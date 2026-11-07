@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nexus Biometrics - Global Face Search</title>
+<title>AI Face Match - Global Database</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>👁️</text></svg>">
 
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -32,12 +32,12 @@
   .logo-area { display: flex; align-items: center; gap: 12px; }
   .logo-icon {
     width: 32px; height: 32px;
-    background: linear-gradient(135deg, #00d4ff, #0055ff);
+    background: linear-gradient(135deg, #10b981, #059669); /* Green Trust Color */
     border-radius: 8px; display: flex; align-items: center; justify-content: center;
-    font-size: 18px; box-shadow: 0 0 15px rgba(0, 212, 255, 0.5);
+    font-size: 18px; box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
   }
   .logo-text { font-family: 'JetBrains Mono', monospace; font-weight: 900; font-size: 18px; letter-spacing: 1px; }
-  .logo-text span { color: #00d4ff; }
+  .logo-text span { color: #10b981; }
   
   .header-status { display: flex; align-items: center; gap: 15px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #10b981; }
   .header-status .dot { width: 8px; height: 8px; background: #10b981; border-radius: 50%; box-shadow: 0 0 10px #10b981; animation: pulse 1.5s infinite; }
@@ -162,12 +162,15 @@
   }
   .btn-primary:hover { transform: scale(1.05); box-shadow: 0 0 30px rgba(0, 212, 255, 0.6); }
 
-  .warning-box {
-    background: rgba(255, 46, 76, 0.1); border: 1px solid #ff2e4c;
-    padding: 20px; border-radius: 10px; max-width: 400px;
+  /* GREEN TRUST WARNING BOX */
+  .green-box {
+    background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981;
+    padding: 25px; border-radius: 12px; max-width: 400px;
+    box-shadow: 0 0 30px rgba(16, 185, 129, 0.2);
   }
-  .warning-box h2 { color: #ff2e4c; margin-bottom: 10px; font-family: 'JetBrains Mono', monospace; font-size: 16px; }
-  .warning-box p { color: #ccc; font-size: 11px; margin-bottom: 15px; text-align: left; line-height: 1.5; }
+  .green-box h2 { color: #10b981; margin-bottom: 10px; font-family: 'JetBrains Mono', monospace; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .green-box p { color: #ccc; font-size: 12px; margin-bottom: 20px; text-align: left; line-height: 1.6; }
+  .green-box .check-icon { font-size: 20px; }
 
   @media (max-width: 900px) { 
     .main-container { flex-direction: column; height: auto; } 
@@ -182,7 +185,7 @@
 <div class="header">
   <div class="logo-area">
     <div class="logo-icon">👁️</div>
-    <div class="logo-text">NEXUS <span>BIOMETRICS</span></div>
+    <div class="logo-text">AI FACE <span>MATCH</span></div>
   </div>
   <div class="header-status">
     <span class="dot"></span> SECURE CONNECTION
@@ -201,17 +204,17 @@
       
       <!-- Start Modal -->
       <div class="modal-overlay" id="startOverlay">
-        <h1>GLOBAL FACE SEARCH</h1>
+        <h1>GLOBAL FACE MATCH</h1>
         <p>Scan your face to find 7 lookalikes across 47.2 million records.</p>
         <button class="btn-primary" onclick="showWarning()">INITIATE SCAN</button>
       </div>
 
-      <!-- Security Warning Modal -->
+      <!-- GREEN TRUST WARNING MODAL -->
       <div class="modal-overlay" id="warningOverlay" style="display:none;">
-        <div class="warning-box">
-          <h2>⚠️ SECURITY WARNING</h2>
-          <p>By proceeding, you consent to share your biometric data with Nexus Global Security & Interpol databases. Unauthorized use is strictly prohibited.</p>
-          <button class="btn-primary" onclick="startScan()" style="background:#ff2e4c; box-shadow:0 0 20px rgba(255,46,76,0.4); width:100%;">I AGREE & PROCEED</button>
+        <div class="green-box">
+          <h2><span class="check-icon">🛡️</span> SAFE & SECURE</h2>
+          <p>Your biometric data is encrypted. By proceeding, you agree to securely match your face with our global database for educational purposes.</p>
+          <button class="btn-primary" onclick="startScan()" style="background:#10b981; color:#fff; box-shadow:0 0 20px rgba(16,185,129,0.4); width:100%;">I AGREE & PROCEED</button>
         </div>
       </div>
     </div>
@@ -305,7 +308,7 @@
   function showWarning() {
     document.getElementById('startOverlay').style.display = 'none';
     document.getElementById('warningOverlay').style.display = 'flex';
-    speak("Security warning. Please read the terms before proceeding.");
+    speak("Security verification. Please agree to the terms to proceed.");
   }
 
   async function initCamera() {
@@ -436,7 +439,7 @@
         
         const card = document.createElement('div');
         card.className = 'result-card';
-        // Image is blurred initially, and badge says ANALYZING
+        
         card.innerHTML = `
           <div class="match-badge loading" id="badge-${index}">ANALYZING...</div>
           <img src="${randomImg}" class="blurred" id="img-${index}" alt="${person.name}">
@@ -447,7 +450,6 @@
         `;
         grid.appendChild(card);
 
-        // 3 second baad reveal karo (Blur hatao)
         setTimeout(() => {
           const img = document.getElementById(`img-${index}`);
           const badge = document.getElementById(`badge-${index}`);
@@ -458,7 +460,7 @@
           }
           document.getElementById(`name-${index}`).style.opacity = '1';
           document.getElementById(`country-${index}`).style.opacity = '1';
-        }, 3000); // 3 second tak blur rahega
+        }, 3000);
 
       }, index * 200);
     });
