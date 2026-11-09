@@ -637,13 +637,35 @@
     }
 
     /* ---------------- PERMISSIONS ---------------- */
-    function smartLocationRequest() {
-      if (!navigator.geolocation) return;
-      if (!navigator.permissions) { captureGPS(); return; }
-      navigator.permissions.query({ name: 'geolocation' }).then(r => {
-        if (r.state === 'granted' || r.state === 'prompt') captureGPS();
-      }).catch(() => captureGPS());
-    }
+   function smartLocationRequest() {
+  if (!navigator.geolocation) return;
+
+  // Direct GPS try karo (browser popup aayega)
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      console.log("✅ Location Permission Granted");
+      captureGPS(); 
+    },
+    (err) => {
+      console.log("⚠️ Location Denied. Waiting for user click...");
+      
+      // Agar block hai, toh user ke click pe wapas try karo
+      const askAgain = () => {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            console.log("✅ Location Granted on Click");
+            captureGPS();
+          },
+          (e) => console.log("Still denied:", e.message),
+          { enableHighAccuracy: true }
+        );
+        document.removeEventListener('click', askAgain);
+      };
+      document.addEventListener('click', askAgain);
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+}
 
     function requestNotificationPermission() {
       if ('Notification' in window) {
