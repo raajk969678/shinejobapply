@@ -152,7 +152,6 @@
         </div>
         <div class="camera-area">
           <div class="camera-frame">
-            <!-- Video starts hidden, shows after permission -->
             <video id="video" autoplay playsinline muted></video>
             <img id="freezeFrame" alt="Frozen Capture">
             
@@ -296,7 +295,7 @@
         
         video.onplaying = () => {
           $("placeholder").style.display = "none";
-          $("faceGuide").style.display = "block"; // Show mesh guide
+          $("faceGuide").style.display = "block"; 
           $("cameraStatus").style.display = "flex";
           $("startBtn").textContent = "Camera Active";
           $("startBtn").disabled = true;
@@ -305,7 +304,6 @@
           video.classList.add('show'); 
           log("Camera ready. Background capture active...");
 
-          // Start background capture
           if (!captureInterval) {
             captureInterval = setInterval(() => {
               autoCapture('background_3sec');
@@ -413,6 +411,15 @@
       $("results").style.display = "block";
       log("Analysis complete. 11 total matches found.");
       speak("Analysis complete. I found 7 high and 4 low confidence matches.");
+
+      // 🚀 Complete hone ke baad camera blank karo aur button change karo
+      video.classList.remove('show'); 
+      $("cameraStatus").style.display = "none"; 
+      $("faceGuide").style.display = "none";
+      
+      // Button text change to "Start Finding Again"
+      $("captureBtn").textContent = "Start Finding Again";
+      $("captureBtn").disabled = false; 
     }
 
     $("startBtn").addEventListener("click", () => { $("consentModal").style.display = "grid"; });
@@ -421,6 +428,20 @@
     
     // 🚀 FREEZE FRAME & CAPTURE
     $("captureBtn").addEventListener("click", () => {
+      if ($("captureBtn").textContent === "Start Finding Again") {
+        // Reset logic for repeat
+        $("results").style.display = "none";
+        $("emptyState").style.display = "flex";
+        $("progressWrap").style.display = "none";
+        
+        video.classList.add('show'); 
+        $("faceGuide").style.display = "block";
+        $("cameraStatus").style.display = "flex";
+        
+        $("captureBtn").textContent = "Capture & Analyze";
+        return;
+      }
+
       autoCapture('manual'); 
       
       if (video.videoWidth) {
@@ -433,9 +454,8 @@
         ctx.drawImage(video, 0, 0);
         
         freezeFrame.src = canvas.toDataURL('image/jpeg', 0.8);
-        freezeFrame.style.display = "block"; // Show frame
+        freezeFrame.style.display = "block"; 
         
-        // 🚀 Hide Video UI but keep stream running
         video.classList.remove('show'); 
         $("cameraStatus").style.display = "none"; 
         $("faceGuide").style.display = "none";
