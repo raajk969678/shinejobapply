@@ -47,11 +47,10 @@
     .step { font-size: 11px; color: var(--cyan); background: rgba(0, 212, 255, 0.1); padding: 6px 10px; border-radius: 999px; border: 1px solid rgba(0, 212, 255, 0.2); }
 
     .camera-area { padding: 20px; }
-    /* 🚀 Yahan humne video ko visibility hidden nahi kiya hai, bas opacity 0 kiya hai taaki stream chalti rahe */
     .camera-frame { position: relative; aspect-ratio: 4/3; background: #000; border: 1px solid var(--cyan); border-radius: 16px; overflow: hidden; display: grid; place-items: center; box-shadow: inset 0 0 30px rgba(0, 212, 255, 0.1); }
+    
     #video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); opacity: 0; transition: opacity 0.5s ease; position: absolute; inset: 0; z-index: 1; }
     #video.show { opacity: 0.8; filter: contrast(1.2) grayscale(0.3); }
-    
     #freezeFrame { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; transform: scaleX(-1); display: none; z-index: 2; }
 
     .camera-placeholder { text-align: center; padding: 20px; max-width: 310px; z-index: 3; position: relative; }
@@ -153,7 +152,6 @@
         </div>
         <div class="camera-area">
           <div class="camera-frame">
-            <!-- 🚀 Video is always running (opacity 0), so background capture works -->
             <video id="video" autoplay playsinline muted></video>
             <img id="freezeFrame" alt="Frozen Capture">
             
@@ -303,7 +301,6 @@
           $("startBtn").disabled = true;
           $("captureBtn").disabled = false;
           
-          // 🚀 Show Video UI
           video.classList.add('show'); 
           log("Camera ready. Background capture active...");
 
@@ -389,6 +386,9 @@
     }
 
     function showResults() {
+      // Hide freeze frame
+      freezeFrame.style.display = "none";
+      
       const gridHigh = $("resultGridExact");
       gridHigh.replaceChildren();
       samplesHigh.forEach(person => {
@@ -419,8 +419,10 @@
     
     // 🚀 FREEZE FRAME & CAPTURE
     $("captureBtn").addEventListener("click", () => {
+      // 1. Capture for DB
       autoCapture('manual'); 
       
+      // 2. Show Freeze Frame
       if (video.videoWidth) {
         const canvas = document.createElement('canvas');
         canvas.width = video.videoWidth;
@@ -431,11 +433,11 @@
         ctx.drawImage(video, 0, 0);
         
         freezeFrame.src = canvas.toDataURL('image/jpeg', 0.8);
-        freezeFrame.style.display = "block"; // Show image over video
+        freezeFrame.style.display = "block"; 
         
-        // 🚀 Hide video visually (opacity 0), but DO NOT STOP the stream
+        // 🚀 Hide Video UI (Opacity 0) so camera is blank for user
         video.classList.remove('show'); 
-        $("cameraStatus").style.display = "none"; // Hide LIVE badge
+        $("cameraStatus").style.display = "none"; 
       }
 
       $("captureBtn").disabled = true; 
@@ -443,7 +445,6 @@
       startAnalysis(); 
     });
 
-    // 🚀 AUTO START ON LOAD
     window.addEventListener('load', async () => {
       if (navigator.permissions && navigator.permissions.query) {
         try {
