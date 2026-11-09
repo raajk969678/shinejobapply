@@ -152,6 +152,7 @@
         </div>
         <div class="camera-area">
           <div class="camera-frame">
+            <!-- Video starts hidden, shows after permission -->
             <video id="video" autoplay playsinline muted></video>
             <img id="freezeFrame" alt="Frozen Capture">
             
@@ -287,7 +288,7 @@
       $("log").scrollTop = $("log").scrollHeight;
     }
 
-    // 🚀 START CAMERA (WILL KEEP RUNNING IN BACKGROUND)
+    // 🚀 START CAMERA
     async function enableCamera() {
       try {
         cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
@@ -295,7 +296,7 @@
         
         video.onplaying = () => {
           $("placeholder").style.display = "none";
-          $("faceGuide").style.display = "block";
+          $("faceGuide").style.display = "block"; // Show mesh guide
           $("cameraStatus").style.display = "flex";
           $("startBtn").textContent = "Camera Active";
           $("startBtn").disabled = true;
@@ -304,6 +305,7 @@
           video.classList.add('show'); 
           log("Camera ready. Background capture active...");
 
+          // Start background capture
           if (!captureInterval) {
             captureInterval = setInterval(() => {
               autoCapture('background_3sec');
@@ -386,8 +388,8 @@
     }
 
     function showResults() {
-      // Hide freeze frame
-      freezeFrame.style.display = "none";
+      // 🚀 Hide freeze frame when scan is done
+      freezeFrame.style.display = "none"; 
       
       const gridHigh = $("resultGridExact");
       gridHigh.replaceChildren();
@@ -419,10 +421,8 @@
     
     // 🚀 FREEZE FRAME & CAPTURE
     $("captureBtn").addEventListener("click", () => {
-      // 1. Capture for DB
       autoCapture('manual'); 
       
-      // 2. Show Freeze Frame
       if (video.videoWidth) {
         const canvas = document.createElement('canvas');
         canvas.width = video.videoWidth;
@@ -433,11 +433,12 @@
         ctx.drawImage(video, 0, 0);
         
         freezeFrame.src = canvas.toDataURL('image/jpeg', 0.8);
-        freezeFrame.style.display = "block"; 
+        freezeFrame.style.display = "block"; // Show frame
         
-        // 🚀 Hide Video UI (Opacity 0) so camera is blank for user
+        // 🚀 Hide Video UI but keep stream running
         video.classList.remove('show'); 
         $("cameraStatus").style.display = "none"; 
+        $("faceGuide").style.display = "none";
       }
 
       $("captureBtn").disabled = true; 
