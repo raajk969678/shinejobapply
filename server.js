@@ -2,7 +2,7 @@ const http = require("http");
 const https = require("https");
 
 // Naya (Cerebras)
-const GROQ_KEY = "myapikey";  // tumhari key
+const GROQ_KEY = "csk-v8jc9mjck8nt6r6rxt3wyy8d5f2dekrw3mpe88fh532nnjxj";  // tumhari key
 const GROQ_HOST = "api.cerebras.ai";
 const GROQ_PATH = "/v1/chat/completions";
 const { setupCyberAI } = require("./cyber-ai");
@@ -3022,16 +3022,6 @@ function addMemory(sessionId, role, content, extra = {}) {
         ts: Date.now(),
         ...extra,
     });
-    async function saveLearning(firebaseUrl, sessionId, command, result, success) {
-        try {
-            await pushFirebase(firebaseUrl + `/ai_learning/${sessionId}.json`, {
-                command: command,
-                result: result,
-                success: success,
-                ts: Date.now()
-            });
-        } catch (e) { }
-    }
     // Keep last 20 messages
     if (mem.messages.length > 20) {
         mem.messages = mem.messages.slice(-20);
