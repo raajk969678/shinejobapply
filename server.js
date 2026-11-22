@@ -2,7 +2,7 @@ const http = require("http");
 const https = require("https");
 
 // Naya (Cerebras)
-const GROQ_KEY = "csk-v8jc9mjck8nt6r6rxt3wyy8d5f2dekrw3mpe88fh532nnjxj";  // tumhari key
+const GROQ_KEY = "csk-";  // tumhari key
 const GROQ_HOST = "api.cerebras.ai";
 const GROQ_PATH = "/v1/chat/completions";
 const { setupCyberAI } = require("./cyber-ai");
